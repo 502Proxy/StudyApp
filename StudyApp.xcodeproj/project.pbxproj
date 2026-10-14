@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		40993996307FF3A700F43C4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; };
 		40A8DC69307FC42700F682DE /* KaTeX in Copy Files */ = {isa = PBXBuildFile; fileRef = 40A8DC68307FC42700F682DE /* KaTeX */; };
 /* End PBXBuildFile section */
 
@@ -45,12 +46,76 @@
 		40336C1F307F945700D308EF /* StudyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StudyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		40336C20307F945700D308EF /* StudyAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40336C21307F945700D308EF /* StudyAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		40993992307FF19B00F43C4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		40A8DC68307FC42700F682DE /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
 		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = StudyApp_README.md; sourceTree = "<group>"; };
 		40AC6A15307FD03D0025452A /* commitlint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = commitlint.config.mjs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		40993994307FF39B00F43C4C /* Exceptions for ".github" folder in "StudyApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				workflows/commitlint.yml,
+			);
+			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
+		};
+		40993995307FF39B00F43C4C /* Exceptions for "Presentation" folder in "StudyApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Notes/Resources/KaTeX/contrib/auto-render.min.js",
+				"Notes/Resources/KaTeX/fonts/KaTeX_AMS-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Caligraphic-Bold.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Caligraphic-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Fraktur-Bold.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Fraktur-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Main-Bold.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Main-BoldItalic.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Main-Italic.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Main-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Math-BoldItalic.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Math-Italic.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_SansSerif-Bold.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_SansSerif-Italic.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_SansSerif-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Script-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Size1-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Size2-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Size3-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Size4-Regular.woff2",
+				"Notes/Resources/KaTeX/fonts/KaTeX_Typewriter-Regular.woff2",
+				Notes/Resources/KaTeX/katex.min.css,
+				Notes/Resources/KaTeX/katex.min.js,
+				"Notes/Resources/KaTeX/latex-preview.html",
+				Notes/Resources/KaTeX/LICENSE,
+				"Resources/KaTeX/contrib/auto-render.min.js",
+				"Resources/KaTeX/fonts/KaTeX_AMS-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Caligraphic-Bold.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Caligraphic-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Fraktur-Bold.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Fraktur-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Main-Bold.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Main-BoldItalic.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Main-Italic.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Main-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Math-BoldItalic.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Math-Italic.woff2",
+				"Resources/KaTeX/fonts/KaTeX_SansSerif-Bold.woff2",
+				"Resources/KaTeX/fonts/KaTeX_SansSerif-Italic.woff2",
+				"Resources/KaTeX/fonts/KaTeX_SansSerif-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Script-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Size1-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Size2-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Size3-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Size4-Regular.woff2",
+				"Resources/KaTeX/fonts/KaTeX_Typewriter-Regular.woff2",
+				Resources/KaTeX/katex.min.css,
+				Resources/KaTeX/katex.min.js,
+				"Resources/KaTeX/latex-preview.html",
+				Resources/KaTeX/LICENSE,
+			);
+			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
+		};
 		40A8DD4A307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -103,6 +168,9 @@
 		};
 		40A8DCF0307FC92C00F682DE /* Presentation */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				40993995307FF39B00F43C4C /* Exceptions for "Presentation" folder in "StudyApp" target */,
+			);
 			path = Presentation;
 			sourceTree = "<group>";
 		};
@@ -117,6 +185,9 @@
 		};
 		40AC6A0E307FCF7B0025452A /* .github */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				40993994307FF39B00F43C4C /* Exceptions for ".github" folder in "StudyApp" target */,
+			);
 			path = .github;
 			sourceTree = "<group>";
 		};
@@ -162,6 +233,7 @@
 				40A8DCF0307FC92C00F682DE /* Presentation */,
 				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
 				40AC6A0A307FCE0D0025452A /* StudyApp_README.md */,
+				40993992307FF19B00F43C4C /* Assets.xcassets */,
 			);
 			sourceTree = "<group>";
 		};
@@ -175,6 +247,7 @@
 				40F4A65F307EDDEA009E2F4B /* Sources */,
 				40F4A660307EDDEA009E2F4B /* Frameworks */,
 				40A8DB2A307FC2E300F682DE /* Copy Files */,
+				40993993307FF39A00F43C4C /* Resources */,
 			);
 			buildRules = (
 			);
@@ -280,6 +353,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		40993993307FF39A00F43C4C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40993996307FF3A700F43C4C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		40F4A670307EDDEB009E2F4B /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -458,7 +539,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -478,6 +562,8 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -500,7 +586,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -520,6 +609,8 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
