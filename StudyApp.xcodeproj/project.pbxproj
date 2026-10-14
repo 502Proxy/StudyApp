@@ -47,6 +47,7 @@
 		40336C21307F945700D308EF /* StudyAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40A8DC68307FC42700F682DE /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
 		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = StudyApp_README.md; sourceTree = "<group>"; };
+		40AC6A15307FD03D0025452A /* commitlint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = commitlint.config.mjs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -114,6 +115,11 @@
 			path = StudyAppTests;
 			sourceTree = "<group>";
 		};
+		40AC6A0E307FCF7B0025452A /* .github */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = .github;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,6 +150,8 @@
 		40F4A65A307EDDEA009E2F4B = {
 			isa = PBXGroup;
 			children = (
+				40AC6A15307FD03D0025452A /* commitlint.config.mjs */,
+				40AC6A0E307FCF7B0025452A /* .github */,
 				40A8DC68307FC42700F682DE /* KaTeX */,
 				40336C1F307F945700D308EF /* StudyApp.app */,
 				40336C20307F945700D308EF /* StudyAppTests.xctest */,
@@ -178,6 +186,7 @@
 				40A8DC94307FC92C00F682DE /* Domain */,
 				40A8DCF0307FC92C00F682DE /* Presentation */,
 				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
+				40AC6A0E307FCF7B0025452A /* .github */,
 			);
 			name = StudyApp;
 			packageProductDependencies = (
