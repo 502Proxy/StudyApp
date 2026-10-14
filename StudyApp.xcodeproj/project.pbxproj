@@ -46,9 +46,7 @@
 		40336C20307F945700D308EF /* StudyAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40336C21307F945700D308EF /* StudyAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40A8DC68307FC42700F682DE /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
-		40A8DC95307FC92C00F682DE /* MILESTONE2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE2.md; sourceTree = "<group>"; };
-		40A8DC96307FC92C00F682DE /* MILESTONE3.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE3.md; sourceTree = "<group>"; };
-		40A8DC97307FC92C00F682DE /* MILESTONE4_LEARNING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE4_LEARNING.md; sourceTree = "<group>"; };
+		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = StudyApp_README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -153,11 +151,9 @@
 				40A8DC6C307FC92C00F682DE /* App */,
 				40A8DC7E307FC92C00F682DE /* Data */,
 				40A8DC94307FC92C00F682DE /* Domain */,
-				40A8DC95307FC92C00F682DE /* MILESTONE2.md */,
-				40A8DC96307FC92C00F682DE /* MILESTONE3.md */,
-				40A8DC97307FC92C00F682DE /* MILESTONE4_LEARNING.md */,
 				40A8DCF0307FC92C00F682DE /* Presentation */,
 				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
+				40AC6A0A307FCE0D0025452A /* StudyApp_README.md */,
 			);
 			sourceTree = "<group>";
 		};
