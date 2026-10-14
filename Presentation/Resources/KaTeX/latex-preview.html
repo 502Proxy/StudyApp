@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  Offline preview page for LaTeX notes. Loaded once by `LaTeXWebView`; every
+  later update calls `window.renderNote(source, isInline)` from Swift.
+  All assets are referenced relatively, so the whole folder must be copied
+  into the app bundle as a *folder reference*.
+-->
+<link rel="stylesheet" href="katex.min.css">
+<style>
+  /* Mirrors the system text view colors (light and dark) used by the native editor. */
+  :root {
+    --background: #FFFFFF;
+    --text: #1D1D1F;
+    --error: #FF3B30;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --background: #1E1E1E; --text: #F5F5F7; --error: #FF453A; }
+  }
+  html, body { margin: 0; background: var(--background); color: var(--text); }
+  body {
+    font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    padding: 16px 18px;
+    -webkit-font-smoothing: antialiased;
+  }
+  #note { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .katex { font-size: 1.1em; }
+  .katex-display { margin: 0.9em 0; overflow-x: auto; overflow-y: hidden; }
+  .katex-error { color: var(--error); }
+  /* Compact rendering is used by the Markdown flow layout for inline equations. */
+  body.inline-math { padding: 0; line-height: 1.1; overflow: hidden; }
+  body.inline-math #note { white-space: nowrap; overflow: visible; line-height: 1.1; }
+  body.inline-math .katex { font-size: 1em; }
+  body.inline-math .katex-display { margin: 0; overflow: visible; }
+</style>
+<script defer src="katex.min.js"></script>
+<script defer src="contrib/auto-render.min.js"></script>
+</head>
+<body>
+<div id="note"></div>
+<script>
+  // Order matters: "$$" must be tried before "$".
+  var DELIMITERS = [
+    { left: "$$", right: "$$", display: true },
+    { left: "\\[", right: "\\]", display: true },
+    { left: "\\begin{equation*}", right: "\\end{equation*}", display: true },
+    { left: "\\begin{align*}", right: "\\end{align*}", display: true },
+    { left: "\\begin{gather*}", right: "\\end{gather*}", display: true },
+    { left: "\\begin{equation}", right: "\\end{equation}", display: true },
+    { left: "\\begin{align}", right: "\\end{align}", display: true },
+    { left: "\\begin{gather}", right: "\\end{gather}", display: true },
+    { left: "\\(", right: "\\)", display: false },
+    { left: "$", right: "$", display: false }
+  ];
+
+  /**
+   * Replaces the page content with `source` and typesets all math in it.
+   * The text is inserted via `textContent`, so user input is never parsed as HTML.
+   */
+  window.renderNote = function (source, isInline) {
+    document.body.classList.toggle("inline-math", Boolean(isInline));
+    var container = document.getElementById("note");
+    container.textContent = source;
+    if (typeof renderMathInElement !== "function") { return; }
+    renderMathInElement(container, {
+      delimiters: DELIMITERS,
+      throwOnError: false,   // show broken formulas in red instead of aborting
+      errorColor: getComputedStyle(document.documentElement).getPropertyValue("--error").trim()
+    });
+  };
+</script>
+</body>
+</html>
