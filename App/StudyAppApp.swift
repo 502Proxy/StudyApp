@@ -24,7 +24,8 @@ struct StudyAppApp: App {
                 },
                 makeLearningViewModel: { module in
                     container.makeLearningViewModel(module: module)
-                }
+                },
+                makeCalendarViewModel: { container.makeStudyCalendarViewModel() }
             )
             .frame(minWidth: 900, minHeight: 600)
             .task { modulesViewModel.load() }

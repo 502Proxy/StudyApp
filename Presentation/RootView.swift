@@ -4,13 +4,20 @@ struct RootView: View {
     @Bindable var viewModel: ModulesViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
+    let makeCalendarViewModel: () -> StudyCalendarViewModel
+    @State private var showsCalendar = false
 
     var body: some View {
         NavigationSplitView {
-            SidebarView(viewModel: viewModel)
+            SidebarView(viewModel: viewModel, onShowCalendar: { showsCalendar = true })
                 .navigationSplitViewColumnWidth(min: 220, ideal: 260, max: 340)
         } detail: {
-            if let module = viewModel.selectedModule {
+            if showsCalendar {
+                StudyCalendarView(viewModel: makeCalendarViewModel(), onOpenModule: { moduleID in
+                    viewModel.selectedID = moduleID
+                    showsCalendar = false
+                })
+            } else if let module = viewModel.selectedModule {
                 ModuleDetailView(
                     module: module,
                     makeSlidesViewModel: makeSlidesViewModel,

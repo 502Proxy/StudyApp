@@ -10,6 +10,7 @@ final class AppContainer {
     let noteRepository: any NoteRepository
     let flashcardRepository: any FlashcardRepository
     let studySheetRepository: any StudySheetRepository
+    let studyCalendarRepository: any StudyCalendarRepository
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
 
@@ -23,6 +24,7 @@ final class AppContainer {
         noteRepository = SwiftDataNoteRepository(context: context)
         flashcardRepository = SwiftDataFlashcardRepository(context: context)
         studySheetRepository = SwiftDataStudySheetRepository(context: context)
+        studyCalendarRepository = SwiftDataStudyCalendarRepository(context: context)
         pdfInspector = PDFKitInspector()
 
         if inMemory {
@@ -44,6 +46,10 @@ final class AppContainer {
             studySheetRepository: studySheetRepository,
             fileStorage: fileStorage
         )
+    }
+
+    func makeStudyCalendarViewModel() -> StudyCalendarViewModel {
+        StudyCalendarViewModel(repository: studyCalendarRepository, moduleRepository: moduleRepository)
     }
 
     func makeLearningViewModel(module: StudyModule) -> LearningViewModel {

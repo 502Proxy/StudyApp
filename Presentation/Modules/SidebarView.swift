@@ -3,9 +3,16 @@ import SwiftUI
 struct SidebarView: View {
     @Bindable var viewModel: ModulesViewModel
     @State private var pendingDeletion: StudyModule?
+    let onShowCalendar: () -> Void
 
     var body: some View {
         List(selection: $viewModel.selectedID) {
+            Section("Organisation") {
+                Button(action: onShowCalendar) {
+                    Label("Kalender", systemImage: "calendar")
+                }
+                .buttonStyle(.plain)
+            }
             Section("Module") {
                 ForEach(viewModel.modules) { module in
                     ModuleRow(module: module)

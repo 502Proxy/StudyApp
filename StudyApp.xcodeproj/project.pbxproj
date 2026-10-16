@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		40993996307FF3A700F43C4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; };
-		40A8DC69307FC42700F682DE /* KaTeX in Copy Files */ = {isa = PBXBuildFile; fileRef = 40A8DC68307FC42700F682DE /* KaTeX */; };
+		409BB5BF308013E5004EC161 /* Assets.xcassets in Copy Files */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; };
+		409BB5C430801406004EC161 /* KaTeX in Resources */ = {isa = PBXBuildFile; fileRef = 409BB5C330801406004EC161 /* KaTeX */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,14 +31,14 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		40A8DB2A307FC2E300F682DE /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				40A8DC69307FC42700F682DE /* KaTeX in Copy Files */,
+				409BB5BF308013E5004EC161 /* Assets.xcassets in Copy Files */,
 			);
 			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -47,20 +47,59 @@
 		40336C20307F945700D308EF /* StudyAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40336C21307F945700D308EF /* StudyAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40993992307FF19B00F43C4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		40A8DC68307FC42700F682DE /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
+		409BB4C0308012F1004EC161 /* MILESTONE2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE2.md; sourceTree = "<group>"; };
+		409BB4C1308012F1004EC161 /* MILESTONE3.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE3.md; sourceTree = "<group>"; };
+		409BB4C2308012F1004EC161 /* MILESTONE4_LEARNING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE4_LEARNING.md; sourceTree = "<group>"; };
+		409BB4C3308012F1004EC161 /* MILESTONE5_CALENDAR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE5_CALENDAR.md; sourceTree = "<group>"; };
+		409BB520308012F1004EC161 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		409BB5C330801406004EC161 /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
 		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = StudyApp_README.md; sourceTree = "<group>"; };
 		40AC6A15307FD03D0025452A /* commitlint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = commitlint.config.mjs; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		40993994307FF39B00F43C4C /* Exceptions for ".github" folder in "StudyApp" target */ = {
+		409BB5BC3080130B004EC161 /* Exceptions for "StudyAppTests" folder in "StudyApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ICalendarParserTests.swift,
+				LearningDataTests.swift,
+				LearningUseCaseTests.swift,
+				MarkdownBlockParserTests.swift,
+				ModuleUseCaseTests.swift,
+				NoteDataTests.swift,
+				NotesViewModelTests.swift,
+				NoteUseCaseTests.swift,
+				SlideDataTests.swift,
+				SlideUseCaseTests.swift,
+				SwiftDataModuleRepositoryTests.swift,
+			);
+			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
+		};
+		409BB5BD3080130B004EC161 /* Exceptions for "StudyAppTests" folder in "StudyAppTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ICalendarParserTests.swift,
+				LearningDataTests.swift,
+				LearningUseCaseTests.swift,
+				MarkdownBlockParserTests.swift,
+				ModuleUseCaseTests.swift,
+				NoteDataTests.swift,
+				NotesViewModelTests.swift,
+				NoteUseCaseTests.swift,
+				SlideDataTests.swift,
+				SlideUseCaseTests.swift,
+				SwiftDataModuleRepositoryTests.swift,
+			);
+			target = 40F4A671307EDDEB009E2F4B /* StudyAppTests */;
+		};
+		409BB5C1308013F0004EC161 /* Exceptions for ".github" folder in "StudyApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				workflows/commitlint.yml,
 			);
 			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
 		};
-		40993995307FF39B00F43C4C /* Exceptions for "Presentation" folder in "StudyApp" target */ = {
+		409BB5C2308013F0004EC161 /* Exceptions for "Presentation" folder in "StudyApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Notes/Resources/KaTeX/contrib/auto-render.min.js",
@@ -116,69 +155,37 @@
 			);
 			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
 		};
-		40A8DD4A307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyApp" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				LearningDataTests.swift,
-				LearningUseCaseTests.swift,
-				MarkdownBlockParserTests.swift,
-				ModuleUseCaseTests.swift,
-				NoteDataTests.swift,
-				NotesViewModelTests.swift,
-				NoteUseCaseTests.swift,
-				SlideDataTests.swift,
-				SlideUseCaseTests.swift,
-				SwiftDataModuleRepositoryTests.swift,
-			);
-			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
-		};
-		40A8DD4B307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyAppTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				LearningDataTests.swift,
-				LearningUseCaseTests.swift,
-				MarkdownBlockParserTests.swift,
-				ModuleUseCaseTests.swift,
-				NoteDataTests.swift,
-				NotesViewModelTests.swift,
-				NoteUseCaseTests.swift,
-				SlideDataTests.swift,
-				SlideUseCaseTests.swift,
-				SwiftDataModuleRepositoryTests.swift,
-			);
-			target = 40F4A671307EDDEB009E2F4B /* StudyAppTests */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		40A8DC6C307FC92C00F682DE /* App */ = {
+		409BB490308012F1004EC161 /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
 			sourceTree = "<group>";
 		};
-		40A8DC7E307FC92C00F682DE /* Data */ = {
+		409BB4A6308012F1004EC161 /* Data */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Data;
 			sourceTree = "<group>";
 		};
-		40A8DC94307FC92C00F682DE /* Domain */ = {
+		409BB4BF308012F1004EC161 /* Domain */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Domain;
 			sourceTree = "<group>";
 		};
-		40A8DCF0307FC92C00F682DE /* Presentation */ = {
+		409BB51F308012F1004EC161 /* Presentation */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				40993995307FF39B00F43C4C /* Exceptions for "Presentation" folder in "StudyApp" target */,
+				409BB5C2308013F0004EC161 /* Exceptions for "Presentation" folder in "StudyApp" target */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
 		};
-		40A8DCFB307FC92C00F682DE /* StudyAppTests */ = {
+		409BB52C308012F1004EC161 /* StudyAppTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				40A8DD4A307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyApp" target */,
-				40A8DD4B307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyAppTests" target */,
+				409BB5BC3080130B004EC161 /* Exceptions for "StudyAppTests" folder in "StudyApp" target */,
+				409BB5BD3080130B004EC161 /* Exceptions for "StudyAppTests" folder in "StudyAppTests" target */,
 			);
 			path = StudyAppTests;
 			sourceTree = "<group>";
@@ -186,7 +193,7 @@
 		40AC6A0E307FCF7B0025452A /* .github */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				40993994307FF39B00F43C4C /* Exceptions for ".github" folder in "StudyApp" target */,
+				409BB5C1308013F0004EC161 /* Exceptions for ".github" folder in "StudyApp" target */,
 			);
 			path = .github;
 			sourceTree = "<group>";
@@ -221,19 +228,24 @@
 		40F4A65A307EDDEA009E2F4B = {
 			isa = PBXGroup;
 			children = (
+				409BB5C330801406004EC161 /* KaTeX */,
 				40AC6A15307FD03D0025452A /* commitlint.config.mjs */,
 				40AC6A0E307FCF7B0025452A /* .github */,
-				40A8DC68307FC42700F682DE /* KaTeX */,
 				40336C1F307F945700D308EF /* StudyApp.app */,
 				40336C20307F945700D308EF /* StudyAppTests.xctest */,
 				40336C21307F945700D308EF /* StudyAppUITests.xctest */,
-				40A8DC6C307FC92C00F682DE /* App */,
-				40A8DC7E307FC92C00F682DE /* Data */,
-				40A8DC94307FC92C00F682DE /* Domain */,
-				40A8DCF0307FC92C00F682DE /* Presentation */,
-				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
 				40AC6A0A307FCE0D0025452A /* StudyApp_README.md */,
 				40993992307FF19B00F43C4C /* Assets.xcassets */,
+				409BB490308012F1004EC161 /* App */,
+				409BB4A6308012F1004EC161 /* Data */,
+				409BB4BF308012F1004EC161 /* Domain */,
+				409BB4C0308012F1004EC161 /* MILESTONE2.md */,
+				409BB4C1308012F1004EC161 /* MILESTONE3.md */,
+				409BB4C2308012F1004EC161 /* MILESTONE4_LEARNING.md */,
+				409BB4C3308012F1004EC161 /* MILESTONE5_CALENDAR.md */,
+				409BB51F308012F1004EC161 /* Presentation */,
+				409BB520308012F1004EC161 /* README.md */,
+				409BB52C308012F1004EC161 /* StudyAppTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -247,18 +259,18 @@
 				40F4A65F307EDDEA009E2F4B /* Sources */,
 				40F4A660307EDDEA009E2F4B /* Frameworks */,
 				40A8DB2A307FC2E300F682DE /* Copy Files */,
-				40993993307FF39A00F43C4C /* Resources */,
+				409BB5C0308013EF004EC161 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				40A8DC6C307FC92C00F682DE /* App */,
-				40A8DC7E307FC92C00F682DE /* Data */,
-				40A8DC94307FC92C00F682DE /* Domain */,
-				40A8DCF0307FC92C00F682DE /* Presentation */,
-				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
+				409BB490308012F1004EC161 /* App */,
+				409BB4A6308012F1004EC161 /* Data */,
+				409BB4BF308012F1004EC161 /* Domain */,
+				409BB51F308012F1004EC161 /* Presentation */,
+				409BB52C308012F1004EC161 /* StudyAppTests */,
 				40AC6A0E307FCF7B0025452A /* .github */,
 			);
 			name = StudyApp;
@@ -353,11 +365,11 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		40993993307FF39A00F43C4C /* Resources */ = {
+		409BB5C0308013EF004EC161 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40993996307FF3A700F43C4C /* Assets.xcassets in Resources */,
+				409BB5C430801406004EC161 /* KaTeX in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
