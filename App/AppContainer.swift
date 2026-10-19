@@ -11,10 +11,14 @@ final class AppContainer {
     let flashcardRepository: any FlashcardRepository
     let studySheetRepository: any StudySheetRepository
     let studyCalendarRepository: any StudyCalendarRepository
+    let calendarFeedLoader: any CalendarFeedLoader
+    let calendarEventParser: any CalendarEventParsing
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
+    let defaults: UserDefaults
+    let readingProgress: ReadingProgressStore
 
-    init(inMemory: Bool = false) throws {
+    init(inMemory: Bool = false, defaults: UserDefaults = .standard) throws {
         let container = try Persistence.makeContainer(inMemory: inMemory)
         let context = container.mainContext
 
@@ -25,7 +29,11 @@ final class AppContainer {
         flashcardRepository = SwiftDataFlashcardRepository(context: context)
         studySheetRepository = SwiftDataStudySheetRepository(context: context)
         studyCalendarRepository = SwiftDataStudyCalendarRepository(context: context)
+        calendarFeedLoader = URLSessionCalendarFeedLoader()
+        calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
+        self.defaults = defaults
+        readingProgress = ReadingProgressStore(defaults: defaults)
 
         if inMemory {
             // Für Previews und Tests: Dateien landen im temporären Ordner.
@@ -44,12 +52,29 @@ final class AppContainer {
             noteRepository: noteRepository,
             flashcardRepository: flashcardRepository,
             studySheetRepository: studySheetRepository,
-            fileStorage: fileStorage
+            fileStorage: fileStorage,
+            calendarRepository: studyCalendarRepository,
+            defaults: defaults
         )
     }
 
     func makeStudyCalendarViewModel() -> StudyCalendarViewModel {
-        StudyCalendarViewModel(repository: studyCalendarRepository, moduleRepository: moduleRepository)
+        StudyCalendarViewModel(
+            repository: studyCalendarRepository,
+            moduleRepository: moduleRepository,
+            feedLoader: calendarFeedLoader,
+            parser: calendarEventParser,
+            defaults: defaults
+        )
+    }
+
+    func makeTodayViewModel() -> TodayViewModel {
+        TodayViewModel(
+            moduleRepository: moduleRepository,
+            slideRepository: slideRepository,
+            noteRepository: noteRepository,
+            flashcardRepository: flashcardRepository
+        )
     }
 
     func makeLearningViewModel(module: StudyModule) -> LearningViewModel {
@@ -69,6 +94,7 @@ final class AppContainer {
             noteRepository: noteRepository,
             storage: fileStorage,
             inspector: pdfInspector,
+            readingProgress: readingProgress,
             notesViewModelFactory: { [noteRepository] document in
                 NotesViewModel(document: document, repository: noteRepository)
             }
