@@ -326,7 +326,7 @@ struct ParsingContext {
     }
 
     /// IANA-Namen direkt, gängige Windows-Namen (Outlook/Exchange) über eine kleine Zuordnung.
-    static func timeZone(named name: String) -> TimeZone? {
+    nonisolated static func timeZone(named name: String) -> TimeZone? {
         if let zone = TimeZone(identifier: name) { return zone }
         let windowsNames: [String: String] = [
             "W. Europe Standard Time": "Europe/Berlin",

@@ -27,9 +27,11 @@ final class AppUpdater {
         if configured {
             let controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
             self.controller = controller
+            // Sparkle ändert `canCheckForUpdates` auf dem Main Thread.
             observation = controller.updater.observe(\.canCheckForUpdates, options: [.initial, .new]) { [weak self] updater, _ in
-                let canCheck = updater.canCheckForUpdates
-                Task { @MainActor in self?.canCheckForUpdates = canCheck }
+                MainActor.assumeIsolated {
+                    self?.canCheckForUpdates = updater.canCheckForUpdates
+                }
             }
         } else {
             controller = nil

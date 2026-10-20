@@ -33,8 +33,8 @@ enum ModuleEditorMode: Identifiable {
                 name: module.name,
                 code: module.code,
                 color: module.color,
-                creditsText: module.credits.map(GradeScale.formatCredits) ?? "",
-                gradeText: module.grade.map(GradeScale.format) ?? ""
+                creditsText: module.credits.map { GradeScale.formatCredits($0) } ?? "",
+                gradeText: module.grade.map { GradeScale.format($0) } ?? ""
             )
         }
     }

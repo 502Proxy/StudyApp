@@ -57,6 +57,7 @@ download_sparkle
 echo "→ Baue StudyApp $VERSION ($BUILD_NUMBER) …"
 rm -rf "$ARCHIVE"
 xcodebuild -project StudyApp.xcodeproj -scheme StudyApp -configuration Release \
+    -destination "generic/platform=macOS" \
     -archivePath "$ARCHIVE" \
     MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
     archive -quiet
@@ -99,8 +100,11 @@ if $UPLOAD && command -v gh >/dev/null && gh auth status >/dev/null 2>&1; then
         || gh release create "$UPDATES_TAG" --repo "$REPO" --title "Updates" --notes "Downloads für automatische Updates."
     gh release upload "$UPDATES_TAG" "$DMG" --repo "$REPO" --clobber
     echo "✓ Hochgeladen. Jetzt docs/appcast.xml committen und pushen:"
-    echo "    git add docs/appcast.xml && git commit -m \"chore(release): $VERSION\" && git push"
+    echo "    git add docs/appcast.xml && git commit -m \"chore(release): ${VERSION}\" && git push"
 else
     echo "✓ Fertig: $DMG"
-    echo "  Noch zu tun: DMG im GitHub-Release „$UPDATES_TAG“ hochladen und docs/appcast.xml pushen."
+    echo "  Noch zu tun (GitHub-CLI nicht angemeldet):"
+    echo "    1. Auf https://github.com/${REPO}/releases das Release mit dem Tag „${UPDATES_TAG}“ öffnen"
+    echo "       (beim ersten Mal anlegen) und $(basename "$DMG") hochladen."
+    echo "    2. git add docs/appcast.xml && git commit -m \"chore(release): ${VERSION}\" && git push"
 fi
