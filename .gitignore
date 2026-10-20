@@ -1,3 +1,44 @@
-build/
+# ── macOS ─────────────────────────────────────────────
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+Icon?
+
+# ── Xcode: persönliche Einstellungen und Build-Ausgaben ──
 xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ── Swift Package Manager ─────────────────────────────
+.build/
+.swiftpm/
+# Package.resolved bleibt versioniert, damit alle dieselbe Sparkle-Version bauen.
+
+# ── Releases: Archive, DMGs, Update-Pakete ─────────────
+*.xcarchive
+*.dmg
+*.zip
+*.delta
+*.app/
+
+# ── Geheimnisse – niemals committen! ──────────────────
+# Privater Sparkle-Schlüssel (Export von `generate_keys -x …`)
+private-key*.txt
+*private*key*
+*.pem
+*.p12
+*.cer
+*.key
+*.mobileprovision
+*.provisionprofile
+.env
+.env.*
