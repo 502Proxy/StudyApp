@@ -14,6 +14,7 @@ struct ModuleDetailView: View {
     let liveProgress: Double
     /// Bezugszeit der Kalenderuhr, damit „läuft gerade“ überall gleich bewertet wird.
     let referenceDate: Date
+    let assignments: AssignmentsViewModel
     let onShowEvent: (StudyCalendarEvent) -> Void
     let onEdit: () -> Void
 
@@ -28,6 +29,7 @@ struct ModuleDetailView: View {
         liveEvent: StudyCalendarEvent?,
         liveProgress: Double,
         referenceDate: Date,
+        assignments: AssignmentsViewModel,
         makeSlidesViewModel: SlidesViewModelFactory,
         makeLearningViewModel: LearningViewModelFactory,
         onShowEvent: @escaping (StudyCalendarEvent) -> Void,
@@ -40,6 +42,7 @@ struct ModuleDetailView: View {
         self.liveEvent = liveEvent
         self.liveProgress = liveProgress
         self.referenceDate = referenceDate
+        self.assignments = assignments
         self.onShowEvent = onShowEvent
         self.onEdit = onEdit
         _slidesViewModel = State(initialValue: makeSlidesViewModel(module.id))
@@ -70,6 +73,8 @@ struct ModuleDetailView: View {
                     NotesOverviewView(viewModel: learningViewModel) { note in
                         openInSlides(note)
                     }
+                case .assignments:
+                    AssignmentsView(viewModel: assignments, module: module)
                 case .flashcards:
                     FlashcardsView(viewModel: learningViewModel)
                 case .studySheets:
@@ -148,10 +153,21 @@ struct ModuleDetailView: View {
                             LiveBadge()
                         }
                     }
-                    if !module.code.isEmpty {
-                        Text(module.code)
-                            .font(Theme.Typography.caption)
-                            .foregroundStyle(Theme.textSecondary)
+                    HStack(spacing: 6) {
+                        if !module.code.isEmpty {
+                            Text(module.code)
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        if let credits = module.credits {
+                            Pill(text: "\(GradeScale.formatCredits(credits)) ECTS", tint: Theme.success)
+                        }
+                        if let grade = module.grade {
+                            Pill(
+                                text: "Note \(GradeScale.format(grade))",
+                                tint: GradeScale.isPassing(grade) ? Theme.accent : Theme.danger
+                            )
+                        }
                     }
                 }
                 Spacer()
@@ -209,6 +225,13 @@ struct ModuleDetailView: View {
                         tint: Theme.accent
                     ) { section = .notes }
                     StatTile(
+                        title: "Aufgaben",
+                        value: "\(assignments.openCount(forModule: module.id))",
+                        detail: nextAssignmentDetail,
+                        systemImage: "checklist",
+                        tint: Theme.danger
+                    ) { section = .assignments }
+                    StatTile(
                         title: "Karteikarten",
                         value: "\(learningViewModel.flashcards.count)",
                         detail: "\(learningViewModel.dueFlashcards.count) Wiederholungen fällig",
@@ -260,6 +283,14 @@ struct ModuleDetailView: View {
             .padding(.bottom, Theme.Spacing.page)
             .frame(maxWidth: 1120, alignment: .leading)
         }
+    }
+
+    /// Nächste offene Abgabe als Kurztext für die Kachel.
+    private var nextAssignmentDetail: String {
+        guard let next = assignments.assignments(forModule: module.id).first(where: { !$0.isCompleted }) else {
+            return "Keine offenen Abgaben"
+        }
+        return "Nächste: \(assignments.dueText(for: next))"
     }
 
     private func resumeCard(_ document: SlideDocument) -> some View {
@@ -351,6 +382,9 @@ struct ModuleDetailView: View {
                 learningViewModel.load()
                 learningViewModel.addModuleNote()
                 section = .notes
+            }
+            QuickActionRow(title: "Aufgabe eintragen", systemImage: "checklist") {
+                assignments.startNewAssignment(moduleID: module.id)
             }
             QuickActionRow(title: "Karteikarten lernen", systemImage: "rectangle.stack") {
                 section = .flashcards

@@ -3,6 +3,8 @@ import SwiftUI
 /// Kalender-Bereich: Monatsraster oder Agenda, Tagesdetails als Inspector, Suche und Quellenverwaltung.
 struct StudyCalendarView: View {
     @Bindable var viewModel: StudyCalendarViewModel
+    /// Abgaben erscheinen an ihrem Fälligkeitstag im Raster und in den Tagesdetails.
+    var assignments: AssignmentsViewModel?
     let onOpenModule: (UUID, ModuleSection) -> Void
 
     @State private var isImporting = false
@@ -19,7 +21,7 @@ struct StudyCalendarView: View {
             .searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "Termine durchsuchen")
             .toolbar { toolbarContent }
             .inspector(isPresented: inspectorBinding) {
-                CalendarDayInspector(viewModel: viewModel)
+                CalendarDayInspector(viewModel: viewModel, assignments: assignments)
                     .inspectorColumnWidth(min: 260, ideal: 300, max: 400)
             }
             .overlay(alignment: .bottom) { statusBanner }
@@ -79,7 +81,7 @@ struct StudyCalendarView: View {
             CalendarSearchResultsView(viewModel: viewModel)
         } else {
             switch viewModel.mode {
-            case .month: CalendarMonthView(viewModel: viewModel)
+            case .month: CalendarMonthView(viewModel: viewModel, assignments: assignments)
             case .agenda: CalendarAgendaView(viewModel: viewModel)
             }
         }

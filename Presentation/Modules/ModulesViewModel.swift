@@ -7,6 +7,9 @@ struct ModuleDraft {
     var name: String = ""
     var code: String = ""
     var color: ModuleColor = .violet
+    /// Freitext, damit „7,5“ oder ein leeres Feld möglich sind.
+    var creditsText: String = ""
+    var gradeText: String = ""
 }
 
 enum ModuleEditorMode: Identifiable {
@@ -25,7 +28,14 @@ enum ModuleEditorMode: Identifiable {
         case .create:
             ModuleDraft()
         case .edit(let module):
-            ModuleDraft(id: module.id, name: module.name, code: module.code, color: module.color)
+            ModuleDraft(
+                id: module.id,
+                name: module.name,
+                code: module.code,
+                color: module.color,
+                creditsText: module.credits.map(GradeScale.formatCredits) ?? "",
+                gradeText: module.grade.map(GradeScale.format) ?? ""
+            )
         }
     }
 
@@ -48,6 +58,7 @@ final class ModulesViewModel {
     private let createModule: CreateModuleUseCase
     private let updateModule: UpdateModuleUseCase
     private let deleteModule: DeleteModuleUseCase
+    private let updateGrade: UpdateModuleGradeUseCase
     private let settings: any StudySettingsStore
 
     init(
@@ -58,12 +69,14 @@ final class ModulesViewModel {
         studySheetRepository: any StudySheetRepository,
         fileStorage: any FileStorage,
         calendarRepository: (any StudyCalendarRepository)? = nil,
+        assignmentRepository: (any AssignmentRepository)? = nil,
         settings: any StudySettingsStore
     ) {
         self.settings = settings
         listModules = ListModulesUseCase(repository: repository)
         createModule = CreateModuleUseCase(repository: repository)
         updateModule = UpdateModuleUseCase(repository: repository)
+        updateGrade = UpdateModuleGradeUseCase(repository: repository)
         deleteModule = DeleteModuleUseCase(
             repository: repository,
             slideRepository: slideRepository,
@@ -71,7 +84,8 @@ final class ModulesViewModel {
             flashcardRepository: flashcardRepository,
             studySheetRepository: studySheetRepository,
             fileStorage: fileStorage,
-            calendarRepository: calendarRepository
+            calendarRepository: calendarRepository,
+            assignmentRepository: assignmentRepository
         )
     }
 
@@ -92,7 +106,9 @@ final class ModulesViewModel {
     @discardableResult
     func save(_ draft: ModuleDraft) -> StudyModule? {
         do {
-            let saved: StudyModule
+            // Erst prüfen, dann speichern: sonst entstünde bei einer ungültigen Note ein halb angelegtes Modul.
+            let (credits, grade) = try Self.parseGrade(creditsText: draft.creditsText, gradeText: draft.gradeText)
+            var saved: StudyModule
             if let id = draft.id {
                 guard let existing = module(withID: id) else {
                     throw ModuleError.notFound
@@ -101,6 +117,7 @@ final class ModulesViewModel {
             } else {
                 saved = try createModule(name: draft.name, code: draft.code, color: draft.color)
             }
+            saved = try updateGrade(saved, credits: credits, grade: grade)
             // Ein bewusst angelegtes Modul darf wieder mit dem Kalender abgeglichen werden.
             settings.ignoredCourseKeys.remove(DetectModuleCandidatesUseCase.moduleKey(for: saved))
             load()
@@ -109,6 +126,33 @@ final class ModulesViewModel {
             errorMessage = error.localizedDescription
             return nil
         }
+    }
+
+    // MARK: Noten und ECTS
+
+    var gradeSummary: GradeSummary { GradeSummary(modules: modules) }
+
+    /// Speichert Note und Leistungspunkte aus Texteingaben. Gibt bei ungültigen Werten `false` zurück.
+    @discardableResult
+    func updateGrade(of module: StudyModule, creditsText: String, gradeText: String) -> Bool {
+        do {
+            let (credits, grade) = try Self.parseGrade(creditsText: creditsText, gradeText: gradeText)
+            try updateGrade(module, credits: credits, grade: grade)
+            load()
+            return true
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    /// Liest „7,5“ bzw. „1,7“; leerer Text bedeutet „nicht angegeben“.
+    static func parseGrade(creditsText: String, gradeText: String) throws -> (credits: Double?, grade: Double?) {
+        guard let credits = GradeScale.parse(creditsText) else { throw GradeError.invalidCredits }
+        guard let grade = GradeScale.parse(gradeText) else { throw GradeError.invalidGrade }
+        if let grade, !GradeScale.range.contains(grade) { throw GradeError.invalidGrade }
+        if let credits, !(0...GradeScale.maximumCredits).contains(credits) { throw GradeError.invalidCredits }
+        return (credits, grade)
     }
 
     func delete(_ module: StudyModule) {

@@ -133,6 +133,34 @@ struct NoteEditorView: View {
                         Label("Alle Notizen exportieren", systemImage: "doc.on.doc")
                     }
                     .disabled(!viewModel.hasExportableNotes)
+
+                    Divider()
+
+                    Button {
+                        viewModel.saveNow()
+                        if let document = viewModel.printableCurrentNote() {
+                            PrintActions.exportPDF(document, into: $exportFile) { viewModel.errorMessage = $0 }
+                        }
+                    } label: {
+                        Label("Aktuelle Notiz als PDF …", systemImage: "doc.richtext")
+                    }
+                    .disabled(viewModel.currentNoteForExport() == nil)
+
+                    Button {
+                        viewModel.saveNow()
+                        PrintActions.exportPDF(viewModel.printableAllNotes(), into: $exportFile) { viewModel.errorMessage = $0 }
+                    } label: {
+                        Label("Alle Notizen als PDF …", systemImage: "doc.on.doc.fill")
+                    }
+                    .disabled(!viewModel.hasExportableNotes)
+
+                    Button {
+                        viewModel.saveNow()
+                        PrintActions.print(viewModel.printableAllNotes()) { viewModel.errorMessage = $0 }
+                    } label: {
+                        Label("Drucken …", systemImage: "printer")
+                    }
+                    .disabled(!viewModel.hasExportableNotes)
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }

@@ -5,6 +5,7 @@ import SwiftUI
 struct AppCommands: Commands {
     let navigation: AppNavigation
     let calendar: StudyCalendarViewModel
+    let assignments: AssignmentsViewModel
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
 
     var body: some Commands {
@@ -17,6 +18,11 @@ struct AppCommands: Commands {
 
             Button("Kalender") { navigation.showCalendar() }
                 .keyboardShortcut("c", modifiers: [.command, .shift])
+
+            Button("Noten & ECTS") { navigation.showGrades() }
+
+            Button("Neue Aufgabe …") { assignments.startNewAssignment(moduleID: navigation.selectedModuleID) }
+                .keyboardShortcut("t", modifiers: [.command, .option])
 
             Button("Laufende Vorlesung öffnen") {
                 if let moduleID = calendar.currentLecture?.moduleID {

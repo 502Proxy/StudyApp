@@ -241,14 +241,44 @@ final class LearningViewModel {
 
     /// Alle Notizen des Moduls als ein Markdown-Dokument: freie Notizen zuerst, dann je Foliensatz.
     func exportAllNotesAsMarkdown() -> String {
-        let sections = noteSections.flatMap { section in
+        NoteExportFormatting.markdown(title: "Notizen: \(module.name)", sections: exportSections)
+    }
+
+    /// Abschnitte für den Export aller Notizen, mit Überschrift je Notiz.
+    private var exportSections: [(heading: String, note: LectureNote)] {
+        noteSections.flatMap { section in
             section.notes.map { note -> (heading: String, note: LectureNote) in
                 if isModuleNote(note) { return (note.title, note) }
                 let page = note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument"
                 return ("\(section.title) – \(page)", note)
             }
         }
-        return NoteExportFormatting.markdown(title: "Notizen: \(module.name)", sections: sections)
+    }
+
+    // MARK: PDF und Druck
+
+    func printableNote(withID id: UUID) -> PrintableDocument? {
+        guard let note = notes.first(where: { $0.id == id }) else { return nil }
+        let title: String
+        if isModuleNote(note) {
+            title = note.title
+        } else {
+            let page = note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument"
+            title = "\(sourceDocumentTitle(for: note)) – \(page)"
+        }
+        return .note(note, title: title, subtitle: "\(module.name) · Stand \(note.updatedAt.formatted(date: .long, time: .shortened))")
+    }
+
+    func printableAllNotes() -> PrintableDocument {
+        .notes(
+            title: "Notizen: \(module.name)",
+            subtitle: "\(notes.filter(\.hasContent).count) Notizen · Stand \(Date().formatted(date: .long, time: .omitted))",
+            sections: exportSections
+        )
+    }
+
+    func printableStudySheet(_ sheet: StudySheet) -> PrintableDocument {
+        .studySheet(sheet, moduleName: module.name)
     }
 
     func makeEditingSession(for note: LectureNote) -> NoteEditingSession {

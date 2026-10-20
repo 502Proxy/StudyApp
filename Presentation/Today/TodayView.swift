@@ -4,6 +4,7 @@ import SwiftUI
 struct TodayView: View {
     @Bindable var calendar: StudyCalendarViewModel
     @Bindable var today: TodayViewModel
+    @Bindable var assignments: AssignmentsViewModel
     let onOpenModule: (UUID, ModuleSection, ModuleIntent?) -> Void
     let onShowCalendar: () -> Void
     let onCreateModule: () -> Void
@@ -17,8 +18,11 @@ struct TodayView: View {
                 HStack(alignment: .top, spacing: 18) {
                     scheduleCard
                         .frame(maxWidth: .infinity)
-                    reviewCard
-                        .frame(maxWidth: .infinity)
+                    VStack(spacing: 18) {
+                        assignmentsCard
+                        reviewCard
+                    }
+                    .frame(maxWidth: .infinity)
                 }
                 if !today.recentNotes.isEmpty {
                     recentNotes
@@ -47,8 +51,14 @@ struct TodayView: View {
                 .foregroundStyle(Theme.textPrimary)
             HStack(spacing: 8) {
                 Pill(text: StudyCalendarViewModel.eventCountText(calendar.todayEvents.count) + " heute", systemImage: "calendar", tint: Theme.accent)
+                if assignments.overdueCount > 0 {
+                    Pill(text: "\(assignments.overdueCount) überfällig", systemImage: "exclamationmark.circle", tint: Theme.danger)
+                }
                 if today.totalDue > 0 {
                     Pill(text: "\(today.totalDue) Karten fällig", systemImage: "rectangle.stack", tint: Theme.warning)
+                }
+                if let average = GradeSummary(modules: today.modules).weightedAverage {
+                    Pill(text: "Ø \(GradeScale.format(average))", systemImage: "graduationcap", tint: Theme.accent)
                 }
                 if !today.modules.isEmpty {
                     Pill(text: today.modules.count == 1 ? "1 Modul" : "\(today.modules.count) Module", systemImage: "books.vertical")
@@ -164,6 +174,51 @@ struct TodayView: View {
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .card()
+    }
+
+    // MARK: Abgaben
+
+    private var assignmentsCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeader("Abgaben", systemImage: "checklist") {
+                Button {
+                    assignments.startNewAssignment(moduleID: nil)
+                } label: {
+                    Label("Neu", systemImage: "plus")
+                }
+                .buttonStyle(.link)
+                .font(Theme.Typography.small)
+                .disabled(today.modules.isEmpty)
+            }
+            let upcoming = assignments.upcoming(days: 7)
+            if upcoming.isEmpty {
+                Text("Keine Abgaben in den nächsten 7 Tagen.")
+                    .font(Theme.Typography.caption)
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(upcoming.prefix(6)) { assignment in
+                        AssignmentRow(
+                            assignment: assignment,
+                            urgency: assignments.urgency(of: assignment),
+                            dueText: assignments.dueText(for: assignment),
+                            module: today.module(withID: assignment.moduleID),
+                            onToggle: { assignments.setCompleted(assignment, !assignment.isCompleted) },
+                            onEdit: { assignments.edit(assignment) },
+                            onDelete: { assignments.delete(assignment) }
+                        )
+                    }
+                }
+                if upcoming.count > 6 {
+                    Text("+ \(upcoming.count - 6) weitere")
+                        .font(Theme.Typography.small)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+        }
+        .card()
+        .task { assignments.load() }
     }
 
     // MARK: Wiederholen

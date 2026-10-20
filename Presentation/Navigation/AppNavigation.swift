@@ -57,6 +57,7 @@ final class AppNavigation {
         switch destination {
         case .today: navigate(to: .today)
         case .calendar: navigate(to: .calendar)
+        case .grades: navigate(to: .grades)
         case .module(let id): navigate(to: .module(id, section: section(for: id)))
         }
     }
@@ -67,6 +68,10 @@ final class AppNavigation {
 
     func showCalendar() {
         navigate(to: .calendar)
+    }
+
+    func showGrades() {
+        navigate(to: .grades)
     }
 
     /// Öffnet ein Modul und gibt der Modulansicht einen Auftrag mit.
@@ -143,6 +148,7 @@ final class AppNavigation {
     private func persist() {
         switch destination {
         case .today: defaults.set("today", forKey: Self.destinationKey)
+        case .grades: defaults.set("grades", forKey: Self.destinationKey)
         case .calendar: defaults.set("calendar", forKey: Self.destinationKey)
         case .module(let id): defaults.set(id.uuidString, forKey: Self.destinationKey)
         case nil: defaults.removeObject(forKey: Self.destinationKey)
@@ -154,6 +160,7 @@ final class AppNavigation {
     private static func restoreDestination(from defaults: UserDefaults) -> AppDestination? {
         guard let raw = defaults.string(forKey: destinationKey) else { return nil }
         if raw == "today" { return .today }
+        if raw == "grades" { return .grades }
         if raw == "calendar" { return .calendar }
         return UUID(uuidString: raw).map(AppDestination.module)
     }

@@ -3,6 +3,7 @@ import SwiftUI
 /// Monatsraster mit Terminchips, Tastatursteuerung und Auswahl eines Tages.
 struct CalendarMonthView: View {
     @Bindable var viewModel: StudyCalendarViewModel
+    var assignments: AssignmentsViewModel?
     @FocusState private var isGridFocused: Bool
 
     var body: some View {
@@ -51,6 +52,10 @@ struct CalendarMonthView: View {
                             day: day,
                             dayLabel: dayLabel(for: day),
                             events: viewModel.events(on: day),
+                            assignments: assignments?.assignments(on: day) ?? [],
+                            assignmentColor: { assignment in
+                                viewModel.module(withID: assignment.moduleID)?.color.color ?? Theme.textSecondary
+                            },
                             isInMonth: viewModel.isInDisplayedMonth(day),
                             isSelected: day == viewModel.selectedDate,
                             isToday: day == viewModel.today,
@@ -62,6 +67,10 @@ struct CalendarMonthView: View {
                             onOpen: { event in
                                 viewModel.select(day)
                                 viewModel.selectedEvent = event
+                            },
+                            onOpenAssignment: { assignment in
+                                viewModel.select(day)
+                                assignments?.edit(assignment)
                             }
                         )
                     }
@@ -86,12 +95,15 @@ private struct CalendarDayCell: View {
     let day: Date
     let dayLabel: String
     let events: [StudyCalendarEvent]
+    let assignments: [Assignment]
+    let assignmentColor: (Assignment) -> Color
     let isInMonth: Bool
     let isSelected: Bool
     let isToday: Bool
     let color: (StudyCalendarEvent) -> Color
     let onSelect: () -> Void
     let onOpen: (StudyCalendarEvent) -> Void
+    let onOpenAssignment: (Assignment) -> Void
 
     private static let chipHeight: CGFloat = 19
     private static let headerHeight: CGFloat = 30
@@ -99,15 +111,22 @@ private struct CalendarDayCell: View {
     var body: some View {
         GeometryReader { proxy in
             let capacity = max(Int((proxy.size.height - Self.headerHeight) / Self.chipHeight), 0)
-            let visibleCount = events.count <= capacity ? events.count : max(capacity - 1, 0)
+            let total = events.count + assignments.count
+            let visibleCount = total <= capacity ? total : max(capacity - 1, 0)
+            // Abgaben zuerst: Sie sind meist wichtiger als ein weiterer Vorlesungstermin.
+            let visibleAssignments = min(assignments.count, visibleCount)
+            let visibleEvents = visibleCount - visibleAssignments
 
             VStack(alignment: .leading, spacing: 2) {
                 dayNumber
-                ForEach(events.prefix(visibleCount)) { event in
+                ForEach(assignments.prefix(visibleAssignments)) { assignment in
+                    assignmentChip(for: assignment)
+                }
+                ForEach(events.prefix(visibleEvents)) { event in
                     chip(for: event)
                 }
-                if events.count > visibleCount {
-                    Text("+\(events.count - visibleCount) weitere")
+                if total > visibleCount {
+                    Text("+\(total - visibleCount) weitere")
                         .font(.caption2)
                         .foregroundStyle(Theme.textSecondary)
                         .padding(.leading, 5)
@@ -124,10 +143,29 @@ private struct CalendarDayCell: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
-        .help(events.map(\.title).joined(separator: "\n"))
+        .help((assignments.map { "Abgabe: \($0.title)" } + events.map(\.title)).joined(separator: "\n"))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(day.formatted(date: .complete, time: .omitted)), \(StudyCalendarViewModel.eventCountText(events.count))")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func assignmentChip(for assignment: Assignment) -> some View {
+        Button { onOpenAssignment(assignment) } label: {
+            Label(assignment.title, systemImage: assignment.isCompleted ? "checkmark.circle.fill" : "flag.fill")
+                .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+                .foregroundStyle(assignment.isCompleted ? Theme.textTertiary : assignmentColor(assignment))
+                .strikethrough(assignment.isCompleted)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .strokeBorder(assignmentColor(assignment).opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
+                )
+        }
+        .buttonStyle(.plain)
+        .help("Abgabe: \(assignment.title)")
     }
 
     private var dayNumber: some View {

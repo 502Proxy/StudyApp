@@ -33,6 +33,10 @@ enum QuickNavigatorIndex {
                 id: "calendar", title: "Kalender", subtitle: "Termine und Abos",
                 systemImage: "calendar", moduleColor: nil, location: .calendar
             ),
+            QuickNavigatorItem(
+                id: "grades", title: "Noten & ECTS", subtitle: "Notenschnitt und Leistungspunkte",
+                systemImage: "graduationcap", moduleColor: nil, location: .grades
+            ),
         ]
         for module in modules {
             for section in ModuleSection.allCases {

@@ -556,4 +556,3 @@ final class PDFReaderController {
         }
     }
 }
-

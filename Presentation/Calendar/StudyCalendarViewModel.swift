@@ -112,6 +112,10 @@ final class StudyCalendarViewModel {
         eventsByDay[calendar.startOfDay(for: date)] ?? []
     }
 
+    func module(withID id: UUID) -> StudyModule? {
+        modulesByID[id]
+    }
+
     func module(for event: StudyCalendarEvent) -> StudyModule? {
         event.moduleID.flatMap { modulesByID[$0] }
     }

@@ -138,6 +138,12 @@ struct AppNavigationTodayTests {
         #expect(restored.destination == .today)
     }
 
+    @Test func gradesArePersistedAndRestored() throws {
+        let defaults = try makeDefaults()
+        AppNavigation(defaults: defaults).showGrades()
+        #expect(AppNavigation(defaults: defaults).destination == .grades)
+    }
+
     @Test func showingAModuleWithIntentKeepsTheIntentForTheModuleView() throws {
         let navigation = AppNavigation(defaults: try makeDefaults())
         let module = UUID()
@@ -165,8 +171,8 @@ struct QuickNavigatorIndexTests {
 
     @Test func indexContainsTodayCalendarAndEverySectionOfEveryModule() {
         let items = QuickNavigatorIndex.items(modules: [analysis, algebra])
-        #expect(items.count == 2 + 2 * ModuleSection.allCases.count)
-        #expect(items.map(\.location).prefix(2) == [.today, .calendar])
+        #expect(items.count == 3 + 2 * ModuleSection.allCases.count)
+        #expect(items.map(\.location).prefix(3) == [.today, .calendar, .grades])
         #expect(Set(items.map(\.id)).count == items.count)
     }
 
