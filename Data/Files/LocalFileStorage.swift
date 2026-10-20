@@ -38,6 +38,11 @@ struct LocalFileStorage: FileStorage {
         baseDirectory.appending(path: fileName, directoryHint: .notDirectory)
     }
 
+    func write(_ data: Data, as fileName: String) throws {
+        // `.atomic` schreibt zuerst in eine temporäre Datei; ein Absturz hinterlässt nie ein halbes PDF.
+        try data.write(to: url(for: fileName), options: .atomic)
+    }
+
     func remove(fileName: String) throws {
         let target = url(for: fileName)
         guard FileManager.default.fileExists(atPath: target.path) else { return }

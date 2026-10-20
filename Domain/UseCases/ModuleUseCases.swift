@@ -1,9 +1,5 @@
 import Foundation
 
-private extension String {
-    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-}
-
 @MainActor
 struct ListModulesUseCase {
     let repository: any ModuleRepository
@@ -58,6 +54,7 @@ struct UpdateModuleUseCase {
 }
 
 /// Deletes a module together with its slides, lecture notes, flashcards, and study sheets.
+/// Calendar events stay, only their link to the module is removed.
 @MainActor
 struct DeleteModuleUseCase {
     let repository: any ModuleRepository
@@ -66,6 +63,7 @@ struct DeleteModuleUseCase {
     let flashcardRepository: any FlashcardRepository
     let studySheetRepository: any StudySheetRepository
     let fileStorage: any FileStorage
+    var calendarRepository: (any StudyCalendarRepository)? = nil
 
     func callAsFunction(_ module: StudyModule) throws {
         let deleteSlides = DeleteSlideDocumentUseCase(
@@ -76,8 +74,11 @@ struct DeleteModuleUseCase {
         for document in try slideRepository.documents(forModule: module.id) {
             try deleteSlides(document)
         }
+        // Free module notes are stored under the module's ID (see `LectureNote`).
+        try noteRepository.deleteNotes(forSlideDocument: module.id)
         try flashcardRepository.deleteCards(forModule: module.id)
         try studySheetRepository.deleteSheets(forModule: module.id)
+        try calendarRepository?.clearModuleLinks(forModule: module.id)
         try repository.delete(id: module.id)
     }
 }

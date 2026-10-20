@@ -1,9 +1,5 @@
 import Foundation
 
-private extension String {
-    var trimmedForSheet: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-}
-
 @MainActor
 struct ListStudySheetsUseCase {
     let repository: any StudySheetRepository
@@ -79,7 +75,7 @@ struct CreateStudySheetUseCase {
 
     @discardableResult
     func callAsFunction(moduleID: UUID, title: String, notes: [LectureNote]) throws -> StudySheet {
-        let cleanTitle = title.trimmedForSheet
+        let cleanTitle = title.trimmed
         guard !cleanTitle.isEmpty else { throw StudySheetError.emptyTitle }
         let uniqueNotes = Dictionary(grouping: notes, by: \.id).compactMap { $0.value.first }
         guard !uniqueNotes.isEmpty else { throw StudySheetError.noSourceNotes }

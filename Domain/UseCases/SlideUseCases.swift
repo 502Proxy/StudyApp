@@ -1,9 +1,5 @@
 import Foundation
 
-private extension String {
-    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-}
-
 @MainActor
 struct ListSlideDocumentsUseCase {
     let repository: any SlideDocumentRepository

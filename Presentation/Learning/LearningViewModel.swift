@@ -4,6 +4,13 @@ import Observation
 /// Coordinates the learning area. Persistence and scheduling stay in domain/data layers.
 typealias LearningViewModelFactory = @MainActor (StudyModule) -> LearningViewModel
 
+struct NoteSection: Identifiable {
+    let id: UUID
+    let title: String
+    let systemImage: String
+    let notes: [LectureNote]
+}
+
 struct FlashcardDraft {
     var id: UUID?
     var question: String
@@ -34,6 +41,8 @@ final class LearningViewModel {
 
     private let slideRepository: any SlideDocumentRepository
     private let noteRepository: any NoteRepository
+    private let createModuleNote: CreateModuleNoteUseCase
+    private let deleteNoteUseCase: DeleteNoteUseCase
     private let listFlashcards: ListFlashcardsUseCase
     private let saveFlashcard: SaveFlashcardUseCase
     private let deleteFlashcard: DeleteFlashcardUseCase
@@ -52,6 +61,8 @@ final class LearningViewModel {
         self.module = module
         self.slideRepository = slideRepository
         self.noteRepository = noteRepository
+        createModuleNote = CreateModuleNoteUseCase(repository: noteRepository)
+        deleteNoteUseCase = DeleteNoteUseCase(repository: noteRepository)
         listFlashcards = ListFlashcardsUseCase(repository: flashcardRepository)
         saveFlashcard = SaveFlashcardUseCase(repository: flashcardRepository)
         deleteFlashcard = DeleteFlashcardUseCase(repository: flashcardRepository)
@@ -112,9 +123,36 @@ final class LearningViewModel {
     }
 
     func sourceLabel(for note: LectureNote) -> String {
+        if note.isModuleNote(of: module.id) { return "Notiz · \(note.title)" }
         let title = sourceDocumentTitle(for: note)
         guard let page = note.pageNumber else { return "\(title) · Gesamtdokument" }
         return "\(title) · Seite \(page)"
+    }
+
+    /// Foliensatz einer Notiz, `nil` für freie Modulnotizen.
+    func document(for note: LectureNote) -> SlideDocument? {
+        documents.first { $0.id == note.slideDocumentID }
+    }
+
+    func isModuleNote(_ note: LectureNote) -> Bool {
+        note.isModuleNote(of: module.id)
+    }
+
+    /// Sichtbare Notizen, gruppiert: freie Notizen zuerst, danach je Foliensatz.
+    var noteSections: [NoteSection] {
+        let visible = visibleNotes
+        var sections: [NoteSection] = []
+        let moduleNotes = visible.filter { $0.isModuleNote(of: module.id) }
+        if !moduleNotes.isEmpty {
+            sections.append(NoteSection(id: module.id, title: "Vorlesungs- & Modulnotizen", systemImage: "square.and.pencil", notes: moduleNotes))
+        }
+        for document in documents {
+            let notes = visible.filter { $0.slideDocumentID == document.id }
+            if !notes.isEmpty {
+                sections.append(NoteSection(id: document.id, title: document.title, systemImage: "doc.richtext", notes: notes))
+            }
+        }
+        return sections
     }
 
     func load() {
@@ -124,11 +162,11 @@ final class LearningViewModel {
             }
             var loadedNotes: [LectureNote] = []
             for document in documents {
-                loadedNotes.append(contentsOf: try noteRepository.notes(forSlideDocument: document.id))
+                // Leere Folien-Notizen entstehen beim Blättern und sind hier ohne Wert.
+                loadedNotes.append(contentsOf: try noteRepository.notes(forSlideDocument: document.id).filter(\.hasContent))
             }
-            notes = loadedNotes
-                .filter { !$0.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-                .sorted(by: Self.noteOrder)
+            loadedNotes.append(contentsOf: try noteRepository.notes(forSlideDocument: module.id))
+            notes = loadedNotes.sorted(by: noteOrder)
             if let selectedNoteID, !notes.contains(where: { $0.id == selectedNoteID }) {
                 self.selectedNoteID = nil
             }
@@ -147,6 +185,84 @@ final class LearningViewModel {
             reviewQueue = reviewQueue.filter { id in flashcards.contains(where: { $0.id == id }) }
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: Notizen bearbeiten
+
+    /// Legt eine freie Notiz an (ohne Folien) und wählt sie aus.
+    @discardableResult
+    func addModuleNote(title: String = "Neue Notiz", content: String = "") -> LectureNote? {
+        do {
+            let note = try createModuleNote(moduleID: module.id, title: title, content: content)
+            notes.append(note)
+            notes = notes.sorted(by: noteOrder)
+            noteSearchQuery = ""
+            selectedNoteID = note.id
+            return note
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    /// Öffnet die Notiz zu einem Vorlesungstermin; existiert sie noch nicht, wird sie angelegt.
+    @discardableResult
+    func openLectureNote(start: Date, eventTitle: String) -> LectureNote? {
+        let kind = CourseTitleAnalyzer.analyze(eventTitle)?.kind ?? .lecture
+        let label = kind == .other ? "Vorlesung" : kind.label
+        let title = "\(label) vom \(start.formatted(.dateTime.day(.twoDigits).month(.twoDigits).year()))"
+        if let existing = notes.first(where: { isModuleNote($0) && $0.title == title }) {
+            noteSearchQuery = ""
+            selectedNoteID = existing.id
+            return existing
+        }
+        return addModuleNote(title: title, content: "# \(title)\n\n")
+    }
+
+    func deleteNote(_ note: LectureNote) {
+        do {
+            try deleteNoteUseCase(id: note.id)
+            notes.removeAll { $0.id == note.id }
+            selectedNoteIDs.remove(note.id)
+            if selectedNoteID == note.id { selectedNoteID = visibleNotes.first?.id }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    // MARK: Export
+
+    /// Dateiname und Inhalt für eine einzelne Notiz (aktueller gespeicherter Stand).
+    func exportContent(forNoteWithID id: UUID) -> (fileName: String, text: String)? {
+        guard let note = notes.first(where: { $0.id == id }) else { return nil }
+        return (NoteExportFormatting.fileName(for: note, documentTitle: document(for: note)?.title), note.content)
+    }
+
+    /// Alle Notizen des Moduls als ein Markdown-Dokument: freie Notizen zuerst, dann je Foliensatz.
+    func exportAllNotesAsMarkdown() -> String {
+        let sections = noteSections.flatMap { section in
+            section.notes.map { note -> (heading: String, note: LectureNote) in
+                if isModuleNote(note) { return (note.title, note) }
+                let page = note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument"
+                return ("\(section.title) – \(page)", note)
+            }
+        }
+        return NoteExportFormatting.markdown(title: "Notizen: \(module.name)", sections: sections)
+    }
+
+    func makeEditingSession(for note: LectureNote) -> NoteEditingSession {
+        NoteEditingSession(note: note, repository: noteRepository) { [weak self] saved in
+            self?.noteDidSave(saved)
+        }
+    }
+
+    private func noteDidSave(_ note: LectureNote) {
+        if let index = notes.firstIndex(where: { $0.id == note.id }) {
+            notes[index] = note
+        } else {
+            notes.append(note)
+            notes = notes.sorted(by: noteOrder)
         }
     }
 
@@ -260,9 +376,15 @@ final class LearningViewModel {
         }
     }
 
-    private static func noteOrder(_ lhs: LectureNote, _ rhs: LectureNote) -> Bool {
+    /// Freie Notizen zuerst (neueste oben), dann nach Foliensatz und Seite.
+    /// Sortiert nach `createdAt`, damit die Liste beim Tippen nicht springt.
+    private func noteOrder(_ lhs: LectureNote, _ rhs: LectureNote) -> Bool {
+        let lhsIsModuleNote = lhs.isModuleNote(of: module.id)
+        let rhsIsModuleNote = rhs.isModuleNote(of: module.id)
+        if lhsIsModuleNote != rhsIsModuleNote { return lhsIsModuleNote }
+        if lhsIsModuleNote { return lhs.createdAt > rhs.createdAt }
         if lhs.slideDocumentID != rhs.slideDocumentID {
-            return lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
+            return sourceDocumentTitle(for: lhs).localizedStandardCompare(sourceDocumentTitle(for: rhs)) == .orderedAscending
         }
         switch (lhs.pageNumber, rhs.pageNumber) {
         case (nil, nil): return lhs.updatedAt > rhs.updatedAt

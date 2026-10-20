@@ -53,9 +53,11 @@ struct FlashcardsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Karteikarten")
                     .font(Theme.Typography.title)
-                Text("\(viewModel.flashcards.count) Karten · \(viewModel.dueFlashcards.count) fällig · \(viewModel.reviewedTodayCount) heute wiederholt")
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(Theme.textSecondary)
+                HStack(spacing: 6) {
+                    Pill(text: "\(viewModel.flashcards.count) Karten")
+                    Pill(text: "\(viewModel.dueFlashcards.count) fällig", tint: viewModel.dueFlashcards.isEmpty ? Theme.textSecondary : Theme.warning)
+                    Pill(text: "\(viewModel.reviewedTodayCount) heute wiederholt", tint: Theme.success)
+                }
             }
             Spacer()
             Button {
@@ -73,8 +75,8 @@ struct FlashcardsView: View {
             .buttonStyle(.borderedProminent)
             .disabled(viewModel.dueFlashcards.isEmpty)
         }
-        .padding(.horizontal, 22)
-        .padding(.vertical, 16)
+        .padding(.horizontal, Theme.Spacing.page)
+        .padding(.vertical, 14)
     }
 
     @ViewBuilder
@@ -118,15 +120,15 @@ struct FlashcardsView: View {
                             viewModel.revealAnswer()
                         }
                         .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
                         .keyboardShortcut(.return, modifiers: [])
+                        Text("Tipp: ↩ zeigt die Antwort, 1–4 bewertet sie.")
+                            .font(Theme.Typography.small)
+                            .foregroundStyle(Theme.textTertiary)
                     }
                 }
-                .padding(26)
                 .frame(maxWidth: 760, minHeight: 280, alignment: .leading)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16).strokeBorder(Theme.surfaceBorder)
-                }
+                .card(padding: 28, radius: 20)
 
                 Spacer(minLength: 0)
             }
@@ -158,7 +160,7 @@ struct FlashcardsView: View {
 
     private var ratingButtons: some View {
         HStack(spacing: 10) {
-            ForEach(FlashcardReviewRating.allCases) { rating in
+            ForEach(Array(FlashcardReviewRating.allCases.enumerated()), id: \.element) { index, rating in
                 Button {
                     viewModel.rateCurrentCard(rating)
                 } label: {
@@ -166,7 +168,10 @@ struct FlashcardsView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                .tint(rating == .good ? Theme.accent : Theme.textPrimary)
+                .controlSize(.large)
+                .tint(rating.tint)
+                .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: [])
+                .help("\(rating.label) (\(index + 1))")
             }
         }
         .padding(.top, 8)
@@ -188,10 +193,16 @@ struct FlashcardsView: View {
             .padding(18)
 
             if viewModel.flashcards.isEmpty {
-                ContentUnavailableView(
-                    "Noch keine Karteikarten",
+                EmptyStateView(
+                    title: "Noch keine Karteikarten",
                     systemImage: "rectangle.stack",
-                    description: Text("Erstelle Fragen und Antworten selbst oder lege aus einer Notiz eine erste Karte an.")
+                    message: "Erstelle Fragen und Antworten selbst oder lege aus einer Notiz eine erste Karte an.",
+                    actionTitle: "Erste Karte anlegen",
+                    action: {
+                        editingCard = nil
+                        editorDraft = nil
+                        isEditorPresented = true
+                    }
                 )
             } else {
                 List {
@@ -241,7 +252,19 @@ struct FlashcardsView: View {
                     }
                 }
                 .listStyle(.inset)
+                .scrollContentBackground(.hidden)
             }
+        }
+    }
+}
+
+private extension FlashcardReviewRating {
+    var tint: Color {
+        switch self {
+        case .again: Theme.danger
+        case .hard: Theme.warning
+        case .good: Theme.accent
+        case .easy: Theme.success
         }
     }
 }

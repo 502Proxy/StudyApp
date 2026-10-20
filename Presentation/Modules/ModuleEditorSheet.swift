@@ -30,7 +30,7 @@ struct ModuleEditorSheet: View {
                 TextField("Kürzel (optional)", text: $draft.code)
 
                 LabeledContent("Farbe") {
-                    HStack(spacing: 12) {
+                    HStack(spacing: 10) {
                         ForEach(ModuleColor.allCases, id: \.self) { color in
                             Button {
                                 draft.color = color
@@ -53,12 +53,13 @@ struct ModuleEditorSheet: View {
                 Button("Sichern") {
                     if onSave(draft) { dismiss() }
                 }
+                .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(!canSave)
             }
             .padding(20)
         }
-        .frame(width: 440)
-        .background(Theme.background)
+        .frame(width: 480)
+        .background(Theme.surface)
     }
 }

@@ -4,7 +4,7 @@ import WebKit
 
 /// Locates the bundled, offline KaTeX preview page.
 ///
-/// The `KaTeX` folder (`Presentation/Notes/Resources/KaTeX`) has to be added to the
+/// The `KaTeX` folder (`Presentation/Resources/KaTeX`) has to be added to the
 /// app target as a *folder reference*, so its sub-folders (`contrib`, `fonts`) survive.
 enum LaTeXResources {
     static let pageURL: URL? = Bundle.main.url(
@@ -20,10 +20,11 @@ struct LaTeXPreviewView: View {
     let source: String
     /// Uses zero-padding/compact layout when embedded into a Markdown paragraph.
     var isInline: Bool = false
+    @Environment(\.noteFontSize) private var fontSize
 
     var body: some View {
         if let pageURL = LaTeXResources.pageURL {
-            LaTeXWebView(source: source, pageURL: pageURL, isInline: isInline)
+            LaTeXWebView(source: source, pageURL: pageURL, isInline: isInline, fontSize: fontSize)
         } else {
             VStack(alignment: .leading, spacing: 12) {
                 Label("KaTeX fehlt im App-Bundle. Der Ordner „KaTeX“ muss als Ordnerreferenz zum Target gehören.",
@@ -32,7 +33,7 @@ struct LaTeXPreviewView: View {
                     .foregroundStyle(Theme.textSecondary)
                 ScrollView {
                     Text(source)
-                        .font(.system(size: 13, design: .monospaced))
+                        .font(.system(size: fontSize * 0.93, design: .monospaced))
                         .foregroundStyle(Theme.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
@@ -52,6 +53,7 @@ struct LaTeXWebView: NSViewRepresentable {
     let source: String
     let pageURL: URL
     var isInline: Bool = false
+    var fontSize: Double = NoteFontSize.standard
 
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -68,7 +70,7 @@ struct LaTeXWebView: NSViewRepresentable {
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
-        context.coordinator.render(source, isInline: isInline)
+        context.coordinator.render(source, isInline: isInline, fontSize: fontSize)
     }
 
     /// Queues the latest source until the page has loaded, then forwards it to JavaScript.
@@ -76,23 +78,29 @@ struct LaTeXWebView: NSViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate {
         weak var webView: WKWebView?
         private var isPageLoaded = false
-        private var pendingRender: (source: String, isInline: Bool)?
+        private var pendingRender: (source: String, isInline: Bool, fontSize: Double)?
+        /// Zuletzt gerenderter Stand; unverändertes erneutes Rendern wird übersprungen.
+        private var lastRender: (source: String, isInline: Bool, fontSize: Double)?
 
-        func render(_ source: String, isInline: Bool = false) {
+        func render(_ source: String, isInline: Bool = false, fontSize: Double = NoteFontSize.standard) {
             guard isPageLoaded else {
-                pendingRender = (source, isInline)
+                pendingRender = (source, isInline, fontSize)
+                return
+            }
+            if let lastRender, lastRender.source == source, lastRender.isInline == isInline, lastRender.fontSize == fontSize {
                 return
             }
             guard let literal = Self.javaScriptLiteral(for: source) else { return }
             let inlineLiteral = isInline ? "true" : "false"
-            webView?.evaluateJavaScript("window.renderNote(\(literal), \(inlineLiteral));", completionHandler: nil)
+            lastRender = (source, isInline, fontSize)
+            webView?.evaluateJavaScript("window.renderNote(\(literal), \(inlineLiteral), \(fontSize));", completionHandler: nil)
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             isPageLoaded = true
             if let pendingRender {
                 self.pendingRender = nil
-                render(pendingRender.source, isInline: pendingRender.isInline)
+                render(pendingRender.source, isInline: pendingRender.isInline, fontSize: pendingRender.fontSize)
             }
         }
 

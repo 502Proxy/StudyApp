@@ -3,6 +3,7 @@ import SwiftUI
 struct StudySheetsView: View {
     @Bindable var viewModel: LearningViewModel
     @State private var pendingDeletion: StudySheet?
+    @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -19,15 +20,15 @@ struct StudySheetsView: View {
                     .font(.caption)
                     .foregroundStyle(Theme.textSecondary)
             }
-            .padding(.horizontal, 22)
-            .padding(.vertical, 16)
+            .padding(.horizontal, Theme.Spacing.page)
+            .padding(.vertical, 14)
             Divider()
 
             if viewModel.studySheets.isEmpty {
-                ContentUnavailableView(
-                    "Noch keine Lernzettel",
+                EmptyStateView(
+                    title: "Noch keine Lernzettel",
                     systemImage: "doc.text",
-                    description: Text("Gehe zu Notizen, wähle die passenden Einträge aus und erstelle daraus einen Lernzettel.")
+                    message: "Gehe zu „Notizen“, hake die passenden Einträge an und erstelle daraus einen Lernzettel."
                 )
             } else {
                 HSplitView {
@@ -80,6 +81,7 @@ struct StudySheetsView: View {
                             .padding(18)
                             Divider()
                             MarkdownPreviewView(source: sheet.content)
+                                .environment(\.noteFontSize, noteFontSize)
                         }
                         .frame(minWidth: 400)
                     } else {

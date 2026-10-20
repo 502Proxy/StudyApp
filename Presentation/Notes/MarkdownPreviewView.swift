@@ -21,6 +21,7 @@ struct MarkdownPreviewView: View {
 
 private struct MarkdownBlockView: View {
     let block: MarkdownBlock
+    @Environment(\.noteFontSize) private var fontSize
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -44,13 +45,13 @@ private struct MarkdownBlockView: View {
             MarkdownInlineContentView(
                 text: block.text,
                 segments: block.inlineSegments,
-                font: Self.headingFont(level),
+                font: headingFont(level),
                 color: Theme.textPrimary
             )
             .padding(.top, level <= 2 ? 6 : 2)
         case .code:
             Text(block.text)
-                .font(.system(size: 13, design: .monospaced))
+                .font(.system(size: fontSize * 0.93, design: .monospaced))
                 .foregroundStyle(Theme.textPrimary)
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,24 +76,25 @@ private struct MarkdownBlockView: View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             if let marker = block.listMarker {
                 Text(marker)
-                    .font(Theme.Typography.body.monospacedDigit())
+                    .font(.system(size: fontSize).monospacedDigit())
                     .foregroundStyle(Theme.textSecondary)
             }
             MarkdownInlineContentView(
                 text: block.text,
                 segments: block.inlineSegments,
-                font: Theme.Typography.body,
+                font: .system(size: fontSize),
                 color: block.quoteDepth > 0 ? Theme.textSecondary : Theme.textPrimary
             )
         }
     }
 
-    private static func headingFont(_ level: Int) -> Font {
+    /// Überschriften wachsen proportional zur eingestellten Notizschrift.
+    private func headingFont(_ level: Int) -> Font {
         switch level {
-        case 1: .system(size: 24, weight: .bold)
-        case 2: .system(size: 20, weight: .semibold)
-        case 3: .system(size: 17, weight: .semibold)
-        default: .system(size: 15, weight: .semibold)
+        case 1: .system(size: fontSize * 1.7, weight: .bold)
+        case 2: .system(size: fontSize * 1.43, weight: .semibold)
+        case 3: .system(size: fontSize * 1.21, weight: .semibold)
+        default: .system(size: fontSize * 1.07, weight: .semibold)
         }
     }
 }
@@ -103,6 +105,10 @@ private struct MarkdownInlineContentView: View {
     let segments: [MarkdownInlineSegment]
     let font: Font
     let color: Color
+    @Environment(\.noteFontSize) private var fontSize
+
+    /// Formelflächen wachsen mit der Notizschrift.
+    private var scale: CGFloat { CGFloat(fontSize / NoteFontSize.standard) }
 
     var body: some View {
         if segments.isEmpty {
@@ -135,7 +141,7 @@ private struct MarkdownInlineContentView: View {
                     }
                 case .math(let source, _):
                     LaTeXPreviewView(source: source, isInline: true)
-                        .frame(width: Self.inlineFormulaWidth(source), height: 30)
+                        .frame(width: Self.inlineFormulaWidth(source) * scale, height: 30 * scale)
                 }
             }
         }
@@ -155,7 +161,7 @@ private struct MarkdownInlineContentView: View {
                 case .math(let source, let displayMode):
                     LaTeXPreviewView(source: source, isInline: !displayMode)
                         .frame(maxWidth: .infinity)
-                        .frame(height: displayMode ? 76 : 34)
+                        .frame(height: (displayMode ? 76 : 34) * scale)
                 }
             }
         }
@@ -280,19 +286,20 @@ private struct MarkdownTableView: View {
 private struct MarkdownTableCellView: View {
     let cell: MarkdownTableCell
     let isHeader: Bool
+    @Environment(\.noteFontSize) private var fontSize
 
     var body: some View {
         Group {
             if cell.segments.count == 1, case .text(let text) = cell.segments[0].kind {
                 Text(text)
-                    .font(isHeader ? Theme.Typography.body.weight(.semibold) : Theme.Typography.body)
+                    .font(.system(size: fontSize, weight: isHeader ? .semibold : .regular))
                     .foregroundStyle(Theme.textPrimary)
             } else {
                 // Formula-bearing cells use the same renderer as paragraphs.
                 MarkdownInlineContentView(
                     text: AttributedString(""),
                     segments: cell.segments,
-                    font: isHeader ? Theme.Typography.body.weight(.semibold) : Theme.Typography.body,
+                    font: .system(size: fontSize, weight: isHeader ? .semibold : .regular),
                     color: Theme.textPrimary
                 )
             }

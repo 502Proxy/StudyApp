@@ -619,7 +619,7 @@ private struct BlockBuilder {
 
     private static func marker(ordinal: Int, parent: PresentationIntent.IntentType?) -> String {
         if let parent, case .orderedList = parent.kind {
-            return "\\(ordinal)."
+            return "\(ordinal)."
         }
         return "•"
     }

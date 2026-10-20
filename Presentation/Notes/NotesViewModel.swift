@@ -104,6 +104,24 @@ final class NotesViewModel {
         selectPageNumber(note.pageNumber)
     }
 
+    /// Appends text selected on a slide as a Markdown quote with its page, then autosaves.
+    func appendQuote(_ text: String, fromPage page: Int) {
+        let lines = text
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard !lines.isEmpty else { return }
+        let quote = lines.map { "> \($0)" }.joined(separator: "\n") + "\n> — Folie \(page)"
+        let separator: String
+        if content.isEmpty || content.hasSuffix("\n\n") {
+            separator = ""
+        } else {
+            separator = content.hasSuffix("\n") ? "\n" : "\n\n"
+        }
+        content += separator + quote + "\n\n"
+        noteDidChange()
+    }
+
     /// Call after every edit of `content` or `format`. Restarts the debounce timer.
     func noteDidChange() {
         autosaveTask?.cancel()
@@ -178,13 +196,12 @@ final class NotesViewModel {
     }
 
     func exportAllNotesAsMarkdown() -> String {
-        var sections = ["# Notizen: \(document.title)"]
-        for note in notesForExport() where !note.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            let heading = note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument"
-            let formatLabel = note.format.label
-            sections.append("## \(heading)\n\n_Format: \(formatLabel)_\n\n\(note.content)")
-        }
-        return sections.joined(separator: "\n\n---\n\n") + "\n"
+        NoteExportFormatting.markdown(
+            title: "Notizen: \(document.title)",
+            sections: notesForExport().map { note in
+                (note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument", note)
+            }
+        )
     }
 
     private func loadSelectedNote() {

@@ -1,5 +1,5 @@
 import Foundation
-import PDFKit
+internal import PDFKit
 
 struct PDFKitInspector: PDFInspector {
     func pageCount(at url: URL) -> Int? {

@@ -60,9 +60,13 @@
   /**
    * Replaces the page content with `source` and typesets all math in it.
    * The text is inserted via `textContent`, so user input is never parsed as HTML.
+   * `fontSize` (px) follows the note font size chosen in the app.
    */
-  window.renderNote = function (source, isInline) {
+  window.renderNote = function (source, isInline, fontSize) {
     document.body.classList.toggle("inline-math", Boolean(isInline));
+    if (typeof fontSize === "number" && fontSize > 0) {
+      document.body.style.fontSize = fontSize + "px";
+    }
     var container = document.getElementById("note");
     container.textContent = source;
     if (typeof renderMathInElement !== "function") { return; }

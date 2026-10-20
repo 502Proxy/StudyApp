@@ -1,5 +1,5 @@
 import AppKit
-import PDFKit
+internal import PDFKit
 import SwiftUI
 
 /// Bettet die `PDFView` des Controllers in SwiftUI ein.
@@ -22,7 +22,9 @@ struct PDFThumbnailStrip: NSViewRepresentable {
         thumbnails.pdfView = pdfView
         thumbnails.thumbnailSize = CGSize(width: 110, height: 80)
         thumbnails.maximumNumberOfColumns = 1
-        thumbnails.backgroundColor = NSColor.controlBackgroundColor
+        thumbnails.backgroundColor = NSColor(name: nil) { appearance in
+            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? NSColor(hex: 0x1D1E24) : NSColor(hex: 0xF6F7FB)
+        }
         return thumbnails
     }
 

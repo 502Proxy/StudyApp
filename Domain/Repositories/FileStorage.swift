@@ -6,6 +6,8 @@ protocol FileStorage: Sendable {
     /// Kopiert die Datei unter dem angegebenen Namen in den App-Speicher.
     func store(copyOf sourceURL: URL, as fileName: String) throws
     func url(for fileName: String) -> URL
+    /// Ersetzt den Inhalt einer Datei atomar, z. B. ein PDF nach dem Markieren.
+    func write(_ data: Data, as fileName: String) throws
     /// Entfernt die Datei. Eine bereits fehlende Datei ist kein Fehler.
     func remove(fileName: String) throws
 }

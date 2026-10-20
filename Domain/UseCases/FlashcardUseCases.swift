@@ -1,9 +1,5 @@
 import Foundation
 
-private extension String {
-    var trimmedForCard: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-}
-
 @MainActor
 struct ListFlashcardsUseCase {
     let repository: any FlashcardRepository
@@ -29,8 +25,8 @@ struct SaveFlashcardUseCase {
         front: String,
         back: String
     ) throws -> Flashcard {
-        let question = front.trimmedForCard
-        let answer = back.trimmedForCard
+        let question = front.trimmed
+        let answer = back.trimmed
         guard !question.isEmpty else { throw FlashcardError.emptyQuestion }
         guard !answer.isEmpty else { throw FlashcardError.emptyAnswer }
 

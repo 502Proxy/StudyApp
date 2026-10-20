@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		40993996307FF3A700F43C4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; };
-		40A8DC69307FC42700F682DE /* KaTeX in Copy Files */ = {isa = PBXBuildFile; fileRef = 40A8DC68307FC42700F682DE /* KaTeX */; };
+		4038669E3086CEC500EC91D7 /* Assets.xcassets in Copy Files */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		409BB5C430801406004EC161 /* KaTeX in Resources */ = {isa = PBXBuildFile; fileRef = 409BB5C330801406004EC161 /* KaTeX */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,14 +31,14 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		40A8DB2A307FC2E300F682DE /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
-				40A8DC69307FC42700F682DE /* KaTeX in Copy Files */,
+				4038669E3086CEC500EC91D7 /* Assets.xcassets in Copy Files */,
 			);
 			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -47,47 +47,29 @@
 		40336C20307F945700D308EF /* StudyAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40336C21307F945700D308EF /* StudyAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40993992307FF19B00F43C4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
-		40A8DC68307FC42700F682DE /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
+		409BB5C330801406004EC161 /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
 		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = StudyApp_README.md; sourceTree = "<group>"; };
 		40AC6A15307FD03D0025452A /* commitlint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = commitlint.config.mjs; sourceTree = "<group>"; };
+		40E753193087592100CA2C5A /* LICENSE 2 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE 2"; sourceTree = "<group>"; };
+		40E7531A3087592100CA2C5A /* MILESTONE2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE2.md; sourceTree = "<group>"; };
+		40E7531B3087592100CA2C5A /* MILESTONE3.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE3.md; sourceTree = "<group>"; };
+		40E7531C3087592100CA2C5A /* MILESTONE4_LEARNING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE4_LEARNING.md; sourceTree = "<group>"; };
+		40E7531D3087592100CA2C5A /* MILESTONE5_CALENDAR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE5_CALENDAR.md; sourceTree = "<group>"; };
+		40E7531E3087592100CA2C5A /* MILESTONE6_UNI_WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE6_UNI_WORKFLOW.md; sourceTree = "<group>"; };
+		40E7537A3087592100CA2C5A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		40993994307FF39B00F43C4C /* Exceptions for ".github" folder in "StudyApp" target */ = {
+		409BB5C1308013F0004EC161 /* Exceptions for ".github" folder in "StudyApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				workflows/commitlint.yml,
 			);
 			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
 		};
-		40993995307FF39B00F43C4C /* Exceptions for "Presentation" folder in "StudyApp" target */ = {
+		40E754273087593600CA2C5A /* Exceptions for "Presentation" folder in "StudyApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"Notes/Resources/KaTeX/contrib/auto-render.min.js",
-				"Notes/Resources/KaTeX/fonts/KaTeX_AMS-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Caligraphic-Bold.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Caligraphic-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Fraktur-Bold.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Fraktur-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Main-Bold.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Main-BoldItalic.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Main-Italic.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Main-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Math-BoldItalic.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Math-Italic.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_SansSerif-Bold.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_SansSerif-Italic.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_SansSerif-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Script-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Size1-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Size2-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Size3-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Size4-Regular.woff2",
-				"Notes/Resources/KaTeX/fonts/KaTeX_Typewriter-Regular.woff2",
-				Notes/Resources/KaTeX/katex.min.css,
-				Notes/Resources/KaTeX/katex.min.js,
-				"Notes/Resources/KaTeX/latex-preview.html",
-				Notes/Resources/KaTeX/LICENSE,
 				"Resources/KaTeX/contrib/auto-render.min.js",
 				"Resources/KaTeX/fonts/KaTeX_AMS-Regular.woff2",
 				"Resources/KaTeX/fonts/KaTeX_Caligraphic-Bold.woff2",
@@ -116,79 +98,43 @@
 			);
 			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
 		};
-		40A8DD4A307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyApp" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				LearningDataTests.swift,
-				LearningUseCaseTests.swift,
-				MarkdownBlockParserTests.swift,
-				ModuleUseCaseTests.swift,
-				NoteDataTests.swift,
-				NotesViewModelTests.swift,
-				NoteUseCaseTests.swift,
-				SlideDataTests.swift,
-				SlideUseCaseTests.swift,
-				SwiftDataModuleRepositoryTests.swift,
-			);
-			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
-		};
-		40A8DD4B307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyAppTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				LearningDataTests.swift,
-				LearningUseCaseTests.swift,
-				MarkdownBlockParserTests.swift,
-				ModuleUseCaseTests.swift,
-				NoteDataTests.swift,
-				NotesViewModelTests.swift,
-				NoteUseCaseTests.swift,
-				SlideDataTests.swift,
-				SlideUseCaseTests.swift,
-				SwiftDataModuleRepositoryTests.swift,
-			);
-			target = 40F4A671307EDDEB009E2F4B /* StudyAppTests */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		40A8DC6C307FC92C00F682DE /* App */ = {
+		40AC6A0E307FCF7B0025452A /* .github */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				409BB5C1308013F0004EC161 /* Exceptions for ".github" folder in "StudyApp" target */,
+			);
+			path = .github;
+			sourceTree = "<group>";
+		};
+		40E752DF3087592100CA2C5A /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = App;
 			sourceTree = "<group>";
 		};
-		40A8DC7E307FC92C00F682DE /* Data */ = {
+		40E752F93087592100CA2C5A /* Data */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Data;
 			sourceTree = "<group>";
 		};
-		40A8DC94307FC92C00F682DE /* Domain */ = {
+		40E753183087592100CA2C5A /* Domain */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Domain;
 			sourceTree = "<group>";
 		};
-		40A8DCF0307FC92C00F682DE /* Presentation */ = {
+		40E753793087592100CA2C5A /* Presentation */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				40993995307FF39B00F43C4C /* Exceptions for "Presentation" folder in "StudyApp" target */,
+				40E754273087593600CA2C5A /* Exceptions for "Presentation" folder in "StudyApp" target */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
 		};
-		40A8DCFB307FC92C00F682DE /* StudyAppTests */ = {
+		40E7538F3087592100CA2C5A /* StudyAppTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				40A8DD4A307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyApp" target */,
-				40A8DD4B307FC93D00F682DE /* Exceptions for "StudyAppTests" folder in "StudyAppTests" target */,
-			);
 			path = StudyAppTests;
-			sourceTree = "<group>";
-		};
-		40AC6A0E307FCF7B0025452A /* .github */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				40993994307FF39B00F43C4C /* Exceptions for ".github" folder in "StudyApp" target */,
-			);
-			path = .github;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -221,17 +167,24 @@
 		40F4A65A307EDDEA009E2F4B = {
 			isa = PBXGroup;
 			children = (
+				40E752DF3087592100CA2C5A /* App */,
+				40E752F93087592100CA2C5A /* Data */,
+				40E753183087592100CA2C5A /* Domain */,
+				40E753193087592100CA2C5A /* LICENSE 2 */,
+				40E7531A3087592100CA2C5A /* MILESTONE2.md */,
+				40E7531B3087592100CA2C5A /* MILESTONE3.md */,
+				40E7531C3087592100CA2C5A /* MILESTONE4_LEARNING.md */,
+				40E7531D3087592100CA2C5A /* MILESTONE5_CALENDAR.md */,
+				40E7531E3087592100CA2C5A /* MILESTONE6_UNI_WORKFLOW.md */,
+				40E753793087592100CA2C5A /* Presentation */,
+				40E7537A3087592100CA2C5A /* README.md */,
+				40E7538F3087592100CA2C5A /* StudyAppTests */,
+				409BB5C330801406004EC161 /* KaTeX */,
 				40AC6A15307FD03D0025452A /* commitlint.config.mjs */,
 				40AC6A0E307FCF7B0025452A /* .github */,
-				40A8DC68307FC42700F682DE /* KaTeX */,
 				40336C1F307F945700D308EF /* StudyApp.app */,
 				40336C20307F945700D308EF /* StudyAppTests.xctest */,
 				40336C21307F945700D308EF /* StudyAppUITests.xctest */,
-				40A8DC6C307FC92C00F682DE /* App */,
-				40A8DC7E307FC92C00F682DE /* Data */,
-				40A8DC94307FC92C00F682DE /* Domain */,
-				40A8DCF0307FC92C00F682DE /* Presentation */,
-				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
 				40AC6A0A307FCE0D0025452A /* StudyApp_README.md */,
 				40993992307FF19B00F43C4C /* Assets.xcassets */,
 			);
@@ -247,19 +200,18 @@
 				40F4A65F307EDDEA009E2F4B /* Sources */,
 				40F4A660307EDDEA009E2F4B /* Frameworks */,
 				40A8DB2A307FC2E300F682DE /* Copy Files */,
-				40993993307FF39A00F43C4C /* Resources */,
+				409BB5C0308013EF004EC161 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				40A8DC6C307FC92C00F682DE /* App */,
-				40A8DC7E307FC92C00F682DE /* Data */,
-				40A8DC94307FC92C00F682DE /* Domain */,
-				40A8DCF0307FC92C00F682DE /* Presentation */,
-				40A8DCFB307FC92C00F682DE /* StudyAppTests */,
 				40AC6A0E307FCF7B0025452A /* .github */,
+				40E752DF3087592100CA2C5A /* App */,
+				40E752F93087592100CA2C5A /* Data */,
+				40E753183087592100CA2C5A /* Domain */,
+				40E753793087592100CA2C5A /* Presentation */,
 			);
 			name = StudyApp;
 			packageProductDependencies = (
@@ -280,6 +232,9 @@
 			);
 			dependencies = (
 				40F4A674307EDDEB009E2F4B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				40E7538F3087592100CA2C5A /* StudyAppTests */,
 			);
 			name = StudyAppTests;
 			packageProductDependencies = (
@@ -353,11 +308,11 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		40993993307FF39A00F43C4C /* Resources */ = {
+		409BB5C0308013EF004EC161 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				40993996307FF3A700F43C4C /* Assets.xcassets in Resources */,
+				409BB5C430801406004EC161 /* KaTeX in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -560,7 +515,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
@@ -607,7 +562,7 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";

@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import UniformTypeIdentifiers
 
 /// Note pane next to the slides: scope picker, editor, search, export and live preview.
 struct NoteEditorView: View {
@@ -10,6 +9,8 @@ struct NoteEditorView: View {
 
     @State private var mode: ViewMode = .split
     @State private var showsSearch = false
+    @State private var exportFile: NoteExportFile?
+    @AppStorage(ViewPreferences.noteFontSizeKey) private var fontSize = NoteFontSize.standard
 
     enum ViewMode: String, CaseIterable, Identifiable {
         case edit = "Text"
@@ -65,9 +66,10 @@ struct NoteEditorView: View {
             }
         }
         .background(Theme.background)
+        .environment(\.noteFontSize, fontSize)
         .onChange(of: viewModel.content) { viewModel.noteDidChange() }
         .onChange(of: viewModel.format) { viewModel.noteDidChange() }
-        .onChange(of: currentPageNumber) { newPageNumber in
+        .onChange(of: currentPageNumber) { _, newPageNumber in
             // When page scope is active, keep the note attached to the PDF's visible page.
             if viewModel.pageNumber != nil, viewModel.pageNumber != newPageNumber {
                 viewModel.selectPageNumber(newPageNumber)
@@ -80,17 +82,8 @@ struct NoteEditorView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
             viewModel.saveNow()
         }
-        .alert(
-            "Fehler",
-            isPresented: Binding(
-                get: { viewModel.errorMessage != nil },
-                set: { if !$0 { viewModel.errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(viewModel.errorMessage ?? "")
-        }
+        .errorAlert(message: viewModel.errorMessage) { viewModel.errorMessage = nil }
+        .noteExporter(file: $exportFile) { viewModel.errorMessage = $0 }
     }
 
     // MARK: Header
@@ -99,10 +92,11 @@ struct NoteEditorView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Notizen")
-                    .font(Theme.Typography.title)
+                    .font(Theme.Typography.sectionTitle)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                SaveStateLabel(state: viewModel.saveState)
+                SaveIndicator(state: viewModel.saveState)
+                NoteFontSizeControl()
 
                 Button {
                     showsSearch.toggle()
@@ -164,7 +158,7 @@ struct NoteEditorView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.bar)
+        .background(Theme.surface)
     }
 
     private var searchPanel: some View {
@@ -219,7 +213,7 @@ struct NoteEditorView: View {
     private var editor: some View {
         ZStack(alignment: .topLeading) {
             TextEditor(text: $viewModel.content)
-                .font(viewModel.format == .plainText ? Theme.Typography.body : .system(size: 13, design: .monospaced))
+                .font(.system(size: fontSize, design: viewModel.format == .plainText ? .default : .monospaced))
                 .foregroundStyle(Theme.textPrimary)
                 .scrollContentBackground(.hidden)
                 // Smart punctuation would corrupt Markdown and LaTeX source.
@@ -229,7 +223,7 @@ struct NoteEditorView: View {
 
             if viewModel.content.isEmpty {
                 Text(viewModel.format.placeholder)
-                    .font(Theme.Typography.body)
+                    .font(.system(size: fontSize))
                     .foregroundStyle(Theme.textSecondary.opacity(0.7))
                     .padding(.horizontal, 17)
                     .padding(.vertical, 8)
@@ -265,68 +259,16 @@ struct NoteEditorView: View {
 
     private func exportCurrentNote() {
         guard let note = viewModel.currentNoteForExport() else { return }
-        let fileExtension: String
-        switch note.format {
-        case .plainText: fileExtension = "txt"
-        case .markdown: fileExtension = "md"
-        case .latex: fileExtension = "tex"
-        }
-        let scope = note.pageNumber.map { "_Seite_\($0)" } ?? "_Gesamtdokument"
-        presentSavePanel(
-            content: note.content,
-            fileName: "\(safeFileName(documentTitle: viewModel.document.title))\(scope).\(fileExtension)",
-            fileExtension: fileExtension
+        exportFile = NoteExportFile(
+            fileName: NoteExportFormatting.fileName(for: note, documentTitle: viewModel.document.title),
+            text: note.content
         )
     }
 
     private func exportAllNotes() {
-        let content = viewModel.exportAllNotesAsMarkdown()
-        presentSavePanel(
-            content: content,
-            fileName: "\(safeFileName(documentTitle: viewModel.document.title))_Notizen.md",
-            fileExtension: "md"
+        exportFile = NoteExportFile(
+            fileName: "\(NoteExportFormatting.safeFileName(viewModel.document.title))_Notizen.md",
+            text: viewModel.exportAllNotesAsMarkdown()
         )
-    }
-
-    private func presentSavePanel(content: String, fileName: String, fileExtension: String) {
-        let panel = NSSavePanel()
-        panel.title = "Notizen exportieren"
-        panel.nameFieldStringValue = fileName
-        panel.allowedContentTypes = [UTType(filenameExtension: fileExtension) ?? .plainText]
-        panel.canCreateDirectories = true
-        panel.isExtensionHidden = false
-
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            try content.write(to: url, atomically: true, encoding: .utf8)
-        } catch {
-            viewModel.errorMessage = "Der Export ist fehlgeschlagen: \(error.localizedDescription)"
-        }
-    }
-
-    private func safeFileName(documentTitle: String) -> String {
-        let invalidCharacters = CharacterSet(charactersIn: "/:\0")
-        let cleaned = documentTitle.components(separatedBy: invalidCharacters).joined(separator: "-")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return cleaned.isEmpty ? "Notizen" : cleaned
-    }
-}
-
-/// Small autosave indicator in the pane header.
-private struct SaveStateLabel: View {
-    let state: NotesViewModel.SaveState
-
-    var body: some View {
-        switch state {
-        case .saved:
-            Label("Gespeichert", systemImage: "checkmark.circle")
-                .foregroundStyle(Theme.textSecondary)
-        case .pending:
-            Label("Speichert …", systemImage: "ellipsis.circle")
-                .foregroundStyle(Theme.textSecondary)
-        case .failed:
-            Label("Nicht gespeichert", systemImage: "exclamationmark.triangle")
-                .foregroundStyle(.red)
-        }
     }
 }

@@ -32,6 +32,7 @@ final class FakeSlideDocumentRepository: SlideDocumentRepository {
 /// Nur in Tests und nur vom Main Actor benutzt, daher `@unchecked Sendable`.
 final class FakeFileStorage: FileStorage, @unchecked Sendable {
     private(set) var files: Set<String> = []
+    private(set) var written: [String: Data] = [:]
 
     func store(copyOf sourceURL: URL, as fileName: String) throws {
         files.insert(fileName)
@@ -39,6 +40,11 @@ final class FakeFileStorage: FileStorage, @unchecked Sendable {
 
     func url(for fileName: String) -> URL {
         URL(fileURLWithPath: "/fake/\(fileName)")
+    }
+
+    func write(_ data: Data, as fileName: String) throws {
+        files.insert(fileName)
+        written[fileName] = data
     }
 
     func remove(fileName: String) throws {

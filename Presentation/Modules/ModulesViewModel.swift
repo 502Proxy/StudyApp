@@ -41,7 +41,6 @@ enum ModuleEditorMode: Identifiable {
 @Observable
 final class ModulesViewModel {
     private(set) var modules: [StudyModule] = []
-    var selectedID: UUID?
     var editorMode: ModuleEditorMode?
     var errorMessage: String?
 
@@ -49,6 +48,7 @@ final class ModulesViewModel {
     private let createModule: CreateModuleUseCase
     private let updateModule: UpdateModuleUseCase
     private let deleteModule: DeleteModuleUseCase
+    private let settings: any StudySettingsStore
 
     init(
         repository: any ModuleRepository,
@@ -56,8 +56,11 @@ final class ModulesViewModel {
         noteRepository: any NoteRepository,
         flashcardRepository: any FlashcardRepository,
         studySheetRepository: any StudySheetRepository,
-        fileStorage: any FileStorage
+        fileStorage: any FileStorage,
+        calendarRepository: (any StudyCalendarRepository)? = nil,
+        settings: any StudySettingsStore
     ) {
+        self.settings = settings
         listModules = ListModulesUseCase(repository: repository)
         createModule = CreateModuleUseCase(repository: repository)
         updateModule = UpdateModuleUseCase(repository: repository)
@@ -67,48 +70,52 @@ final class ModulesViewModel {
             noteRepository: noteRepository,
             flashcardRepository: flashcardRepository,
             studySheetRepository: studySheetRepository,
-            fileStorage: fileStorage
+            fileStorage: fileStorage,
+            calendarRepository: calendarRepository
         )
     }
 
-    var selectedModule: StudyModule? {
-        modules.first { $0.id == selectedID }
+    func module(withID id: UUID) -> StudyModule? {
+        modules.first { $0.id == id }
     }
 
     func load() {
         do {
             modules = try listModules()
-            if let selectedID, !modules.contains(where: { $0.id == selectedID }) {
-                self.selectedID = nil
-            }
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
-    /// Speichert Anlegen oder Bearbeiten. Gibt `true` zurück, wenn der Editor schließen darf.
-    func save(_ draft: ModuleDraft) -> Bool {
+    /// Speichert Anlegen oder Bearbeiten. Gibt das gespeicherte Modul zurück, bei einem Fehler `nil`
+    /// (der Editor bleibt dann offen). Die Auswahl in der Seitenleiste verwaltet `AppNavigation`.
+    @discardableResult
+    func save(_ draft: ModuleDraft) -> StudyModule? {
         do {
+            let saved: StudyModule
             if let id = draft.id {
-                guard let existing = modules.first(where: { $0.id == id }) else {
+                guard let existing = module(withID: id) else {
                     throw ModuleError.notFound
                 }
-                try updateModule(existing, name: draft.name, code: draft.code, color: draft.color)
+                saved = try updateModule(existing, name: draft.name, code: draft.code, color: draft.color)
             } else {
-                let created = try createModule(name: draft.name, code: draft.code, color: draft.color)
-                selectedID = created.id
+                saved = try createModule(name: draft.name, code: draft.code, color: draft.color)
             }
+            // Ein bewusst angelegtes Modul darf wieder mit dem Kalender abgeglichen werden.
+            settings.ignoredCourseKeys.remove(DetectModuleCandidatesUseCase.moduleKey(for: saved))
             load()
-            return true
+            return saved
         } catch {
             errorMessage = error.localizedDescription
-            return false
+            return nil
         }
     }
 
     func delete(_ module: StudyModule) {
         do {
             try deleteModule(module)
+            // Ein gelöschtes Modul soll nicht beim nächsten Kalenderabgleich wieder entstehen.
+            settings.ignoredCourseKeys.insert(DetectModuleCandidatesUseCase.moduleKey(for: module))
             load()
         } catch {
             errorMessage = error.localizedDescription

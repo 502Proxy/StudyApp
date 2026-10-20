@@ -1,9 +1,5 @@
 import Foundation
 
-private extension String {
-    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
-}
-
 /// Loads the note of a slide document.
 @MainActor
 struct GetNoteUseCase {
@@ -94,5 +90,58 @@ struct DeleteNoteUseCase {
 
     func callAsFunction(slideDocumentID: UUID) throws {
         try repository.deleteNotes(forSlideDocument: slideDocumentID)
+    }
+}
+
+/// Creates a free note of a module, independent of any slides (e.g. one note per lecture).
+@MainActor
+struct CreateModuleNoteUseCase {
+    static let fallbackTitle = "Neue Notiz"
+
+    let repository: any NoteRepository
+    var now: () -> Date = { Date() }
+
+    @discardableResult
+    func callAsFunction(
+        moduleID: UUID,
+        title: String,
+        content: String = "",
+        format: NoteFormat = .markdown
+    ) throws -> LectureNote {
+        let timestamp = now()
+        let note = LectureNote(
+            id: UUID(),
+            slideDocumentID: moduleID,
+            title: title.trimmed.isEmpty ? Self.fallbackTitle : title.trimmed,
+            content: content,
+            format: format,
+            pageNumber: nil,
+            createdAt: timestamp,
+            updatedAt: timestamp
+        )
+        try repository.add(note)
+        return note
+    }
+}
+
+/// Updates a known note by its ID. Used where a note is edited directly (notes overview),
+/// independent of the document/page scope that `SaveNoteUseCase` works with.
+@MainActor
+struct UpdateNoteUseCase {
+    let repository: any NoteRepository
+    var now: () -> Date = { Date() }
+
+    /// Returns the note untouched when nothing changed, so autosave can call this freely.
+    @discardableResult
+    func callAsFunction(_ note: LectureNote, title: String, content: String, format: NoteFormat) throws -> LectureNote {
+        let cleanTitle = title.trimmed.isEmpty ? note.title : title.trimmed
+        guard note.title != cleanTitle || note.content != content || note.format != format else { return note }
+        var updated = note
+        updated.title = cleanTitle
+        updated.content = content
+        updated.format = format
+        updated.updatedAt = now()
+        try repository.update(updated)
+        return updated
     }
 }
