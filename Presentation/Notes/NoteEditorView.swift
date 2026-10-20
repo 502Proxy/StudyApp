@@ -1,6 +1,5 @@
 import AppKit
 import SwiftUI
-import UniformTypeIdentifiers
 
 /// Note pane next to the slides: scope picker, editor, search, export and live preview.
 struct NoteEditorView: View {
@@ -10,6 +9,7 @@ struct NoteEditorView: View {
 
     @State private var mode: ViewMode = .split
     @State private var showsSearch = false
+    @State private var exportFile: NoteExportFile?
     @AppStorage(ViewPreferences.noteFontSizeKey) private var fontSize = NoteFontSize.standard
 
     enum ViewMode: String, CaseIterable, Identifiable {
@@ -83,6 +83,7 @@ struct NoteEditorView: View {
             viewModel.saveNow()
         }
         .errorAlert(message: viewModel.errorMessage) { viewModel.errorMessage = nil }
+        .noteExporter(file: $exportFile) { viewModel.errorMessage = $0 }
     }
 
     // MARK: Header
@@ -258,49 +259,16 @@ struct NoteEditorView: View {
 
     private func exportCurrentNote() {
         guard let note = viewModel.currentNoteForExport() else { return }
-        let fileExtension: String
-        switch note.format {
-        case .plainText: fileExtension = "txt"
-        case .markdown: fileExtension = "md"
-        case .latex: fileExtension = "tex"
-        }
-        let scope = note.pageNumber.map { "_Seite_\($0)" } ?? "_Gesamtdokument"
-        presentSavePanel(
-            content: note.content,
-            fileName: "\(safeFileName(documentTitle: viewModel.document.title))\(scope).\(fileExtension)",
-            fileExtension: fileExtension
+        exportFile = NoteExportFile(
+            fileName: NoteExportFormatting.fileName(for: note, documentTitle: viewModel.document.title),
+            text: note.content
         )
     }
 
     private func exportAllNotes() {
-        let content = viewModel.exportAllNotesAsMarkdown()
-        presentSavePanel(
-            content: content,
-            fileName: "\(safeFileName(documentTitle: viewModel.document.title))_Notizen.md",
-            fileExtension: "md"
+        exportFile = NoteExportFile(
+            fileName: "\(NoteExportFormatting.safeFileName(viewModel.document.title))_Notizen.md",
+            text: viewModel.exportAllNotesAsMarkdown()
         )
-    }
-
-    private func presentSavePanel(content: String, fileName: String, fileExtension: String) {
-        let panel = NSSavePanel()
-        panel.title = "Notizen exportieren"
-        panel.nameFieldStringValue = fileName
-        panel.allowedContentTypes = [UTType(filenameExtension: fileExtension) ?? .plainText]
-        panel.canCreateDirectories = true
-        panel.isExtensionHidden = false
-
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do {
-            try content.write(to: url, atomically: true, encoding: .utf8)
-        } catch {
-            viewModel.errorMessage = "Der Export ist fehlgeschlagen: \(error.localizedDescription)"
-        }
-    }
-
-    private func safeFileName(documentTitle: String) -> String {
-        let invalidCharacters = CharacterSet(charactersIn: "/:\0")
-        let cleaned = documentTitle.components(separatedBy: invalidCharacters).joined(separator: "-")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return cleaned.isEmpty ? "Notizen" : cleaned
     }
 }

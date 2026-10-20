@@ -1,5 +1,5 @@
 import AppKit
-import PDFKit
+internal import PDFKit
 import SwiftUI
 
 /// Bettet die `PDFView` des Controllers in SwiftUI ein.

@@ -231,6 +231,26 @@ final class LearningViewModel {
         }
     }
 
+    // MARK: Export
+
+    /// Dateiname und Inhalt für eine einzelne Notiz (aktueller gespeicherter Stand).
+    func exportContent(forNoteWithID id: UUID) -> (fileName: String, text: String)? {
+        guard let note = notes.first(where: { $0.id == id }) else { return nil }
+        return (NoteExportFormatting.fileName(for: note, documentTitle: document(for: note)?.title), note.content)
+    }
+
+    /// Alle Notizen des Moduls als ein Markdown-Dokument: freie Notizen zuerst, dann je Foliensatz.
+    func exportAllNotesAsMarkdown() -> String {
+        let sections = noteSections.flatMap { section in
+            section.notes.map { note -> (heading: String, note: LectureNote) in
+                if isModuleNote(note) { return (note.title, note) }
+                let page = note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument"
+                return ("\(section.title) – \(page)", note)
+            }
+        }
+        return NoteExportFormatting.markdown(title: "Notizen: \(module.name)", sections: sections)
+    }
+
     func makeEditingSession(for note: LectureNote) -> NoteEditingSession {
         NoteEditingSession(note: note, repository: noteRepository) { [weak self] saved in
             self?.noteDidSave(saved)

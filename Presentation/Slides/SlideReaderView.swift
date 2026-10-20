@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+internal import PDFKit
 
 /// PDF-Viewer mit Werkzeugleiste: Seitenwechsel, Zoom, Markierungswerkzeuge, Seiten- oder
 /// Markierungsübersicht und einer ein- und ausblendbaren Notizen-Seitenleiste.
@@ -18,6 +19,7 @@ struct SlideReaderView: View {
     private enum SidebarMode: String, CaseIterable, Identifiable {
         case pages = "Seiten"
         case annotations = "Markierungen"
+        case search = "Suche"
         var id: Self { self }
     }
 
@@ -28,6 +30,10 @@ struct SlideReaderView: View {
     @State private var showsSidebar = true
     @State private var sidebarMode: SidebarMode = .pages
     @State private var pendingText = ""
+    @State private var isSearching = false
+    @State private var searchQuery = ""
+    @State private var searchTask: Task<Void, Never>?
+    @FocusState private var isSearchFieldFocused: Bool
     @AppStorage(ViewPreferences.slideReaderShowsNotesKey) private var showsNotes = true
 
     var body: some View {
@@ -76,6 +82,10 @@ struct SlideReaderView: View {
             VStack(spacing: 0) {
                 toolbar(controller)
                 Divider()
+                if isSearching {
+                    searchBar(controller)
+                    Divider()
+                }
                 AnnotationToolbar(controller: controller, onQuote: { quoteSelection(from: controller) }, canQuote: notes != nil)
                 Divider()
                 HSplitView {
@@ -139,6 +149,98 @@ struct SlideReaderView: View {
         controller.pdfView.clearSelection()
     }
 
+    // MARK: Suche
+
+    private func openSearch() {
+        isSearching = true
+        showsSidebar = true
+        sidebarMode = .search
+        isSearchFieldFocused = true
+    }
+
+    private func closeSearch(_ controller: PDFReaderController) {
+        searchTask?.cancel()
+        isSearching = false
+        searchQuery = ""
+        controller.clearSearch()
+        if sidebarMode == .search { sidebarMode = .pages }
+    }
+
+    private func searchBar(_ controller: PDFReaderController) -> some View {
+        HStack(spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(Theme.textTertiary)
+                TextField("Im PDF suchen", text: $searchQuery)
+                    .textFieldStyle(.plain)
+                    .focused($isSearchFieldFocused)
+                    .onSubmit { controller.nextSearchResult() }
+                    .onKeyPress(.return, phases: .down) { press in
+                        guard press.modifiers.contains(.shift) else { return .ignored }
+                        controller.previousSearchResult()
+                        return .handled
+                    }
+                    .onExitCommand { closeSearch(controller) }
+                if !searchQuery.isEmpty {
+                    Button {
+                        searchQuery = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(Theme.textTertiary)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Theme.surfaceSecondary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .frame(maxWidth: 360)
+
+            Text(searchStatus(controller))
+                .font(Theme.Typography.small.monospacedDigit())
+                .foregroundStyle(controller.searchResults.isEmpty && !controller.searchedText.isEmpty ? Theme.danger : Theme.textSecondary)
+
+            Button { controller.previousSearchResult() } label: {
+                Image(systemName: "chevron.up")
+            }
+            .disabled(controller.searchResults.isEmpty)
+            .keyboardShortcut("g", modifiers: [.command, .shift])
+            .help("Vorheriger Treffer (⇧↩ oder ⇧⌘G)")
+
+            Button { controller.nextSearchResult() } label: {
+                Image(systemName: "chevron.down")
+            }
+            .disabled(controller.searchResults.isEmpty)
+            .keyboardShortcut("g", modifiers: .command)
+            .help("Nächster Treffer (↩ oder ⌘G)")
+
+            Spacer()
+
+            Button("Fertig") { closeSearch(controller) }
+                .help("Suche schließen (esc)")
+        }
+        .buttonStyle(.borderless)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 7)
+        .background(Theme.surface)
+        .onChange(of: searchQuery) { _, query in
+            // Kurz warten, damit nicht bei jedem Tastendruck das ganze PDF durchsucht wird.
+            searchTask?.cancel()
+            searchTask = Task {
+                try? await Task.sleep(for: .milliseconds(250))
+                guard !Task.isCancelled else { return }
+                controller.search(query)
+            }
+        }
+    }
+
+    private func searchStatus(_ controller: PDFReaderController) -> String {
+        if controller.searchedText.isEmpty { return "" }
+        if controller.searchResults.isEmpty { return "Keine Treffer" }
+        let current = (controller.currentSearchIndex ?? 0) + 1
+        return "\(current) von \(controller.searchResults.count)"
+    }
+
     // MARK: Seitenleiste
 
     @ViewBuilder
@@ -158,6 +260,8 @@ struct SlideReaderView: View {
                 PDFThumbnailStrip(pdfView: controller.pdfView)
             case .annotations:
                 AnnotationListView(controller: controller)
+            case .search:
+                SearchResultsListView(controller: controller)
             }
         }
         .background(Theme.surfaceSecondary)
@@ -228,6 +332,22 @@ struct SlideReaderView: View {
             }
 
             Divider().frame(height: 16)
+
+            Button {
+                openSearch()
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(isSearching ? Theme.accent : Theme.textPrimary)
+            }
+            .keyboardShortcut("f", modifiers: .command)
+            .help("Im PDF suchen (⌘F)")
+
+            // Zusätzlich ⌃F, für alle, die das von Windows gewohnt sind.
+            Button("Im PDF suchen", action: openSearch)
+                .keyboardShortcut("f", modifiers: .control)
+                .frame(width: 0, height: 0)
+                .opacity(0)
+                .accessibilityHidden(true)
 
             Button {
                 showsSidebar.toggle()
@@ -462,5 +582,77 @@ private struct TextAnnotationSheet: View {
         .padding(20)
         .background(Theme.surface)
         .onAppear { isFocused = true }
+    }
+}
+
+/// Trefferliste der PDF-Suche mit Seite und Textausschnitt.
+private struct SearchResultsListView: View {
+    let controller: PDFReaderController
+
+    var body: some View {
+        if controller.searchedText.isEmpty {
+            hint("Suchbegriff oben eingeben (⌘F)", systemImage: "magnifyingglass")
+        } else if controller.searchResults.isEmpty {
+            hint("Keine Treffer für „\(controller.searchedText)“", systemImage: "text.magnifyingglass")
+        } else {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 6) {
+                        ForEach(controller.searchResults) { result in
+                            let isCurrent = controller.currentSearchIndex == result.id
+                            Button {
+                                controller.showSearchResult(at: result.id)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("Seite \(result.pageNumber)")
+                                        .font(.system(size: 10.5, weight: .semibold))
+                                        .foregroundStyle(isCurrent ? Theme.accent : Theme.textSecondary)
+                                    highlighted(result.context)
+                                        .font(Theme.Typography.small)
+                                        .lineLimit(3)
+                                        .multilineTextAlignment(.leading)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(8)
+                                .background(isCurrent ? Theme.accentSoft : Theme.surface, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .id(result.id)
+                        }
+                    }
+                    .padding(8)
+                }
+                .onChange(of: controller.currentSearchIndex) { _, index in
+                    if let index { withAnimation { proxy.scrollTo(index, anchor: .center) } }
+                }
+            }
+        }
+    }
+
+    /// Hebt den Suchbegriff im Ausschnitt fett hervor.
+    private func highlighted(_ context: String) -> Text {
+        var attributed = AttributedString(context)
+        var searchRange = attributed.startIndex..<attributed.endIndex
+        while let range = attributed[searchRange].range(of: controller.searchedText, options: [.caseInsensitive, .diacriticInsensitive]) {
+            attributed[range].font = .system(size: 11, weight: .bold)
+            attributed[range].foregroundColor = Theme.textPrimary
+            searchRange = range.upperBound..<attributed.endIndex
+        }
+        return Text(attributed).foregroundStyle(Theme.textSecondary)
+    }
+
+    private func hint(_ text: String, systemImage: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: systemImage)
+                .font(.system(size: 20))
+                .foregroundStyle(Theme.textTertiary)
+            Text(text)
+                .font(Theme.Typography.small)
+                .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

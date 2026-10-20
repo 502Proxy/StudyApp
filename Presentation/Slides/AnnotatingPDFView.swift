@@ -1,5 +1,5 @@
 import AppKit
-import PDFKit
+internal import PDFKit
 
 /// `PDFView`, die je nach Werkzeug Mausereignisse selbst verarbeitet: Zeichnen, Textfelder
 /// platzieren und Radieren. Im Textmodus bleibt das normale Verhalten (Auswählen, Links) erhalten.

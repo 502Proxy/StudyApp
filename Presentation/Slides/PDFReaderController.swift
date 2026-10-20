@@ -1,6 +1,6 @@
 import AppKit
 import Observation
-import PDFKit
+internal import PDFKit
 import SwiftUI
 
 /// Hält die Observer-Tokens und entfernt sie beim Freigeben.
@@ -43,6 +43,20 @@ final class PDFReaderController {
     private(set) var canUndo = false
     /// Steigt bei jeder Änderung, damit die Markierungsliste neu berechnet wird.
     private(set) var annotationRevision = 0
+
+    /// Suchtreffer im Dokument, in Lesereihenfolge.
+    private(set) var searchResults: [SearchResult] = []
+    /// Index des hervorgehobenen Treffers in `searchResults`.
+    private(set) var currentSearchIndex: Int?
+    private(set) var searchedText = ""
+    @ObservationIgnored private var searchSelections: [PDFSelection] = []
+
+    struct SearchResult: Identifiable {
+        let id: Int
+        let pageNumber: Int
+        /// Umgebender Text mit dem Treffer, für die Trefferliste.
+        let context: String
+    }
     /// Ort für ein neues Textfeld; die Ansicht fragt daraufhin den Text ab.
     var pendingTextLocation: PendingText?
 
@@ -160,6 +174,73 @@ final class PDFReaderController {
 
     func zoomToFit() {
         pdfView.autoScales = true
+    }
+
+    // MARK: Suche
+
+    /// Sucht `query` im ganzen Dokument (ohne Groß-/Kleinschreibung und Akzente),
+    /// markiert alle Treffer und springt zum ersten Treffer ab der aktuellen Seite.
+    func search(_ query: String) {
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text != searchedText else { return }
+        searchedText = text
+        guard !text.isEmpty, let document else {
+            clearSearch()
+            return
+        }
+
+        searchSelections = document.findString(text, withOptions: [.caseInsensitive, .diacriticInsensitive])
+        searchResults = searchSelections.enumerated().map { index, selection in
+            let page = selection.pages.first.map { document.index(for: $0) + 1 } ?? 1
+            return SearchResult(id: index, pageNumber: page, context: Self.context(of: selection))
+        }
+        for selection in searchSelections {
+            selection.color = NSColor.systemYellow.withAlphaComponent(0.55)
+        }
+        pdfView.highlightedSelections = searchSelections
+
+        let start = searchResults.firstIndex { $0.pageNumber >= pageIndex + 1 } ?? 0
+        showSearchResult(at: searchResults.isEmpty ? nil : start)
+    }
+
+    func nextSearchResult() {
+        guard !searchResults.isEmpty else { return }
+        showSearchResult(at: ((currentSearchIndex ?? -1) + 1) % searchResults.count)
+    }
+
+    func previousSearchResult() {
+        guard !searchResults.isEmpty else { return }
+        let count = searchResults.count
+        showSearchResult(at: ((currentSearchIndex ?? 0) - 1 + count) % count)
+    }
+
+    func showSearchResult(at index: Int?) {
+        currentSearchIndex = index
+        guard let index, searchSelections.indices.contains(index) else { return }
+        let selection = searchSelections[index]
+        pdfView.setCurrentSelection(selection, animate: true)
+        pdfView.scrollSelectionToVisible(nil)
+        syncPage()
+    }
+
+    func clearSearch() {
+        searchedText = ""
+        searchSelections = []
+        searchResults = []
+        currentSearchIndex = nil
+        pdfView.highlightedSelections = nil
+        pdfView.clearSelection()
+    }
+
+    /// Etwas Text vor und nach dem Treffer, auf eine Zeile reduziert.
+    private static func context(of selection: PDFSelection) -> String {
+        guard let context = selection.copy() as? PDFSelection else { return selection.string ?? "" }
+        context.extend(atStart: 40)
+        context.extend(atEnd: 60)
+        return (context.string ?? selection.string ?? "")
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
 
     // MARK: Werkzeuge
@@ -475,3 +556,4 @@ final class PDFReaderController {
         }
     }
 }
+
