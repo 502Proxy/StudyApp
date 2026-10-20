@@ -21,6 +21,14 @@ struct SlideReaderView: View {
         case annotations = "Markierungen"
         case search = "Suche"
         var id: Self { self }
+
+        var systemImage: String {
+            switch self {
+            case .pages: "square.grid.2x2"
+            case .annotations: "highlighter"
+            case .search: "magnifyingglass"
+            }
+        }
     }
 
     // Der Controller entsteht erst beim Erscheinen, damit das PDF nicht bei jedem
@@ -92,12 +100,14 @@ struct SlideReaderView: View {
                     HStack(spacing: 0) {
                         if showsSidebar {
                             sidebar(controller)
-                                .frame(width: 200)
+                                .frame(width: 172)
                             Divider()
                         }
                         PDFKitView(pdfView: controller.pdfView)
+                            .frame(minWidth: 340)
                     }
-                    .frame(minWidth: 420)
+                    // Das PDF bekommt beim Teilen den Vorrang vor den Notizen.
+                    .layoutPriority(1)
 
                     if showsNotes, let notes {
                         NoteEditorView(
@@ -109,7 +119,7 @@ struct SlideReaderView: View {
                                 }
                             }
                         )
-                        .frame(minWidth: 280, idealWidth: 380, maxWidth: 640)
+                        .frame(minWidth: 320, idealWidth: 380, maxWidth: 560)
                     }
                 }
             }
@@ -246,14 +256,24 @@ struct SlideReaderView: View {
     @ViewBuilder
     private func sidebar(_ controller: PDFReaderController) -> some View {
         VStack(spacing: 0) {
+            // Symbole statt Text: „Markierungen“ passt in die schmale Leiste nicht hinein.
             Picker("Seitenleiste", selection: $sidebarMode) {
                 ForEach(SidebarMode.allCases) { mode in
-                    Text(mode.rawValue).tag(mode)
+                    Image(systemName: mode.systemImage)
+                        .help(mode.rawValue)
+                        .tag(mode)
                 }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(8)
+            Text(sidebarMode.rawValue)
+                .font(Theme.Typography.overline)
+                .textCase(.uppercase)
+                .foregroundStyle(Theme.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 6)
             Divider()
             switch sidebarMode {
             case .pages:
@@ -326,7 +346,7 @@ struct SlideReaderView: View {
                 .help("Vergrößern")
 
                 Button { controller.zoomToFit() } label: {
-                    Image(systemName: "arrow.up.left.and.down.right.magnifyingglass")
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
                 }
                 .help("An Fenster anpassen")
             }

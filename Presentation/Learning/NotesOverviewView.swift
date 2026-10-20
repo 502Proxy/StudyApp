@@ -449,6 +449,16 @@ private struct NoteDetailPane: View {
 /// Kleiner Autosave-Hinweis.
 struct SaveIndicator: View {
     let state: NotesViewModel.SaveState
+    /// Nur das Symbol, für schmale Bereiche; der Text steht dann im Tooltip.
+    var isCompact = false
+
+    private var title: String {
+        switch state {
+        case .saved: "Gespeichert"
+        case .pending: "Speichert …"
+        case .failed: "Nicht gespeichert"
+        }
+    }
 
     var body: some View {
         Group {
@@ -465,6 +475,19 @@ struct SaveIndicator: View {
             }
         }
         .font(Theme.Typography.small)
-        .labelStyle(.titleAndIcon)
+        .labelStyle(TitleAndIconOrIconOnly(isCompact: isCompact))
+        .help(title)
+    }
+}
+
+private struct TitleAndIconOrIconOnly: LabelStyle {
+    let isCompact: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        if isCompact {
+            configuration.icon
+        } else {
+            Label(configuration)
+        }
     }
 }
