@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!--
+  Ergänzt die von Xcode generierte Info.plist um die Einstellungen für Sparkle (automatische Updates).
+  SUPublicEDKey: öffentlicher Schlüssel aus `generate_keys` (siehe docs/RELEASING.md).
+-->
+<dict>
+	<key>SUFeedURL</key>
+	<string>https://502proxy.github.io/StudyApp/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>HIER_DEN_PUBLIC_KEY_EINTRAGEN</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
+</dict>
+</plist>

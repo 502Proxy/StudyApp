@@ -10,6 +10,7 @@ struct StudyAppApp: App {
     @State private var todayViewModel: TodayViewModel
     @State private var assignmentsViewModel: AssignmentsViewModel
     @State private var navigation: AppNavigation
+    @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
 
     init() {
@@ -68,11 +69,15 @@ struct StudyAppApp: App {
         .commands {
             // Eine App, ein Fenster: ⌘N gehört der „Neuen Notiz“.
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .appInfo) {
+                Button("Nach Updates suchen …") { updater.checkForUpdates() }
+                    .disabled(!updater.canCheckForUpdates)
+            }
             AppCommands(navigation: navigation, calendar: calendarViewModel, assignments: assignmentsViewModel)
         }
 
         Settings {
-            SettingsView(settings: container.preferences)
+            SettingsView(settings: container.preferences, updater: updater)
                 .tint(Theme.accent)
                 .preferredColorScheme(appearance.colorScheme)
         }
