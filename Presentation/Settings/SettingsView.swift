@@ -3,6 +3,7 @@ import SwiftUI
 /// Einstellungen (⌘,): Erscheinungsbild, Notizschrift und die Automatiken rund um den Stundenplan.
 struct SettingsView: View {
     let settings: any StudySettingsStore
+    let updater: AppUpdater
 
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
@@ -11,6 +12,8 @@ struct SettingsView: View {
     @State private var leadMinutes = 10
     @State private var autoRefreshCalendars = true
     @State private var ignoredCount = 0
+    @State private var checksForUpdates = false
+    @State private var downloadsUpdates = false
 
     var body: some View {
         Form {
@@ -47,6 +50,23 @@ struct SettingsView: View {
             }
 
             Section {
+                LabeledContent("Installiert", value: AppUpdater.versionText())
+                if updater.isAvailable {
+                    Toggle("Automatisch nach Updates suchen", isOn: $checksForUpdates)
+                    Toggle("Updates im Hintergrund laden und installieren", isOn: $downloadsUpdates)
+                        .disabled(!checksForUpdates)
+                    Button("Jetzt nach Updates suchen …") { updater.checkForUpdates() }
+                        .disabled(!updater.canCheckForUpdates)
+                }
+            } header: {
+                Text("Updates")
+            } footer: {
+                if !updater.isAvailable {
+                    Text("Automatische Updates sind in dieser Version nicht eingerichtet.")
+                }
+            }
+
+            Section {
                 Toggle("Laufende Vorlesung beim Öffnen der App anzeigen", isOn: $autoOpenLecture)
                 Stepper(value: $leadMinutes, in: 0...30, step: 5) {
                     LabeledContent("Schon vor Beginn öffnen", value: leadMinutes == 0 ? "ab Beginn" : "\(leadMinutes) Min.")
@@ -67,7 +87,11 @@ struct SettingsView: View {
             leadMinutes = settings.lectureLeadMinutes
             autoRefreshCalendars = settings.autoRefreshCalendars
             ignoredCount = settings.ignoredCourseKeys.count
+            checksForUpdates = updater.automaticallyChecksForUpdates
+            downloadsUpdates = updater.automaticallyDownloadsUpdates
         }
+        .onChange(of: checksForUpdates) { _, value in updater.automaticallyChecksForUpdates = value }
+        .onChange(of: downloadsUpdates) { _, value in updater.automaticallyDownloadsUpdates = value }
         .onChange(of: autoCreateModules) { _, value in settings.autoCreateModules = value }
         .onChange(of: autoOpenLecture) { _, value in settings.autoOpenLecture = value }
         .onChange(of: leadMinutes) { _, value in settings.lectureLeadMinutes = value }
