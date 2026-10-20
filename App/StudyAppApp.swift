@@ -8,6 +8,7 @@ struct StudyAppApp: App {
     @State private var modulesViewModel: ModulesViewModel
     @State private var calendarViewModel: StudyCalendarViewModel
     @State private var todayViewModel: TodayViewModel
+    @State private var assignmentsViewModel: AssignmentsViewModel
     @State private var navigation: AppNavigation
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
 
@@ -17,11 +18,13 @@ struct StudyAppApp: App {
             let modules = container.makeModulesViewModel()
             let calendar = container.makeStudyCalendarViewModel()
             let today = container.makeTodayViewModel()
+            let assignments = container.makeAssignmentsViewModel()
             let navigation = AppNavigation()
             // Vom Kalender angelegte Module sofort in Seitenleiste und Startseite zeigen.
             calendar.onModulesChanged = {
                 modules.load()
                 today.load()
+                assignments.load()
             }
             self.container = container
             autopilot = LectureAutopilot(
@@ -30,6 +33,7 @@ struct StudyAppApp: App {
             _modulesViewModel = State(initialValue: modules)
             _calendarViewModel = State(initialValue: calendar)
             _todayViewModel = State(initialValue: today)
+            _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
@@ -43,6 +47,7 @@ struct StudyAppApp: App {
                 navigation: navigation,
                 calendarViewModel: calendarViewModel,
                 todayViewModel: todayViewModel,
+                assignmentsViewModel: assignmentsViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -63,7 +68,7 @@ struct StudyAppApp: App {
         .commands {
             // Eine App, ein Fenster: ⌘N gehört der „Neuen Notiz“.
             CommandGroup(replacing: .newItem) {}
-            AppCommands(navigation: navigation, calendar: calendarViewModel)
+            AppCommands(navigation: navigation, calendar: calendarViewModel, assignments: assignmentsViewModel)
         }
 
         Settings {
@@ -77,6 +82,7 @@ struct StudyAppApp: App {
     private func startUp() async {
         modulesViewModel.load()
         calendarViewModel.load()
+        assignmentsViewModel.load()
         calendarViewModel.synchronizeModules()
         todayViewModel.load()
         if navigation.destination == nil {
@@ -94,6 +100,7 @@ struct StudyAppApp: App {
         while !Task.isCancelled {
             try? await Task.sleep(for: .seconds(30))
             calendarViewModel.tick()
+            assignmentsViewModel.tick()
         }
     }
 }

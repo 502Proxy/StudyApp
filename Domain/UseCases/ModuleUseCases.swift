@@ -64,6 +64,7 @@ struct DeleteModuleUseCase {
     let studySheetRepository: any StudySheetRepository
     let fileStorage: any FileStorage
     var calendarRepository: (any StudyCalendarRepository)? = nil
+    var assignmentRepository: (any AssignmentRepository)? = nil
 
     func callAsFunction(_ module: StudyModule) throws {
         let deleteSlides = DeleteSlideDocumentUseCase(
@@ -79,6 +80,7 @@ struct DeleteModuleUseCase {
         try flashcardRepository.deleteCards(forModule: module.id)
         try studySheetRepository.deleteSheets(forModule: module.id)
         try calendarRepository?.clearModuleLinks(forModule: module.id)
+        try assignmentRepository?.deleteAssignments(forModule: module.id)
         try repository.delete(id: module.id)
     }
 }

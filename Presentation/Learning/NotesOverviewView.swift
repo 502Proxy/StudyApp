@@ -105,16 +105,26 @@ struct NotesOverviewView: View {
             .keyboardShortcut("n", modifiers: .command)
             .help("Neue Notiz ohne Folien (⌘N)")
 
-            Button {
-                exportFile = NoteExportFile(
-                    fileName: "\(NoteExportFormatting.safeFileName(viewModel.module.name))_Notizen.md",
-                    text: viewModel.exportAllNotesAsMarkdown()
-                )
+            Menu {
+                Button("Als Markdown-Datei …", systemImage: "doc.text") {
+                    exportFile = NoteExportFile(
+                        fileName: "\(NoteExportFormatting.safeFileName(viewModel.module.name))_Notizen.md",
+                        text: viewModel.exportAllNotesAsMarkdown()
+                    )
+                }
+                Button("Als PDF …", systemImage: "doc.richtext") {
+                    PrintActions.exportPDF(viewModel.printableAllNotes(), into: $exportFile) { viewModel.errorMessage = $0 }
+                }
+                Divider()
+                Button("Drucken …", systemImage: "printer") {
+                    PrintActions.print(viewModel.printableAllNotes()) { viewModel.errorMessage = $0 }
+                }
             } label: {
                 Label("Alle exportieren", systemImage: "square.and.arrow.up")
             }
+            .fixedSize()
             .disabled(!viewModel.notes.contains(where: \.hasContent))
-            .help("Alle Notizen des Moduls als Markdown-Datei sichern")
+            .help("Alle Notizen des Moduls als Markdown oder PDF sichern oder drucken")
 
             Spacer()
 
@@ -213,6 +223,16 @@ struct NotesOverviewView: View {
                         exportFile = NoteExportFile(fileName: content.fileName, text: content.text)
                     }
                 },
+                onExportPDF: {
+                    if let document = viewModel.printableNote(withID: note.id) {
+                        PrintActions.exportPDF(document, into: $exportFile) { viewModel.errorMessage = $0 }
+                    }
+                },
+                onPrint: {
+                    if let document = viewModel.printableNote(withID: note.id) {
+                        PrintActions.print(document) { viewModel.errorMessage = $0 }
+                    }
+                },
                 onDelete: { pendingDeletion = note }
             )
             .id(note.id)
@@ -268,6 +288,8 @@ private struct NoteDetailPane: View {
     let onOpenInSlides: () -> Void
     let onCreateCard: () -> Void
     let onExport: () -> Void
+    let onExportPDF: () -> Void
+    let onPrint: () -> Void
     let onDelete: () -> Void
 
     @State private var mode: NoteEditorView.ViewMode
@@ -280,6 +302,8 @@ private struct NoteDetailPane: View {
         onOpenInSlides: @escaping () -> Void,
         onCreateCard: @escaping () -> Void,
         onExport: @escaping () -> Void,
+        onExportPDF: @escaping () -> Void,
+        onPrint: @escaping () -> Void,
         onDelete: @escaping () -> Void
     ) {
         _session = State(initialValue: session)
@@ -288,6 +312,8 @@ private struct NoteDetailPane: View {
         self.onOpenInSlides = onOpenInSlides
         self.onCreateCard = onCreateCard
         self.onExport = onExport
+        self.onExportPDF = onExportPDF
+        self.onPrint = onPrint
         self.onDelete = onDelete
         // Vorhandenes zuerst lesen, eine neue Notiz direkt bearbeiten.
         let isBlank = session.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -359,6 +385,14 @@ private struct NoteDetailPane: View {
                         // Vor dem Export speichern, damit die Datei den aktuellen Stand enthält.
                         session.saveNow()
                         onExport()
+                    }
+                    Button("Als PDF exportieren …", systemImage: "doc.richtext") {
+                        session.saveNow()
+                        onExportPDF()
+                    }
+                    Button("Drucken …", systemImage: "printer") {
+                        session.saveNow()
+                        onPrint()
                     }
                     Divider()
                     Button("Notiz löschen", systemImage: "trash", role: .destructive, action: onDelete)
@@ -449,6 +483,16 @@ private struct NoteDetailPane: View {
 /// Kleiner Autosave-Hinweis.
 struct SaveIndicator: View {
     let state: NotesViewModel.SaveState
+    /// Nur das Symbol, für schmale Bereiche; der Text steht dann im Tooltip.
+    var isCompact = false
+
+    private var title: String {
+        switch state {
+        case .saved: "Gespeichert"
+        case .pending: "Speichert …"
+        case .failed: "Nicht gespeichert"
+        }
+    }
 
     var body: some View {
         Group {
@@ -465,6 +509,19 @@ struct SaveIndicator: View {
             }
         }
         .font(Theme.Typography.small)
-        .labelStyle(.titleAndIcon)
+        .labelStyle(TitleAndIconOrIconOnly(isCompact: isCompact))
+        .help(title)
+    }
+}
+
+private struct TitleAndIconOrIconOnly: LabelStyle {
+    let isCompact: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        if isCompact {
+            configuration.icon
+        } else {
+            Label(configuration)
+        }
     }
 }

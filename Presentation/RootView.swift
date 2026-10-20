@@ -5,6 +5,7 @@ struct RootView: View {
     @Bindable var navigation: AppNavigation
     let calendarViewModel: StudyCalendarViewModel
     let todayViewModel: TodayViewModel
+    @Bindable var assignmentsViewModel: AssignmentsViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
 
@@ -17,6 +18,7 @@ struct RootView: View {
                 navigation: navigation,
                 calendar: calendarViewModel,
                 dueCounts: todayViewModel.dueCounts,
+                overdueAssignments: assignmentsViewModel.overdueCount,
                 onDetectModules: { isDetectingModules = true }
             )
             .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 340)
@@ -24,6 +26,14 @@ struct RootView: View {
             detail
         }
         .toolbar { historyButtons }
+        .sheet(item: $assignmentsViewModel.editor) { draft in
+            AssignmentEditorSheet(
+                draft: draft,
+                modules: viewModel.modules,
+                onSave: { assignmentsViewModel.save($0) },
+                onDelete: deleteAction(for: draft)
+            )
+        }
         .sheet(item: $viewModel.editorMode) { mode in
             ModuleEditorSheet(mode: mode) { draft in
                 guard let saved = viewModel.save(draft) else { return false }
@@ -61,9 +71,10 @@ struct RootView: View {
             }
         }
         .animation(.default, value: calendarViewModel.statusMessage)
-        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage) {
+        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage) {
             viewModel.errorMessage = nil
             todayViewModel.errorMessage = nil
+            assignmentsViewModel.errorMessage = nil
         }
     }
 
@@ -76,6 +87,7 @@ struct RootView: View {
             TodayView(
                 calendar: calendarViewModel,
                 today: todayViewModel,
+                assignments: assignmentsViewModel,
                 onOpenModule: { moduleID, section, intent in
                     navigation.show(module: moduleID, section: section, intent: intent)
                 },
@@ -91,8 +103,12 @@ struct RootView: View {
                 }
             )
         case .calendar:
-            StudyCalendarView(viewModel: calendarViewModel) { moduleID, section in
+            StudyCalendarView(viewModel: calendarViewModel, assignments: assignmentsViewModel) { moduleID, section in
                 navigation.show(module: moduleID, section: section)
+            }
+        case .grades:
+            GradesView(viewModel: viewModel) { moduleID in
+                navigation.show(module: moduleID, section: .overview)
             }
         case .module(let id):
             if let module = viewModel.module(withID: id) {
@@ -105,6 +121,7 @@ struct RootView: View {
                     liveEvent: live,
                     liveProgress: live.map(calendarViewModel.progress(of:)) ?? 0,
                     referenceDate: calendarViewModel.referenceDate,
+                    assignments: assignmentsViewModel,
                     makeSlidesViewModel: makeSlidesViewModel,
                     makeLearningViewModel: makeLearningViewModel,
                     onShowEvent: { event in
@@ -128,6 +145,13 @@ struct RootView: View {
             message: "Wähle links „Heute“, den Kalender oder ein Modul, oder springe mit ⌘K direkt zu einem Ziel oder einer Notiz."
         )
         .background(Theme.background)
+    }
+
+    /// Löschen ist nur für bestehende Aufgaben möglich.
+    private func deleteAction(for draft: AssignmentDraft) -> (() -> Void)? {
+        guard let id = draft.assignmentID,
+              let assignment = assignmentsViewModel.assignments.first(where: { $0.id == id }) else { return nil }
+        return { assignmentsViewModel.delete(assignment) }
     }
 
     private func sectionBinding(for moduleID: UUID) -> Binding<ModuleSection> {

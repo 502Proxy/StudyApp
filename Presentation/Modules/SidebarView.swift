@@ -6,6 +6,8 @@ struct SidebarView: View {
     let calendar: StudyCalendarViewModel
     /// Fällige Karteikarten je Modul, als Zähler neben dem Modulnamen.
     let dueCounts: [UUID: Int]
+    /// Überfällige Aufgaben, als Zähler bei „Heute“.
+    var overdueAssignments = 0
     let onDetectModules: () -> Void
     @State private var pendingDeletion: StudyModule?
 
@@ -38,10 +40,13 @@ struct SidebarView: View {
 
             Section {
                 Label("Heute", systemImage: "sun.max")
+                    .badge(overdueAssignments)
                     .tag(AppDestination.today)
                 Label("Kalender", systemImage: "calendar")
                     .badge(calendar.todayEventCount)
                     .tag(AppDestination.calendar)
+                Label("Noten & ECTS", systemImage: "graduationcap")
+                    .tag(AppDestination.grades)
             }
 
             Section {

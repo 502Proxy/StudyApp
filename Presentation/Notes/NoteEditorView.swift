@@ -18,6 +18,14 @@ struct NoteEditorView: View {
         case preview = "Vorschau"
 
         var id: Self { self }
+
+        var systemImage: String {
+            switch self {
+            case .edit: "pencil"
+            case .split: "rectangle.split.1x2"
+            case .preview: "eye"
+            }
+        }
     }
 
     private enum NoteScope: Hashable {
@@ -90,12 +98,16 @@ struct NoteEditorView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            // Der Bereich kann schmal werden: kurze Beschriftungen, Symbole und schrumpfbare Menüs,
+            // damit nichts über den Rand ragt.
+            HStack(spacing: 8) {
                 Text("Notizen")
                     .font(Theme.Typography.sectionTitle)
                     .foregroundStyle(Theme.textPrimary)
-                Spacer()
-                SaveIndicator(state: viewModel.saveState)
+                    .lineLimit(1)
+                    .layoutPriority(1)
+                Spacer(minLength: 4)
+                SaveIndicator(state: viewModel.saveState, isCompact: true)
                 NoteFontSizeControl()
 
                 Button {
@@ -121,20 +133,51 @@ struct NoteEditorView: View {
                         Label("Alle Notizen exportieren", systemImage: "doc.on.doc")
                     }
                     .disabled(!viewModel.hasExportableNotes)
+
+                    Divider()
+
+                    Button {
+                        viewModel.saveNow()
+                        if let document = viewModel.printableCurrentNote() {
+                            PrintActions.exportPDF(document, into: $exportFile) { viewModel.errorMessage = $0 }
+                        }
+                    } label: {
+                        Label("Aktuelle Notiz als PDF …", systemImage: "doc.richtext")
+                    }
+                    .disabled(viewModel.currentNoteForExport() == nil)
+
+                    Button {
+                        viewModel.saveNow()
+                        PrintActions.exportPDF(viewModel.printableAllNotes(), into: $exportFile) { viewModel.errorMessage = $0 }
+                    } label: {
+                        Label("Alle Notizen als PDF …", systemImage: "doc.on.doc.fill")
+                    }
+                    .disabled(!viewModel.hasExportableNotes)
+
+                    Button {
+                        viewModel.saveNow()
+                        PrintActions.print(viewModel.printableAllNotes()) { viewModel.errorMessage = $0 }
+                    } label: {
+                        Label("Drucken …", systemImage: "printer")
+                    }
+                    .disabled(!viewModel.hasExportableNotes)
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
                 .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
                 .help("Notizen exportieren")
             }
 
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 Picker("Notiz für", selection: selectedScope) {
-                    Text("Gesamtdokument").tag(NoteScope.document)
-                    Text("Seite \(currentPageNumber)").tag(NoteScope.page)
+                    Label("Gesamtdokument", systemImage: "doc").tag(NoteScope.document)
+                    Label("Seite \(currentPageNumber)", systemImage: "doc.text").tag(NoteScope.page)
                 }
                 .pickerStyle(.menu)
-                .fixedSize()
+                .labelsHidden()
+                .frame(minWidth: 90, maxWidth: 170)
                 .help("Zwischen dokumentweiten und seitenspezifischen Notizen wechseln")
 
                 Picker("Format", selection: $viewModel.format) {
@@ -143,21 +186,30 @@ struct NoteEditorView: View {
                     }
                 }
                 .pickerStyle(.menu)
-                .fixedSize()
+                .labelsHidden()
+                .frame(minWidth: 80, maxWidth: 140)
+                .help("Format der Notiz")
+
+                Spacer(minLength: 0)
 
                 if viewModel.format.hasPreview {
                     Picker("Ansicht", selection: $mode) {
                         ForEach(ViewMode.allCases) { viewMode in
-                            Text(viewMode.rawValue).tag(viewMode)
+                            Image(systemName: viewMode.systemImage)
+                                .help(viewMode.rawValue)
+                                .tag(viewMode)
                         }
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
+                    .fixedSize()
+                    .help("Text, beides oder nur Vorschau")
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.surface)
     }
 

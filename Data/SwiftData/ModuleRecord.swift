@@ -9,13 +9,18 @@ final class ModuleRecord {
     var code: String
     var colorRaw: String
     var createdAt: Date
+    /// Optional, damit bestehende Datenbanken per leichtgewichtiger Migration übernommen werden.
+    var credits: Double?
+    var grade: Double?
 
-    init(id: UUID, name: String, code: String, colorRaw: String, createdAt: Date) {
+    init(id: UUID, name: String, code: String, colorRaw: String, createdAt: Date, credits: Double? = nil, grade: Double? = nil) {
         self.id = id
         self.name = name
         self.code = code
         self.colorRaw = colorRaw
         self.createdAt = createdAt
+        self.credits = credits
+        self.grade = grade
     }
 }
 
@@ -26,7 +31,9 @@ extension ModuleRecord {
             name: module.name,
             code: module.code,
             colorRaw: module.color.rawValue,
-            createdAt: module.createdAt
+            createdAt: module.createdAt,
+            credits: module.credits,
+            grade: module.grade
         )
     }
 
@@ -36,7 +43,9 @@ extension ModuleRecord {
             name: name,
             code: code,
             color: ModuleColor(rawValue: colorRaw) ?? .violet,
-            createdAt: createdAt
+            createdAt: createdAt,
+            credits: credits,
+            grade: grade
         )
     }
 
@@ -44,5 +53,7 @@ extension ModuleRecord {
         name = module.name
         code = module.code
         colorRaw = module.color.rawValue
+        credits = module.credits
+        grade = module.grade
     }
 }

@@ -28,6 +28,10 @@ struct ModuleEditorSheet: View {
             Form {
                 TextField("Name", text: $draft.name)
                 TextField("Kürzel (optional)", text: $draft.code)
+                HStack(spacing: 16) {
+                    TextField("ECTS", text: $draft.creditsText, prompt: Text("z. B. 6"))
+                    TextField("Note", text: $draft.gradeText, prompt: Text("z. B. 1,7"))
+                }
 
                 LabeledContent("Farbe") {
                     HStack(spacing: 10) {

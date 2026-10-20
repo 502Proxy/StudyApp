@@ -4,6 +4,7 @@ import Foundation
 enum AppDestination: Hashable {
     case today
     case calendar
+    case grades
     case module(UUID)
 }
 
@@ -25,6 +26,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
     case overview
     case slides
     case notes
+    case assignments
     case flashcards
     case studySheets
 
@@ -35,6 +37,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
         case .overview: "Übersicht"
         case .slides: "Folien"
         case .notes: "Notizen"
+        case .assignments: "Aufgaben"
         case .flashcards: "Karteikarten"
         case .studySheets: "Lernzettel"
         }
@@ -45,6 +48,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
         case .overview: "square.grid.2x2"
         case .slides: "doc.richtext"
         case .notes: "note.text"
+        case .assignments: "checklist"
         case .flashcards: "rectangle.stack"
         case .studySheets: "doc.text"
         }
@@ -58,6 +62,7 @@ struct NavigationLocation: Hashable {
 
     static let calendar = NavigationLocation(destination: .calendar, section: nil)
     static let today = NavigationLocation(destination: .today, section: nil)
+    static let grades = NavigationLocation(destination: .grades, section: nil)
 
     static func module(_ id: UUID, section: ModuleSection = .overview) -> NavigationLocation {
         NavigationLocation(destination: .module(id), section: section)

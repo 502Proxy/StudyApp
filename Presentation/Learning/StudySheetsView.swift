@@ -3,6 +3,7 @@ import SwiftUI
 struct StudySheetsView: View {
     @Bindable var viewModel: LearningViewModel
     @State private var pendingDeletion: StudySheet?
+    @State private var exportFile: NoteExportFile?
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
 
     var body: some View {
@@ -68,7 +69,25 @@ struct StudySheetsView: View {
                                         .foregroundStyle(Theme.textSecondary)
                                 }
                                 Spacer()
+                                Button {
+                                    PrintActions.exportPDF(viewModel.printableStudySheet(sheet), into: $exportFile) {
+                                        viewModel.errorMessage = $0
+                                    }
+                                } label: {
+                                    Label("Als PDF", systemImage: "doc.richtext")
+                                }
+                                .help("Lernzettel als PDF sichern")
                                 Menu {
+                                    Button("Drucken …", systemImage: "printer") {
+                                        PrintActions.print(viewModel.printableStudySheet(sheet)) { viewModel.errorMessage = $0 }
+                                    }
+                                    Button("Als Markdown-Datei …", systemImage: "doc.text") {
+                                        exportFile = NoteExportFile(
+                                            fileName: NoteExportFormatting.safeFileName(sheet.title) + ".md",
+                                            text: sheet.content
+                                        )
+                                    }
+                                    Divider()
                                     Button("Löschen", systemImage: "trash", role: .destructive) {
                                         pendingDeletion = sheet
                                     }
@@ -93,6 +112,7 @@ struct StudySheetsView: View {
         }
         .background(Theme.background)
         .task { viewModel.load() }
+        .noteExporter(file: $exportFile) { viewModel.errorMessage = $0 }
         .confirmationDialog(
             "Lernzettel löschen?",
             isPresented: Binding(

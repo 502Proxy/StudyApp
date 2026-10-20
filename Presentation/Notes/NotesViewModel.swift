@@ -195,6 +195,22 @@ final class NotesViewModel {
         return result.sorted(by: Self.noteOrder)
     }
 
+    func printableCurrentNote() -> PrintableDocument? {
+        guard let note = currentNoteForExport() else { return nil }
+        let page = note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument"
+        return .note(note, title: "\(document.title) – \(page)", subtitle: "Notiz zu den Folien · \(Date().formatted(date: .long, time: .omitted))")
+    }
+
+    func printableAllNotes() -> PrintableDocument {
+        .notes(
+            title: "Notizen: \(document.title)",
+            subtitle: "Stand \(Date().formatted(date: .long, time: .omitted))",
+            sections: notesForExport().map { note in
+                (note.pageNumber.map { "Seite \($0)" } ?? "Gesamtdokument", note)
+            }
+        )
+    }
+
     func exportAllNotesAsMarkdown() -> String {
         NoteExportFormatting.markdown(
             title: "Notizen: \(document.title)",

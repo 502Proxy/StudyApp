@@ -11,6 +11,7 @@ final class AppContainer {
     let flashcardRepository: any FlashcardRepository
     let studySheetRepository: any StudySheetRepository
     let studyCalendarRepository: any StudyCalendarRepository
+    let assignmentRepository: any AssignmentRepository
     let calendarFeedLoader: any CalendarFeedLoader
     let calendarEventParser: any CalendarEventParsing
     let fileStorage: any FileStorage
@@ -29,6 +30,7 @@ final class AppContainer {
         flashcardRepository = SwiftDataFlashcardRepository(context: context)
         studySheetRepository = SwiftDataStudySheetRepository(context: context)
         studyCalendarRepository = SwiftDataStudyCalendarRepository(context: context)
+        assignmentRepository = SwiftDataAssignmentRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
@@ -57,8 +59,13 @@ final class AppContainer {
             studySheetRepository: studySheetRepository,
             fileStorage: fileStorage,
             calendarRepository: studyCalendarRepository,
+            assignmentRepository: assignmentRepository,
             settings: preferences
         )
+    }
+
+    func makeAssignmentsViewModel() -> AssignmentsViewModel {
+        AssignmentsViewModel(repository: assignmentRepository)
     }
 
     func makeStudyCalendarViewModel() -> StudyCalendarViewModel {

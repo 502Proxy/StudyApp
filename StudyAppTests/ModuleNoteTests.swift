@@ -51,7 +51,10 @@ struct ModuleNoteTests {
         session.content = "Inhalt"
         session.noteDidChange()
         #expect(session.saveState == .pending)
-        try await Task.sleep(for: .milliseconds(80))
+        // Auf den Autosave warten, ohne von der Auslastung der Testmaschine abzuhängen.
+        for _ in 0..<100 where session.saveState != .saved {
+            try await Task.sleep(for: .milliseconds(20))
+        }
 
         #expect(session.saveState == .saved)
         #expect(reported?.content == "Inhalt")
