@@ -60,8 +60,9 @@ struct TodayView: View {
                 if let average = GradeSummary(modules: today.modules).weightedAverage {
                     Pill(text: "Ø \(GradeScale.format(average))", systemImage: "graduationcap", tint: Theme.accent)
                 }
-                if !today.modules.isEmpty {
-                    Pill(text: today.modules.count == 1 ? "1 Modul" : "\(today.modules.count) Module", systemImage: "books.vertical")
+                let activeCount = today.modules.filter { !$0.isArchived }.count
+                if activeCount > 0 {
+                    Pill(text: activeCount == 1 ? "1 Modul" : "\(activeCount) Module", systemImage: "books.vertical")
                 }
             }
             .padding(.top, 4)
@@ -288,7 +289,9 @@ struct TodayView: View {
     // MARK: Module
 
     private var modulesGrid: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        // Archivierte Semester gehören nicht mehr auf die Startseite.
+        let modules = today.modules.filter { !$0.isArchived }
+        return VStack(alignment: .leading, spacing: 14) {
             SectionHeader("Deine Module", systemImage: "books.vertical") {
                 Button(action: onCreateModule) {
                     Label("Neues Modul", systemImage: "plus")
@@ -296,7 +299,7 @@ struct TodayView: View {
                 .buttonStyle(.link)
                 .font(Theme.Typography.small)
             }
-            if today.modules.isEmpty {
+            if modules.isEmpty {
                 Text("Noch keine Module. Sie entstehen automatisch, sobald du deinen Stundenplan importierst.")
                     .font(Theme.Typography.caption)
                     .foregroundStyle(Theme.textSecondary)
@@ -304,7 +307,7 @@ struct TodayView: View {
                     .card()
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 14)], spacing: 14) {
-                    ForEach(today.modules) { module in
+                    ForEach(modules) { module in
                         Button {
                             onOpenModule(module.id, .overview, nil)
                         } label: {

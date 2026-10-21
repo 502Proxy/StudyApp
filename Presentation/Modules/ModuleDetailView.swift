@@ -14,6 +14,7 @@ struct ModuleDetailView: View {
     let liveProgress: Double
     /// Bezugszeit der Kalenderuhr, damit „läuft gerade“ überall gleich bewertet wird.
     let referenceDate: Date
+    let slidesRevision: Int
     let assignments: AssignmentsViewModel
     let onShowEvent: (StudyCalendarEvent) -> Void
     let onEdit: () -> Void
@@ -29,6 +30,7 @@ struct ModuleDetailView: View {
         liveEvent: StudyCalendarEvent?,
         liveProgress: Double,
         referenceDate: Date,
+        slidesRevision: Int = 0,
         assignments: AssignmentsViewModel,
         makeSlidesViewModel: SlidesViewModelFactory,
         makeLearningViewModel: LearningViewModelFactory,
@@ -42,6 +44,7 @@ struct ModuleDetailView: View {
         self.liveEvent = liveEvent
         self.liveProgress = liveProgress
         self.referenceDate = referenceDate
+        self.slidesRevision = slidesRevision
         self.assignments = assignments
         self.onShowEvent = onShowEvent
         self.onEdit = onEdit
@@ -93,6 +96,11 @@ struct ModuleDetailView: View {
         }
         .onChange(of: pendingIntent) { _, intent in
             handle(intent)
+        }
+        .onChange(of: slidesRevision) {
+            // Aus Stud.IP geladene Folien erscheinen, ohne das geöffnete PDF zu schließen.
+            slidesViewModel.load()
+            learningViewModel.load()
         }
         .onChange(of: section) { _, newSection in
             // Zahlen der Übersicht aktuell halten, z. B. nach dem Schreiben von Notizen im Reader.

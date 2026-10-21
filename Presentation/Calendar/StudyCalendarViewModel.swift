@@ -329,16 +329,21 @@ final class StudyCalendarViewModel {
         }
     }
 
-    /// Abonnements, deren letzter Abgleich länger zurückliegt, werden beim Start aktualisiert.
-    static let refreshInterval: TimeInterval = 3 * 3_600
+    /// Abonnements, deren letzter Abgleich länger zurückliegt, werden automatisch neu geladen.
+    static let refreshInterval: TimeInterval = 3_600
+    /// Mindestabstand zwischen automatischen Versuchen, damit ohne Netz nicht ständig neu geladen wird.
+    static let retryInterval: TimeInterval = 10 * 60
+    @ObservationIgnored private var lastAutomaticRefresh: Date?
 
     /// Aktualisiert Abonnements, deren letzter Abgleich länger als `refreshInterval` her ist.
-    /// Läuft beim Start im Hintergrund; Fehler (z. B. offline) bleiben still.
+    /// Läuft beim Start, beim Aktivieren der App und regelmäßig im Hintergrund; Fehler (z. B. offline) bleiben still.
     func refreshStaleSubscriptions() async {
         guard settings.autoRefreshCalendars, !isSyncing else { return }
+        if let last = lastAutomaticRefresh, now().timeIntervalSince(last) < Self.retryInterval { return }
         let threshold = now().addingTimeInterval(-Self.refreshInterval)
         let stale = sources.filter { $0.kind == .subscription && ($0.lastSyncedAt ?? .distantPast) < threshold }
         guard !stale.isEmpty else { return }
+        lastAutomaticRefresh = now()
         isSyncing = true
         defer { isSyncing = false }
         var updated = 0

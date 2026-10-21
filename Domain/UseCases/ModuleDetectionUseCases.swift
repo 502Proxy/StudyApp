@@ -159,7 +159,8 @@ struct ApplyModuleCandidatesUseCase {
                     code: candidate.code.trimmingCharacters(in: .whitespacesAndNewlines),
                     color: Self.nextColor(for: modules),
                     // Kleiner Versatz, damit die Reihenfolge der Seitenleiste stabil bleibt.
-                    createdAt: timestamp.addingTimeInterval(Double(offset) / 1_000)
+                    createdAt: timestamp.addingTimeInterval(Double(offset) / 1_000),
+                    semester: Semester(containing: candidate.firstStart)
                 )
                 try moduleRepository.add(module)
                 modules.append(module)

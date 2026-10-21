@@ -12,8 +12,16 @@ final class ModuleRecord {
     /// Optional, damit bestehende Datenbanken per leichtgewichtiger Migration übernommen werden.
     var credits: Double?
     var grade: Double?
+    /// `Semester.rawValue`, z. B. „2025W“. Fehlt bei älteren Datensätzen.
+    var semesterRaw: String?
+    var isArchived: Bool?
+    var studIPCourseID: String?
 
-    init(id: UUID, name: String, code: String, colorRaw: String, createdAt: Date, credits: Double? = nil, grade: Double? = nil) {
+    init(
+        id: UUID, name: String, code: String, colorRaw: String, createdAt: Date,
+        credits: Double? = nil, grade: Double? = nil,
+        semesterRaw: String? = nil, isArchived: Bool? = nil, studIPCourseID: String? = nil
+    ) {
         self.id = id
         self.name = name
         self.code = code
@@ -21,6 +29,9 @@ final class ModuleRecord {
         self.createdAt = createdAt
         self.credits = credits
         self.grade = grade
+        self.semesterRaw = semesterRaw
+        self.isArchived = isArchived
+        self.studIPCourseID = studIPCourseID
     }
 }
 
@@ -33,7 +44,10 @@ extension ModuleRecord {
             colorRaw: module.color.rawValue,
             createdAt: module.createdAt,
             credits: module.credits,
-            grade: module.grade
+            grade: module.grade,
+            semesterRaw: module.semester.rawValue,
+            isArchived: module.isArchived,
+            studIPCourseID: module.studIPCourseID
         )
     }
 
@@ -45,7 +59,10 @@ extension ModuleRecord {
             color: ModuleColor(rawValue: colorRaw) ?? .violet,
             createdAt: createdAt,
             credits: credits,
-            grade: grade
+            grade: grade,
+            semester: semesterRaw.flatMap(Semester.init(rawValue:)),
+            isArchived: isArchived ?? false,
+            studIPCourseID: studIPCourseID
         )
     }
 
@@ -55,5 +72,8 @@ extension ModuleRecord {
         colorRaw = module.color.rawValue
         credits = module.credits
         grade = module.grade
+        semesterRaw = module.semester.rawValue
+        isArchived = module.isArchived
+        studIPCourseID = module.studIPCourseID
     }
 }

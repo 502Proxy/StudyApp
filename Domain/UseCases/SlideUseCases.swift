@@ -22,23 +22,59 @@ struct ImportSlideDocumentUseCase {
     /// Schlägt ein Schritt fehl, wird die kopierte Datei wieder entfernt.
     @discardableResult
     func callAsFunction(from sourceURL: URL, moduleID: UUID) throws -> SlideDocument {
+        try importDocument(
+            moduleID: moduleID,
+            title: sourceURL.deletingPathExtension().lastPathComponent,
+            displayName: sourceURL.lastPathComponent
+        ) { fileName in
+            try storage.store(copyOf: sourceURL, as: fileName)
+        }
+    }
+
+    /// Legt eine heruntergeladene PDF an, z. B. aus Stud.IP.
+    @discardableResult
+    func callAsFunction(
+        data: Data,
+        title: String,
+        moduleID: UUID,
+        remoteID: String? = nil,
+        remoteVersion: String? = nil
+    ) throws -> SlideDocument {
+        try importDocument(
+            moduleID: moduleID, title: title, displayName: title,
+            remoteID: remoteID, remoteVersion: remoteVersion
+        ) { fileName in
+            try storage.write(data, as: fileName)
+        }
+    }
+
+    private func importDocument(
+        moduleID: UUID,
+        title: String,
+        displayName: String,
+        remoteID: String? = nil,
+        remoteVersion: String? = nil,
+        writeFile: (String) throws -> Void
+    ) throws -> SlideDocument {
         let id = UUID()
         let fileName = "\(id.uuidString).pdf"
 
-        try storage.store(copyOf: sourceURL, as: fileName)
+        try writeFile(fileName)
         do {
             guard let pages = inspector.pageCount(at: storage.url(for: fileName)), pages > 0 else {
-                throw SlideError.invalidPDF(sourceURL.lastPathComponent)
+                throw SlideError.invalidPDF(displayName)
             }
 
-            let title = sourceURL.deletingPathExtension().lastPathComponent.trimmed
+            let cleanTitle = title.trimmed
             let document = SlideDocument(
                 id: id,
                 moduleID: moduleID,
-                title: title.isEmpty ? "Folien" : title,
+                title: cleanTitle.isEmpty ? "Folien" : cleanTitle,
                 fileName: fileName,
                 pageCount: pages,
-                importedAt: Date()
+                importedAt: Date(),
+                remoteID: remoteID,
+                remoteVersion: remoteVersion
             )
             try repository.add(document)
             return document

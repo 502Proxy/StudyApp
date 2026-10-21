@@ -17,6 +17,14 @@ struct ModuleEditorSheet: View {
         !draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// Vier Jahre zurück und ein Semester voraus, plus das gespeicherte, falls es außerhalb liegt.
+    private var semesterChoices: [Semester] {
+        let current = Semester(containing: .now)
+        var lower = current
+        for _ in 0..<8 { lower = lower.previous }
+        return Semester.range(from: min(lower, draft.semester), to: max(current.next, draft.semester))
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Text(mode.title)
@@ -31,6 +39,14 @@ struct ModuleEditorSheet: View {
                 HStack(spacing: 16) {
                     TextField("ECTS", text: $draft.creditsText, prompt: Text("z. B. 6"))
                     TextField("Note", text: $draft.gradeText, prompt: Text("z. B. 1,7"))
+                }
+                Picker("Semester", selection: $draft.semester) {
+                    ForEach(semesterChoices, id: \.self) { semester in
+                        Text(semester.longTitle).tag(semester)
+                    }
+                }
+                if case .edit = mode {
+                    Toggle("Archiviert", isOn: $draft.isArchived)
                 }
 
                 LabeledContent("Farbe") {

@@ -8,7 +8,7 @@ protocol StudySettingsStore: AnyObject {
     var autoCreateModules: Bool { get set }
     /// Beim Öffnen der App die laufende Vorlesung anzeigen.
     var autoOpenLecture: Bool { get set }
-    /// Abonnierte Kalender beim Start aktualisieren.
+    /// Abonnierte Kalender beim Start und danach stündlich aktualisieren.
     var autoRefreshCalendars: Bool { get set }
     /// So viele Minuten vor Beginn gilt eine Vorlesung bereits als „jetzt“.
     var lectureLeadMinutes: Int { get set }

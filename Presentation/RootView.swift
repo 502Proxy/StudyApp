@@ -6,10 +6,12 @@ struct RootView: View {
     let calendarViewModel: StudyCalendarViewModel
     let todayViewModel: TodayViewModel
     @Bindable var assignmentsViewModel: AssignmentsViewModel
+    @Bindable var studIPViewModel: StudIPViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
 
     @State private var isDetectingModules = false
+    @State private var isLinkingStudIP = false
 
     var body: some View {
         NavigationSplitView {
@@ -19,7 +21,9 @@ struct RootView: View {
                 calendar: calendarViewModel,
                 dueCounts: todayViewModel.dueCounts,
                 overdueAssignments: assignmentsViewModel.overdueCount,
-                onDetectModules: { isDetectingModules = true }
+                studIP: studIPViewModel,
+                onDetectModules: { isDetectingModules = true },
+                onLinkStudIP: { isLinkingStudIP = true }
             )
             .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 340)
         } detail: {
@@ -56,6 +60,9 @@ struct RootView: View {
         .sheet(isPresented: $isDetectingModules) {
             ModuleDetectionSheet(viewModel: calendarViewModel)
         }
+        .sheet(isPresented: $isLinkingStudIP) {
+            StudIPCoursesSheet(viewModel: studIPViewModel, modules: viewModel.activeModules)
+        }
         .onChange(of: viewModel.modules) { _, modules in
             navigation.prune(validModuleIDs: Set(modules.map(\.id)))
             calendarViewModel.load()
@@ -66,15 +73,19 @@ struct RootView: View {
             if destination == .today || destination == nil { todayViewModel.load() }
         }
         .overlay(alignment: .bottom) {
-            if navigation.destination != .calendar, let message = calendarViewModel.statusMessage {
+            if let message = studIPViewModel.statusMessage {
+                StatusToast(message: message, systemImage: "arrow.down.doc")
+            } else if navigation.destination != .calendar, let message = calendarViewModel.statusMessage {
                 StatusToast(message: message, systemImage: "wand.and.stars")
             }
         }
         .animation(.default, value: calendarViewModel.statusMessage)
-        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage) {
+        .animation(.default, value: studIPViewModel.statusMessage)
+        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage ?? studIPViewModel.errorMessage) {
             viewModel.errorMessage = nil
             todayViewModel.errorMessage = nil
             assignmentsViewModel.errorMessage = nil
+            studIPViewModel.errorMessage = nil
         }
     }
 
@@ -121,6 +132,7 @@ struct RootView: View {
                     liveEvent: live,
                     liveProgress: live.map(calendarViewModel.progress(of:)) ?? 0,
                     referenceDate: calendarViewModel.referenceDate,
+                    slidesRevision: studIPViewModel.slidesRevision,
                     assignments: assignmentsViewModel,
                     makeSlidesViewModel: makeSlidesViewModel,
                     makeLearningViewModel: makeLearningViewModel,

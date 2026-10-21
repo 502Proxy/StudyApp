@@ -9,7 +9,7 @@ struct GradesView: View {
         let summary = viewModel.gradeSummary
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.section) {
-                PageHeader("Noten & ECTS", subtitle: "Gewichtet nach Leistungspunkten · bestanden bis 4,0")
+                PageHeader("Noten & ECTS", subtitle: "Gewichtet nach Leistungspunkten · bestanden bis 4,0 · archivierte Semester zählen mit")
 
                 HStack(spacing: 14) {
                     metric(
@@ -37,15 +37,20 @@ struct GradesView: View {
                     )
                     .frame(minHeight: 260)
                 } else {
-                    VStack(spacing: 0) {
-                        header
-                        ForEach(viewModel.modules) { module in
-                            Divider()
-                            GradeRow(module: module, viewModel: viewModel, onOpen: { onOpenModule(module.id) })
-                                .id("\(module.id)-\(module.credits ?? -1)-\(module.grade ?? -1)")
+                    ForEach(SemesterOverview.groups(viewModel.modules)) { group in
+                        VStack(alignment: .leading, spacing: 10) {
+                            semesterHeader(group)
+                            VStack(spacing: 0) {
+                                header
+                                ForEach(group.modules) { module in
+                                    Divider()
+                                    GradeRow(module: module, viewModel: viewModel, onOpen: { onOpenModule(module.id) })
+                                        .id("\(module.id)-\(module.credits ?? -1)-\(module.grade ?? -1)")
+                                }
+                            }
+                            .card(padding: 0)
                         }
                     }
-                    .card(padding: 0)
 
                     Text("Tipp: Werte mit Komma oder Punkt eingeben und mit ↩ bestätigen. Ein leeres Feld entfernt den Wert. Module mit 5,0 zählen nicht zum Schnitt und nicht zu den erreichten ECTS.")
                         .font(Theme.Typography.small)
@@ -58,6 +63,30 @@ struct GradesView: View {
         }
         .background(Theme.background)
         .navigationTitle("Noten & ECTS")
+    }
+
+    /// Semestertitel mit Schnitt und ECTS nur dieses Semesters; der Gesamtschnitt oben umfasst alle.
+    private func semesterHeader(_ group: SemesterOverview.Group) -> some View {
+        let summary = GradeSummary(modules: group.modules)
+        let isArchived = group.modules.allSatisfy(\.isArchived)
+        return HStack(spacing: 10) {
+            Text(group.semester.longTitle)
+                .font(Theme.Typography.headline)
+                .foregroundStyle(Theme.textPrimary)
+            if isArchived {
+                Pill(text: "Archiviert", systemImage: "archivebox", tint: Theme.textSecondary)
+            }
+            Spacer()
+            if let average = summary.weightedAverage {
+                Text("Ø \(GradeScale.format(average))")
+                    .font(Theme.Typography.caption.monospacedDigit())
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Text("\(GradeScale.formatCredits(summary.earnedCredits)) / \(GradeScale.formatCredits(summary.plannedCredits)) ECTS")
+                .font(Theme.Typography.caption.monospacedDigit())
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .padding(.horizontal, 4)
     }
 
     private var header: some View {
