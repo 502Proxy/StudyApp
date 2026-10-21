@@ -1,0 +1,22 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>StudyApp</title>
+        <item>
+            <title>1.3</title>
+            <pubDate>Wed, 21 Oct 2026 00:04:37 +0200</pubDate>
+            <sparkle:version>202610210003</sparkle:version>
+            <sparkle:shortVersionString>1.3</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp-1.3.dmg" length="6393462" type="application/octet-stream" sparkle:edSignature="DQkUl4gY+k7YHuvYGBSymWBumBkZ8niBY/4QqcIYkh+KeQ30rAUnKJul3ekhg6aIXuE8umbhzrqT7zvnNIEHAQ=="/>
+        </item>
+        <item>
+            <title>1.2</title>
+            <pubDate>Wed, 21 Oct 2026 00:00:39 +0200</pubDate>
+            <sparkle:version>202610202359</sparkle:version>
+            <sparkle:shortVersionString>1.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp-1.2.dmg" length="6393479" type="application/octet-stream"/>
+        </item>
+    </channel>
+</rss>
