@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     let settings: any StudySettingsStore
     let updater: AppUpdater
+    let studIP: StudIPViewModel
 
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
@@ -37,7 +38,7 @@ struct SettingsView: View {
 
             Section {
                 Toggle("Module automatisch aus dem Kalender anlegen", isOn: $autoCreateModules)
-                Toggle("Abonnierte Kalender beim Start aktualisieren", isOn: $autoRefreshCalendars)
+                Toggle("Abonnierte Kalender automatisch aktualisieren (stündlich)", isOn: $autoRefreshCalendars)
                 Button("Abgelehnte Veranstaltungen wieder vorschlagen (\(ignoredCount))") {
                     settings.ignoredCourseKeys = []
                     ignoredCount = 0
@@ -48,6 +49,8 @@ struct SettingsView: View {
             } footer: {
                 Text("Wiederkehrende Lehrveranstaltungen (Vorlesung, Übung, Tutorium …) werden als Modul angelegt und alle ihre Termine verknüpft. Gelöschte Module werden nicht erneut erstellt.")
             }
+
+            StudIPSettingsSection(viewModel: studIP)
 
             Section {
                 LabeledContent("Installiert", value: AppUpdater.versionText())

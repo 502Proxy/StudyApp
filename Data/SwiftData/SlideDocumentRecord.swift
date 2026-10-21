@@ -11,14 +11,22 @@ final class SlideDocumentRecord {
     var fileName: String
     var pageCount: Int
     var importedAt: Date
+    /// Optional, damit bestehende Datenbanken per leichtgewichtiger Migration übernommen werden.
+    var remoteID: String?
+    var remoteVersion: String?
 
-    init(id: UUID, moduleID: UUID, title: String, fileName: String, pageCount: Int, importedAt: Date) {
+    init(
+        id: UUID, moduleID: UUID, title: String, fileName: String, pageCount: Int, importedAt: Date,
+        remoteID: String? = nil, remoteVersion: String? = nil
+    ) {
         self.id = id
         self.moduleID = moduleID
         self.title = title
         self.fileName = fileName
         self.pageCount = pageCount
         self.importedAt = importedAt
+        self.remoteID = remoteID
+        self.remoteVersion = remoteVersion
     }
 }
 
@@ -30,7 +38,9 @@ extension SlideDocumentRecord {
             title: document.title,
             fileName: document.fileName,
             pageCount: document.pageCount,
-            importedAt: document.importedAt
+            importedAt: document.importedAt,
+            remoteID: document.remoteID,
+            remoteVersion: document.remoteVersion
         )
     }
 
@@ -41,7 +51,9 @@ extension SlideDocumentRecord {
             title: title,
             fileName: fileName,
             pageCount: pageCount,
-            importedAt: importedAt
+            importedAt: importedAt,
+            remoteID: remoteID,
+            remoteVersion: remoteVersion
         )
     }
 

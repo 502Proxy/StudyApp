@@ -78,9 +78,16 @@ struct CalendarSourcesSheet: View {
                 }
                 Spacer()
             }
-            Text("Abonnements werden beim Hinzufügen, beim App-Start und über „Aktualisieren“ abgeglichen. Wiederkehrende Termine werden vollständig übernommen; Lehrveranstaltungen werden automatisch zu Modulen.")
+            Text("Abonnements werden beim Hinzufügen, beim App-Start und danach stündlich abgeglichen. Wiederkehrende Termine werden vollständig übernommen; Lehrveranstaltungen werden automatisch zu Modulen.")
                 .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
+            Label {
+                Text("**Stud.IP:** Unter „Planer → Stundenplan“ bzw. „Termine“ findest du „Exportieren“ bzw. „Abonnieren“. Kopiere den dort angezeigten Link und füge ihn oben ein – Raumänderungen und Ausfälle kommen dann automatisch an.")
+            } icon: {
+                Image(systemName: "graduationcap")
+            }
+            .font(.caption)
+            .foregroundStyle(Theme.textSecondary)
         }
     }
 

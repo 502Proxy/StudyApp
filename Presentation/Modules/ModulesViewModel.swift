@@ -10,6 +10,8 @@ struct ModuleDraft {
     /// Freitext, damit „7,5“ oder ein leeres Feld möglich sind.
     var creditsText: String = ""
     var gradeText: String = ""
+    var semester = Semester(containing: .now)
+    var isArchived = false
 }
 
 enum ModuleEditorMode: Identifiable {
@@ -34,7 +36,9 @@ enum ModuleEditorMode: Identifiable {
                 code: module.code,
                 color: module.color,
                 creditsText: module.credits.map { GradeScale.formatCredits($0) } ?? "",
-                gradeText: module.grade.map { GradeScale.format($0) } ?? ""
+                gradeText: module.grade.map { GradeScale.format($0) } ?? "",
+                semester: module.semester,
+                isArchived: module.isArchived
             )
         }
     }
@@ -59,6 +63,7 @@ final class ModulesViewModel {
     private let updateModule: UpdateModuleUseCase
     private let deleteModule: DeleteModuleUseCase
     private let updateGrade: UpdateModuleGradeUseCase
+    private let archiveModules: SetModulesArchivedUseCase
     private let settings: any StudySettingsStore
 
     init(
@@ -77,6 +82,7 @@ final class ModulesViewModel {
         createModule = CreateModuleUseCase(repository: repository)
         updateModule = UpdateModuleUseCase(repository: repository)
         updateGrade = UpdateModuleGradeUseCase(repository: repository)
+        archiveModules = SetModulesArchivedUseCase(repository: repository)
         deleteModule = DeleteModuleUseCase(
             repository: repository,
             slideRepository: slideRepository,
@@ -113,9 +119,12 @@ final class ModulesViewModel {
                 guard let existing = module(withID: id) else {
                     throw ModuleError.notFound
                 }
-                saved = try updateModule(existing, name: draft.name, code: draft.code, color: draft.color)
+                saved = try updateModule(
+                    existing, name: draft.name, code: draft.code, color: draft.color,
+                    semester: draft.semester, isArchived: draft.isArchived
+                )
             } else {
-                saved = try createModule(name: draft.name, code: draft.code, color: draft.color)
+                saved = try createModule(name: draft.name, code: draft.code, color: draft.color, semester: draft.semester)
             }
             saved = try updateGrade(saved, credits: credits, grade: grade)
             // Ein bewusst angelegtes Modul darf wieder mit dem Kalender abgeglichen werden.
@@ -125,6 +134,38 @@ final class ModulesViewModel {
         } catch {
             errorMessage = error.localizedDescription
             return nil
+        }
+    }
+
+    // MARK: Semester-Archiv
+
+    /// Module des laufenden Studiums für Seitenleiste und Startseite.
+    var activeModules: [StudyModule] { modules.filter { !$0.isArchived } }
+
+    var archivedGroups: [SemesterOverview.Group] {
+        SemesterOverview.groups(modules.filter(\.isArchived))
+    }
+
+    /// Vergangene Semester mit noch aktiven Modulen, für den Hinweis „Semester abschließen“.
+    func finishedSemesters(now: Date = .now) -> [Semester] {
+        SemesterOverview.finishedSemestersWithActiveModules(modules, now: now)
+    }
+
+    func setArchived(_ module: StudyModule, _ archived: Bool) {
+        setArchived([module], archived)
+    }
+
+    /// Archiviert alle aktiven Module eines Semesters bzw. holt alle archivierten zurück.
+    func setArchived(semester: Semester, _ archived: Bool) {
+        setArchived(modules.filter { $0.semester == semester }, archived)
+    }
+
+    private func setArchived(_ modules: [StudyModule], _ archived: Bool) {
+        do {
+            try archiveModules(modules, archived: archived)
+            load()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 

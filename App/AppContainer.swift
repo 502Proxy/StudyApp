@@ -16,6 +16,8 @@ final class AppContainer {
     let calendarEventParser: any CalendarEventParsing
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
+    let studIPService: any StudIPService
+    let studIPAccountStore: any StudIPAccountStore
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
 
@@ -34,10 +36,13 @@ final class AppContainer {
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
+        studIPService = StudIPJSONAPIClient()
         if inMemory {
             preferences = InMemoryStudyPreferences()
+            studIPAccountStore = InMemoryStudIPAccountStore()
         } else {
             preferences = UserDefaultsStudyPreferences()
+            studIPAccountStore = KeychainStudIPAccountStore()
         }
 
         if inMemory {
@@ -75,6 +80,16 @@ final class AppContainer {
             feedLoader: calendarFeedLoader,
             parser: calendarEventParser,
             settings: preferences
+        )
+    }
+
+    func makeStudIPViewModel() -> StudIPViewModel {
+        StudIPViewModel(
+            service: studIPService,
+            store: studIPAccountStore,
+            moduleRepository: moduleRepository,
+            slideRepository: slideRepository,
+            importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector)
         )
     }
 

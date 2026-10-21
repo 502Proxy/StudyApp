@@ -10,6 +10,7 @@ struct StudyAppApp: App {
     @State private var todayViewModel: TodayViewModel
     @State private var assignmentsViewModel: AssignmentsViewModel
     @State private var navigation: AppNavigation
+    @State private var studIPViewModel: StudIPViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
 
@@ -21,6 +22,12 @@ struct StudyAppApp: App {
             let today = container.makeTodayViewModel()
             let assignments = container.makeAssignmentsViewModel()
             let navigation = AppNavigation()
+            let studIP = container.makeStudIPViewModel()
+            // Neu verknüpfte Veranstaltungen und geladene Folien sofort in Seitenleiste und Startseite zeigen.
+            studIP.onSlidesChanged = {
+                modules.load()
+                today.load()
+            }
             // Vom Kalender angelegte Module sofort in Seitenleiste und Startseite zeigen.
             calendar.onModulesChanged = {
                 modules.load()
@@ -36,6 +43,7 @@ struct StudyAppApp: App {
             _todayViewModel = State(initialValue: today)
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
+            _studIPViewModel = State(initialValue: studIP)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -49,6 +57,7 @@ struct StudyAppApp: App {
                 calendarViewModel: calendarViewModel,
                 todayViewModel: todayViewModel,
                 assignmentsViewModel: assignmentsViewModel,
+                studIPViewModel: studIPViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -61,8 +70,13 @@ struct StudyAppApp: App {
             .preferredColorScheme(appearance.colorScheme)
             .task { await startUp() }
             .task { await keepClockRunning() }
+            .task { await keepSourcesFresh() }
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
                 autopilot.run(isLaunch: false)
+                Task {
+                    await calendarViewModel.refreshStaleSubscriptions()
+                    autopilot.run(isLaunch: false)
+                }
             }
         }
         .defaultSize(width: 1240, height: 800)
@@ -77,7 +91,7 @@ struct StudyAppApp: App {
         }
 
         Settings {
-            SettingsView(settings: container.preferences, updater: updater)
+            SettingsView(settings: container.preferences, updater: updater, studIP: studIPViewModel)
                 .tint(Theme.accent)
                 .preferredColorScheme(appearance.colorScheme)
         }
@@ -98,6 +112,7 @@ struct StudyAppApp: App {
         // Abonnements im Hintergrund auffrischen; eine dabei neu erkannte Vorlesung wird ebenfalls geöffnet.
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
+        await studIPViewModel.syncIfDue()
     }
 
     /// Hält „läuft gerade“, Fortschrittsbalken und „als Nächstes“ aktuell.
@@ -106,6 +121,16 @@ struct StudyAppApp: App {
             try? await Task.sleep(for: .seconds(30))
             calendarViewModel.tick()
             assignmentsViewModel.tick()
+        }
+    }
+
+    /// Holt geänderte Termine (Raumwechsel, Ausfälle) und neue Folien auch bei durchgehend geöffneter App.
+    /// Läuft getrennt von der Uhr, damit ein langsamer Download die Anzeige nicht aufhält.
+    private func keepSourcesFresh() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(for: .seconds(300))
+            await calendarViewModel.refreshStaleSubscriptions()
+            await studIPViewModel.syncIfDue()
         }
     }
 }
