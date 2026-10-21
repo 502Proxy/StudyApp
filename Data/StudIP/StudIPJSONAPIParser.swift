@@ -27,13 +27,14 @@ enum StudIPJSONAPIParser {
     }
 
     /// ID und Anzeigename aus `users/me`.
-    static func currentUser(_ data: Data) throws -> (id: String, name: String) {
+    static func currentUser(_ data: Data) throws -> (id: String, user: StudIPUser) {
         guard let user = try page(data).resources.first, let id = identifier(user) else {
             throw StudIPError.invalidResponse
         }
         let attributes = user["attributes"] as? [String: Any] ?? [:]
-        let name = string(attributes["formatted-name"]) ?? string(attributes["username"]) ?? id
-        return (id, name)
+        let username = string(attributes["username"]) ?? id
+        let name = string(attributes["formatted-name"]) ?? username
+        return (id, StudIPUser(username: username, displayName: name))
     }
 
     /// Semester-ID → Titel, z. B. „WiSe 2025/26“.

@@ -40,9 +40,26 @@ struct ConnectStudIPUseCase {
         let account = StudIPAccount(serverURL: try StudIPServerURL.normalized(server), username: username.trimmed)
         guard !account.username.isEmpty, !password.isEmpty else { throw StudIPError.unauthorized }
         let credentials = StudIPCredentials(account: account, password: password)
-        let name = try await service.verify(credentials)
+        let user = try await service.verify(credentials)
         try store.save(credentials)
-        return name
+        return user.displayName
+    }
+
+    /// Übernimmt die Sitzung einer Browser-Anmeldung (auch mit Zwei-Faktor-Anmeldung).
+    /// Schlägt fehl, solange die Sitzung noch nicht angemeldet ist.
+    @discardableResult
+    func callAsFunction(server: URL, cookieHeader: String) async throws -> String {
+        let probe = StudIPCredentials(
+            account: StudIPAccount(serverURL: server, username: ""),
+            authorization: .session(cookieHeader: cookieHeader)
+        )
+        let user = try await service.verify(probe)
+        let credentials = StudIPCredentials(
+            account: StudIPAccount(serverURL: server, username: user.username),
+            authorization: probe.authorization
+        )
+        try store.save(credentials)
+        return user.displayName
     }
 }
 
@@ -208,7 +225,7 @@ struct SyncStudIPCoursesUseCase {
 
     /// Ohne Netz oder mit ungültiger Anmeldung lohnt sich kein weiterer Versuch.
     static func isFatal(_ error: StudIPError) -> Bool {
-        error == .unauthorized || error == .offline
+        error == .unauthorized || error == .sessionExpired || error == .offline
     }
 
     /// Je Stud.IP-Datei der zuletzt geladene Foliensatz.

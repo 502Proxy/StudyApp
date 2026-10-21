@@ -4,6 +4,7 @@ enum StudIPError: LocalizedError, Equatable {
     case notConnected
     case invalidServerURL
     case unauthorized
+    case sessionExpired
     case notFound
     case server(statusCode: Int)
     case invalidResponse
@@ -13,7 +14,8 @@ enum StudIPError: LocalizedError, Equatable {
         switch self {
         case .notConnected: "Stud.IP ist noch nicht verbunden. Melde dich in den Einstellungen an."
         case .invalidServerURL: "Bitte gib die Adresse deines Stud.IP an, z. B. https://elearning.uni-oldenburg.de."
-        case .unauthorized: "Stud.IP hat die Anmeldung abgelehnt. Prüfe Nutzername und Passwort."
+        case .unauthorized: "Stud.IP hat die Anmeldung abgelehnt. Prüfe Nutzername und Passwort – mit Zwei-Faktor-Anmeldung nutze „Im Browser anmelden“."
+        case .sessionExpired: "Die Stud.IP-Sitzung ist abgelaufen. Melde dich in den Einstellungen erneut an."
         case .notFound: "Stud.IP hat die Anfrage nicht gefunden. Ist die JSON:API auf diesem Server freigeschaltet?"
         case .server(let code): "Der Stud.IP-Server hat mit Status \(code) geantwortet."
         case .invalidResponse: "Die Antwort von Stud.IP war unerwartet. Unterstützt der Server die JSON:API?"
@@ -25,8 +27,8 @@ enum StudIPError: LocalizedError, Equatable {
 /// Port zur Stud.IP-JSON:API. Die Implementierung liegt in der Data-Schicht.
 @MainActor
 protocol StudIPService {
-    /// Prüft die Zugangsdaten und liefert den Anzeigenamen der angemeldeten Person.
-    func verify(_ credentials: StudIPCredentials) async throws -> String
+    /// Prüft die Zugangsdaten und liefert die angemeldete Person.
+    func verify(_ credentials: StudIPCredentials) async throws -> StudIPUser
     func courses(_ credentials: StudIPCredentials) async throws -> [StudIPCourse]
     func files(inCourse courseID: String, _ credentials: StudIPCredentials) async throws -> [StudIPFile]
     func download(_ file: StudIPFile, _ credentials: StudIPCredentials) async throws -> Data

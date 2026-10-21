@@ -15,6 +15,8 @@ final class StudIPViewModel {
     private(set) var isSyncing = false
     private(set) var lastSync: Date?
     private(set) var statusMessage: String?
+    /// Die Browser-Sitzung ist abgelaufen; Abgleiche pausieren bis zur erneuten Anmeldung.
+    private(set) var sessionExpired = false
     /// Erhöht sich nach jedem Abgleich mit neuen Folien oder Dateien, damit offene Module ihre Listen neu laden.
     private(set) var slidesRevision = 0
     var errorMessage: String?
@@ -24,6 +26,12 @@ final class StudIPViewModel {
     }
 
     var isConnected: Bool { account != nil }
+    var usesBrowserLogin: Bool { store.load()?.usesSession ?? false }
+
+    /// Adresse für die Browser-Anmeldung: der bisherige Server oder der der Uni Oldenburg.
+    var loginServer: URL {
+        account?.serverURL ?? (try? StudIPServerURL.normalized(Self.defaultServer)) ?? URL(string: Self.defaultServer)!
+    }
 
     /// Wird nach geladenen Folien aufgerufen, z. B. um Zähler auf der Startseite zu aktualisieren.
     @ObservationIgnored var onSlidesChanged: (() -> Void)?
@@ -71,8 +79,21 @@ final class StudIPViewModel {
     /// Fehler werden geworfen, damit das Formular sie direkt anzeigen kann.
     func connect(server: String, username: String, password: String) async throws {
         let name = try await connectUseCase(server: server, username: username, password: password)
+        didConnect(name)
+    }
+
+    /// Prüft nach jedem Seitenaufruf im Anmeldefenster, ob die Sitzung angemeldet ist.
+    /// - Returns: `true`, sobald die Anmeldung übernommen wurde.
+    func connect(server: URL, cookieHeader: String) async -> Bool {
+        guard let name = try? await connectUseCase(server: server, cookieHeader: cookieHeader) else { return false }
+        didConnect(name)
+        return true
+    }
+
+    private func didConnect(_ name: String) {
         account = store.load()?.account
         courses = []
+        sessionExpired = false
         announce("Mit Stud.IP verbunden als \(name).")
     }
 
@@ -81,6 +102,7 @@ final class StudIPViewModel {
         account = nil
         courses = []
         lastSync = nil
+        sessionExpired = false
     }
 
     // MARK: Veranstaltungen
@@ -93,6 +115,7 @@ final class StudIPViewModel {
         do {
             courses = try await service.courses(credentials).sorted(by: Self.newestFirst)
         } catch {
+            noteSessionExpiry(error)
             errorMessage = error.localizedDescription
         }
     }
@@ -159,13 +182,14 @@ final class StudIPViewModel {
             }
             report(summary)
         } catch {
+            noteSessionExpiry(error)
             errorMessage = "Stud.IP: \(error.localizedDescription)"
         }
     }
 
     /// Beim Start und regelmäßig: still im Hintergrund, Meldung nur bei neuen Folien.
     func syncIfDue() async {
-        guard store.autoSyncSlides, store.load() != nil, !isSyncing else { return }
+        guard store.autoSyncSlides, store.load() != nil, !isSyncing, !sessionExpired else { return }
         if let lastSync, now().timeIntervalSince(lastSync) < Self.autoSyncInterval { return }
         guard let credentials = store.load(),
               let modules = try? moduleRepository.all(),
@@ -175,11 +199,22 @@ final class StudIPViewModel {
         // Auch ein fehlgeschlagener Versuch zählt, sonst würde ohne Netz ständig neu versucht.
         lastSync = now()
         store.lastSlideSync = lastSync
-        guard let summary = try? await syncCourses(modules: modules, credentials: credentials),
-              summary.hasChanges else { return }
+        let summary: StudIPSyncSummary
+        do {
+            summary = try await syncCourses(modules: modules, credentials: credentials)
+        } catch {
+            // Im Hintergrund still bleiben; die Einstellungen zeigen „Sitzung abgelaufen“.
+            noteSessionExpiry(error)
+            return
+        }
+        guard summary.hasChanges else { return }
         slidesRevision += 1
         onSlidesChanged?()
         report(summary)
+    }
+
+    private func noteSessionExpiry(_ error: any Error) {
+        if (error as? StudIPError) == .sessionExpired { sessionExpired = true }
     }
 
     private func report(_ summary: StudIPSyncSummary) {

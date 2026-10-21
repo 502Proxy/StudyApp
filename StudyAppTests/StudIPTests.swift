@@ -14,14 +14,24 @@ final class FakeStudIPService: StudIPService {
     var downloadError: StudIPError?
     private(set) var downloads: [String] = []
 
-    func verify(_ credentials: StudIPCredentials) async throws -> String {
-        guard credentials.password == acceptedPassword else { throw StudIPError.unauthorized }
-        return userName
+    /// Cookie-Header einer angemeldeten Browser-Sitzung.
+    var acceptedSession = "Seminar_Session=angemeldet"
+    var failure: StudIPError?
+
+    func verify(_ credentials: StudIPCredentials) async throws -> StudIPUser {
+        switch credentials.authorization {
+        case .password(let password):
+            guard password == acceptedPassword else { throw StudIPError.unauthorized }
+        case .session(let cookieHeader):
+            guard cookieHeader == acceptedSession else { throw StudIPError.sessionExpired }
+        }
+        return StudIPUser(username: "tmueller13", displayName: userName)
     }
 
     func courses(_ credentials: StudIPCredentials) async throws -> [StudIPCourse] { coursesResult }
 
     func files(inCourse courseID: String, _ credentials: StudIPCredentials) async throws -> [StudIPFile] {
+        if let failure { throw failure }
         if let error = failingCourses[courseID] { throw error }
         return filesByCourse[courseID] ?? []
     }
@@ -106,7 +116,7 @@ struct StudIPJSONAPIParserTests {
         {"data": {"type": "users", "id": "u1", "attributes": {"username": "abcd1234", "formatted-name": "Tristan Müller"}}}
         """))
         #expect(user.id == "u1")
-        #expect(user.name == "Tristan Müller")
+        #expect(user.user == StudIPUser(username: "abcd1234", displayName: "Tristan Müller"))
     }
 
     @Test func readsCoursesWithSemesterAndNextLink() throws {
@@ -572,5 +582,75 @@ struct StudIPFolderParsingTests {
         let resource = try #require(page.resources.first)
         #expect(StudIPJSONAPIParser.parentFolderID(resource) == "ex")
         #expect(StudIPJSONAPIParser.file(resource)?.changedAt == Date(timeIntervalSince1970: 1_760_947_200))
+    }
+}
+
+// MARK: Browser-Anmeldung
+
+@MainActor
+struct StudIPWebLoginTests {
+    let service = FakeStudIPService()
+    let store = InMemoryStudIPAccountStore()
+    let modules = FakeModuleRepository()
+    let slides = FakeSlideDocumentRepository()
+    let server = URL(string: "https://elearning.uni-oldenburg.de")!
+
+    private func makeViewModel(now: Date = Date()) -> StudIPViewModel {
+        StudIPViewModel(
+            service: service,
+            store: store,
+            moduleRepository: modules,
+            slideRepository: slides,
+            importer: ImportSlideDocumentUseCase(repository: slides, storage: FakeFileStorage(), inspector: FakeInspector(pages: 3)),
+            now: { now }
+        )
+    }
+
+    private func cookie(_ name: String, _ value: String, domain: String, expires: Date? = nil) -> HTTPCookie {
+        var properties: [HTTPCookiePropertyKey: Any] = [.name: name, .value: value, .domain: domain, .path: "/"]
+        if let expires { properties[.expires] = expires }
+        return HTTPCookie(properties: properties)!
+    }
+
+    @Test func cookieHeaderContainsOnlyCookiesForTheServer() {
+        let header = StudIPSessionCookies.header(for: [
+            cookie("Seminar_Session", "abc", domain: "elearning.uni-oldenburg.de"),
+            cookie("tfa_trusted", "1", domain: ".uni-oldenburg.de"),
+            cookie("tracking", "x", domain: "example.org"),
+            cookie("old", "y", domain: "elearning.uni-oldenburg.de", expires: Date(timeIntervalSinceNow: -60)),
+        ], server: server)
+        #expect(header == "Seminar_Session=abc; tfa_trusted=1")
+        #expect(StudIPSessionCookies.header(for: [], server: server) == nil)
+    }
+
+    @Test func loginPagesAreIgnoredUntilTheSessionIsSignedIn() async {
+        let viewModel = makeViewModel()
+
+        #expect(await viewModel.connect(server: server, cookieHeader: "Seminar_Session=gast") == false)
+        #expect(!viewModel.isConnected)
+
+        #expect(await viewModel.connect(server: server, cookieHeader: "Seminar_Session=angemeldet"))
+        #expect(viewModel.account == StudIPAccount(serverURL: server, username: "tmueller13"))
+        #expect(viewModel.usesBrowserLogin)
+        #expect(store.credentials?.authorization == .session(cookieHeader: "Seminar_Session=angemeldet"))
+    }
+
+    @Test func expiredSessionPausesAutomaticSyncUntilNextLogin() async {
+        store.credentials = StudIPCredentials(
+            account: StudIPAccount(serverURL: server, username: "tmueller13"),
+            authorization: .session(cookieHeader: "Seminar_Session=alt")
+        )
+        modules.storage = [StudyModule(id: UUID(), name: "Analysis", code: "", color: .blue, createdAt: Date(), studIPCourseID: "c1")]
+        service.failure = .sessionExpired
+        let viewModel = makeViewModel()
+
+        await viewModel.syncIfDue()
+        #expect(viewModel.sessionExpired)
+        // Im Hintergrund keine Fehlermeldung, nur der Hinweis in den Einstellungen.
+        #expect(viewModel.errorMessage == nil)
+
+        service.failure = nil
+        #expect(await viewModel.connect(server: server, cookieHeader: "Seminar_Session=angemeldet"))
+        #expect(!viewModel.sessionExpired)
     }
 }
