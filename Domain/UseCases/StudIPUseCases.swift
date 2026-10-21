@@ -50,6 +50,8 @@ struct ConnectStudIPUseCase {
 @MainActor
 struct LinkStudIPCourseUseCase {
     let repository: any ModuleRepository
+    /// Beim Wechsel der Veranstaltung gehören die bisher geladenen Dateien nicht mehr zum Modul.
+    var removeFiles: RemoveCourseFilesUseCase? = nil
 
     @discardableResult
     func callAsFunction(_ module: StudyModule, courseID: String?) throws -> StudyModule {
@@ -57,6 +59,9 @@ struct LinkStudIPCourseUseCase {
         var updated = module
         updated.studIPCourseID = courseID
         try repository.update(updated)
+        if module.studIPCourseID != nil {
+            try removeFiles?(moduleID: module.id)
+        }
         return updated
     }
 }
@@ -103,21 +108,31 @@ struct StudIPSyncSummary: Equatable, Sendable {
     var imported: [String] = []
     /// Titel, von denen eine neue Fassung geladen wurde.
     var updated: [String] = []
+    /// Namen heruntergeladener Dateien (ohne PDFs, die als Folien zählen).
+    var downloadedFiles: [String] = []
     /// Fehler einzelner Module oder Dateien; der Abgleich der übrigen läuft weiter.
     var failures: [String] = []
     var checkedModules = 0
 
     var newDocumentCount: Int { imported.count + updated.count }
+    var hasChanges: Bool { newDocumentCount > 0 || !downloadedFiles.isEmpty }
 }
 
-/// Lädt neue PDFs aus den verknüpften Stud.IP-Veranstaltungen in die Module.
-/// Bekannte Dateien werden übersprungen; ändert sich eine Datei in Stud.IP, kommt die neue Fassung
-/// als zusätzlicher Foliensatz dazu, damit Markierungen und Notizen der alten erhalten bleiben.
+/// Gleicht die verknüpften Stud.IP-Veranstaltungen ab:
+/// - PDFs werden zu Foliensätzen. Bekannte Dateien werden übersprungen; ändert sich eine Datei in Stud.IP,
+///   kommt die neue Fassung als zusätzlicher Foliensatz dazu, damit Markierungen und Notizen der alten bleiben.
+/// - Alle Dateien landen im Dateikatalog des Moduls; alles außer PDFs wird bis `autoDownloadLimit` heruntergeladen.
 @MainActor
-struct SyncStudIPSlidesUseCase {
+struct SyncStudIPCoursesUseCase {
+    /// Größere Dateien (z. B. Videos) lädt man bei Bedarf von Hand.
+    static let defaultAutoDownloadLimit = 50 * 1_024 * 1_024
+
     let slideRepository: any SlideDocumentRepository
     let service: any StudIPService
     let importer: ImportSlideDocumentUseCase
+    var fileRepository: (any CourseFileRepository)? = nil
+    var storage: (any FileStorage)? = nil
+    var autoDownloadLimit = Self.defaultAutoDownloadLimit
 
     func callAsFunction(modules: [StudyModule], credentials: StudIPCredentials) async throws -> StudIPSyncSummary {
         var summary = StudIPSyncSummary()
@@ -133,29 +148,62 @@ struct SyncStudIPSlidesUseCase {
                 summary.failures.append("\(module.name): \(error.localizedDescription)")
                 continue
             }
-
-            let latest = Self.latestDocuments(try slideRepository.documents(forModule: module.id))
-            for file in files where file.isPDF {
-                let known = latest[file.id]
-                if let known, known.remoteVersion == file.version { continue }
-                do {
-                    let data = try await service.download(file, credentials)
-                    let baseTitle = Self.title(for: file)
-                    let title = known == nil ? baseTitle : "\(baseTitle) (aktualisiert)"
-                    try importer(data: data, title: title, moduleID: module.id, remoteID: file.id, remoteVersion: file.version)
-                    if known == nil {
-                        summary.imported.append(title)
-                    } else {
-                        summary.updated.append(title)
-                    }
-                } catch let error as StudIPError where Self.isFatal(error) {
-                    throw error
-                } catch {
-                    summary.failures.append("\(file.name): \(error.localizedDescription)")
-                }
-            }
+            try await importSlides(from: files, into: module, credentials, &summary)
+            try await updateCatalog(with: files, of: module, credentials, &summary)
         }
         return summary
+    }
+
+    private func importSlides(
+        from files: [StudIPFile], into module: StudyModule, _ credentials: StudIPCredentials, _ summary: inout StudIPSyncSummary
+    ) async throws {
+        let latest = Self.latestDocuments(try slideRepository.documents(forModule: module.id))
+        for file in files where file.isPDF {
+            let known = latest[file.id]
+            if let known, known.remoteVersion == file.version { continue }
+            do {
+                let data = try await service.download(file, credentials)
+                let baseTitle = Self.title(for: file)
+                let title = known == nil ? baseTitle : "\(baseTitle) (aktualisiert)"
+                try importer(data: data, title: title, moduleID: module.id, remoteID: file.id, remoteVersion: file.version)
+                if known == nil {
+                    summary.imported.append(title)
+                } else {
+                    summary.updated.append(title)
+                }
+            } catch let error as StudIPError where Self.isFatal(error) {
+                throw error
+            } catch {
+                summary.failures.append("\(file.name): \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func updateCatalog(
+        with files: [StudIPFile], of module: StudyModule, _ credentials: StudIPCredentials, _ summary: inout StudIPSyncSummary
+    ) async throws {
+        guard let fileRepository, let storage else { return }
+        let removed = try fileRepository.replaceCatalog(forModule: module.id, with: files.map { CourseFile($0, moduleID: module.id) })
+        for file in removed {
+            if let local = file.localFileName { try? storage.remove(fileName: local) }
+        }
+        let download = DownloadCourseFileUseCase(repository: fileRepository, service: service, storage: storage)
+        for file in try fileRepository.files(forModule: module.id) where Self.shouldDownload(file, limit: autoDownloadLimit) {
+            do {
+                try await download(file, credentials)
+                summary.downloadedFiles.append(file.name)
+            } catch let error as StudIPError where Self.isFatal(error) {
+                throw error
+            } catch {
+                summary.failures.append("\(file.name): \(error.localizedDescription)")
+            }
+        }
+    }
+
+    /// PDFs kommen über die Folien; alles andere, wenn es fehlt oder veraltet ist und nicht zu groß.
+    static func shouldDownload(_ file: CourseFile, limit: Int) -> Bool {
+        guard !file.isPDF, !file.isDownloaded || file.isOutdated else { return false }
+        return (file.size ?? 0) <= limit
     }
 
     /// Ohne Netz oder mit ungültiger Anmeldung lohnt sich kein weiterer Versuch.
@@ -177,5 +225,52 @@ struct SyncStudIPSlidesUseCase {
     static func title(for file: StudIPFile) -> String {
         let name = file.name.trimmed
         return name.lowercased().hasSuffix(".pdf") ? String(name.dropLast(4)) : name
+    }
+}
+
+/// Lädt eine einzelne Datei (neu) herunter, z. B. auf Klick oder wenn es eine neue Fassung gibt.
+@MainActor
+struct DownloadCourseFileUseCase {
+    let repository: any CourseFileRepository
+    let service: any StudIPService
+    let storage: any FileStorage
+
+    @discardableResult
+    func callAsFunction(_ file: CourseFile, _ credentials: StudIPCredentials) async throws -> CourseFile {
+        let remote = StudIPFile(id: file.remoteID, name: file.name, size: file.size, version: file.version, mimeType: file.mimeType)
+        let data = try await service.download(remote, credentials)
+        let fileName = Self.storagePath(for: file)
+        try storage.write(data, as: fileName)
+        if let previous = file.localFileName, previous != fileName {
+            try? storage.remove(fileName: previous)
+        }
+        var updated = file
+        updated.localFileName = fileName
+        updated.downloadedVersion = file.version
+        try repository.update(updated)
+        return updated
+    }
+
+    /// Eigener Ordner je Datei, damit der Originalname erhalten bleibt und sich nichts überschreibt.
+    static func storagePath(for file: CourseFile) -> String {
+        let cleaned = file.name
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ":", with: "-")
+            .trimmed
+        let name = cleaned.isEmpty || cleaned.hasPrefix(".") ? "Datei\(cleaned)" : cleaned
+        return "StudIP/\(file.moduleID.uuidString)/\(file.remoteID)/\(name)"
+    }
+}
+
+/// Entfernt Katalog und heruntergeladene Dateien eines Moduls.
+@MainActor
+struct RemoveCourseFilesUseCase {
+    let repository: any CourseFileRepository
+    let storage: any FileStorage
+
+    func callAsFunction(moduleID: UUID) throws {
+        for file in try repository.deleteFiles(forModule: moduleID) {
+            if let local = file.localFileName { try? storage.remove(fileName: local) }
+        }
     }
 }

@@ -71,8 +71,37 @@ enum StudIPJSONAPIParser {
             name: name,
             size: (attributes["filesize"] as? NSNumber)?.intValue ?? string(attributes["filesize"]).flatMap { Int($0) },
             version: version,
-            mimeType: string(attributes["mime-type"]) ?? string(attributes["mime_type"])
+            mimeType: string(attributes["mime-type"]) ?? string(attributes["mime_type"]),
+            changedAt: date(attributes["chdate"]) ?? date(attributes["mkdate"])
         )
+    }
+
+    /// Ordner, in dem eine Datei liegt (Beziehung `parent`).
+    static func parentFolderID(_ resource: Resource) -> String? {
+        relatedID((resource["relationships"] as? [String: Any])?["parent"])
+    }
+
+    /// Ordner-ID → Pfad wie „Übungen/Blatt 1“. Der Hauptordner der Veranstaltung (ohne Elternordner) ist leer.
+    static func folderPaths(_ resources: [Resource]) -> [String: String] {
+        var folders: [String: (name: String, parent: String?)] = [:]
+        for resource in resources {
+            guard let id = identifier(resource) else { continue }
+            let name = string((resource["attributes"] as? [String: Any])?["name"]) ?? ""
+            folders[id] = (name, parentFolderID(resource))
+        }
+        var paths: [String: String] = [:]
+        for id in folders.keys {
+            var components: [String] = []
+            var current: String? = id
+            var visited: Set<String> = []
+            // Bis zum Hauptordner hochlaufen; `visited` schützt vor kaputten Zyklen.
+            while let folderID = current, let folder = folders[folderID], folder.parent != nil, visited.insert(folderID).inserted {
+                components.insert(folder.name, at: 0)
+                current = folder.parent
+            }
+            paths[id] = components.filter { !$0.isEmpty }.joined(separator: "/")
+        }
+        return paths
     }
 
     // MARK: Hilfen
@@ -83,6 +112,16 @@ enum StudIPJSONAPIParser {
             throw StudIPError.invalidResponse
         }
         return object
+    }
+
+    /// Stud.IP liefert Zeitpunkte als ISO-8601-Text oder als Unix-Zeitstempel.
+    private static func date(_ value: Any?) -> Date? {
+        if let number = value as? NSNumber {
+            return Date(timeIntervalSince1970: number.doubleValue)
+        }
+        guard let text = value as? String else { return nil }
+        if let seconds = Double(text) { return Date(timeIntervalSince1970: seconds) }
+        return ISO8601DateFormatter().date(from: text)
     }
 
     private static func identifier(_ resource: Resource) -> String? {

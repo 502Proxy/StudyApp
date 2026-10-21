@@ -9,6 +9,7 @@ struct RootView: View {
     @Bindable var studIPViewModel: StudIPViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
+    let makeCourseFilesViewModel: CourseFilesViewModelFactory
 
     @State private var isDetectingModules = false
     @State private var isLinkingStudIP = false
@@ -134,8 +135,11 @@ struct RootView: View {
                     referenceDate: calendarViewModel.referenceDate,
                     slidesRevision: studIPViewModel.slidesRevision,
                     assignments: assignmentsViewModel,
+                    studIP: studIPViewModel,
                     makeSlidesViewModel: makeSlidesViewModel,
                     makeLearningViewModel: makeLearningViewModel,
+                    makeCourseFilesViewModel: makeCourseFilesViewModel,
+                    onLinkStudIP: { isLinkingStudIP = true },
                     onShowEvent: { event in
                         navigation.showCalendar()
                         calendarViewModel.reveal(event)

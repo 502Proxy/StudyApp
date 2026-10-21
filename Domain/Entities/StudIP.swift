@@ -31,6 +31,9 @@ struct StudIPFile: Identifiable, Hashable, Sendable {
     /// Änderungsstand (Stud.IP `chdate`). Ändert er sich, gibt es eine neue Fassung der Datei.
     var version: String
     var mimeType: String?
+    /// Ordner innerhalb der Veranstaltung, z. B. „Übungen/Blatt 1“. Leer für den Hauptordner.
+    var folderPath: String = ""
+    var changedAt: Date? = nil
 
     var isPDF: Bool {
         mimeType?.lowercased().contains("pdf") == true || name.lowercased().hasSuffix(".pdf")

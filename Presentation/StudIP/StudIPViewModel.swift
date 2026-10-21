@@ -15,7 +15,7 @@ final class StudIPViewModel {
     private(set) var isSyncing = false
     private(set) var lastSync: Date?
     private(set) var statusMessage: String?
-    /// Erhöht sich nach jedem Abgleich mit neuen Folien, damit offene Module ihre Liste neu laden.
+    /// Erhöht sich nach jedem Abgleich mit neuen Folien oder Dateien, damit offene Module ihre Listen neu laden.
     private(set) var slidesRevision = 0
     var errorMessage: String?
 
@@ -32,7 +32,7 @@ final class StudIPViewModel {
     private let moduleRepository: any ModuleRepository
     private let connectUseCase: ConnectStudIPUseCase
     private let linkCourse: LinkStudIPCourseUseCase
-    private let syncSlides: SyncStudIPSlidesUseCase
+    private let syncCourses: SyncStudIPCoursesUseCase
     private let service: any StudIPService
     private let now: () -> Date
     @ObservationIgnored private var statusTask: Task<Void, Never>?
@@ -43,6 +43,8 @@ final class StudIPViewModel {
         moduleRepository: any ModuleRepository,
         slideRepository: any SlideDocumentRepository,
         importer: ImportSlideDocumentUseCase,
+        fileRepository: (any CourseFileRepository)? = nil,
+        storage: (any FileStorage)? = nil,
         now: @escaping () -> Date = { .now }
     ) {
         self.service = service
@@ -50,8 +52,15 @@ final class StudIPViewModel {
         self.moduleRepository = moduleRepository
         self.now = now
         connectUseCase = ConnectStudIPUseCase(service: service, store: store)
-        linkCourse = LinkStudIPCourseUseCase(repository: moduleRepository)
-        syncSlides = SyncStudIPSlidesUseCase(slideRepository: slideRepository, service: service, importer: importer)
+        var removeFiles: RemoveCourseFilesUseCase?
+        if let fileRepository, let storage {
+            removeFiles = RemoveCourseFilesUseCase(repository: fileRepository, storage: storage)
+        }
+        linkCourse = LinkStudIPCourseUseCase(repository: moduleRepository, removeFiles: removeFiles)
+        syncCourses = SyncStudIPCoursesUseCase(
+            slideRepository: slideRepository, service: service, importer: importer,
+            fileRepository: fileRepository, storage: storage
+        )
         account = store.load()?.account
         lastSync = store.lastSlideSync
         autoSyncSlides = store.autoSyncSlides
@@ -100,6 +109,7 @@ final class StudIPViewModel {
     func link(_ module: StudyModule, to courseID: String?) {
         do {
             try linkCourse(module, courseID: courseID)
+            slidesRevision += 1
             onSlidesChanged?()
         } catch {
             errorMessage = error.localizedDescription
@@ -138,12 +148,12 @@ final class StudIPViewModel {
         defer { isSyncing = false }
         do {
             let modules = try onlyModules ?? moduleRepository.all()
-            let summary = try await syncSlides(modules: modules, credentials: credentials)
+            let summary = try await syncCourses(modules: modules, credentials: credentials)
             if onlyModules == nil {
                 lastSync = now()
                 store.lastSlideSync = lastSync
             }
-            if summary.newDocumentCount > 0 {
+            if summary.hasChanges {
                 slidesRevision += 1
                 onSlidesChanged?()
             }
@@ -165,15 +175,15 @@ final class StudIPViewModel {
         // Auch ein fehlgeschlagener Versuch zählt, sonst würde ohne Netz ständig neu versucht.
         lastSync = now()
         store.lastSlideSync = lastSync
-        guard let summary = try? await syncSlides(modules: modules, credentials: credentials),
-              summary.newDocumentCount > 0 else { return }
+        guard let summary = try? await syncCourses(modules: modules, credentials: credentials),
+              summary.hasChanges else { return }
         slidesRevision += 1
         onSlidesChanged?()
         report(summary)
     }
 
     private func report(_ summary: StudIPSyncSummary) {
-        if !summary.failures.isEmpty, summary.newDocumentCount == 0 {
+        if !summary.failures.isEmpty, !summary.hasChanges {
             errorMessage = "Nicht alle Dateien konnten geladen werden:\n" + summary.failures.prefix(5).joined(separator: "\n")
             return
         }
@@ -184,13 +194,16 @@ final class StudIPViewModel {
         if summary.checkedModules == 0 {
             return "Noch kein Modul ist mit einer Stud.IP-Veranstaltung verknüpft."
         }
-        guard summary.newDocumentCount > 0 else { return "Stud.IP: keine neuen Folien." }
+        guard summary.hasChanges else { return "Stud.IP: keine neuen Dateien." }
         var parts: [String] = []
         if !summary.imported.isEmpty {
             parts.append(summary.imported.count == 1 ? "1 neuer Foliensatz" : "\(summary.imported.count) neue Foliensätze")
         }
         if !summary.updated.isEmpty {
             parts.append(summary.updated.count == 1 ? "1 aktualisierter" : "\(summary.updated.count) aktualisierte")
+        }
+        if !summary.downloadedFiles.isEmpty {
+            parts.append(summary.downloadedFiles.count == 1 ? "1 Datei geladen" : "\(summary.downloadedFiles.count) Dateien geladen")
         }
         var text = "Stud.IP: " + parts.joined(separator: ", ")
         if !summary.failures.isEmpty { text += " · \(summary.failures.count) Fehler" }

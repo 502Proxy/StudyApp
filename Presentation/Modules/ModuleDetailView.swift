@@ -15,12 +15,15 @@ struct ModuleDetailView: View {
     /// Bezugszeit der Kalenderuhr, damit „läuft gerade“ überall gleich bewertet wird.
     let referenceDate: Date
     let slidesRevision: Int
+    let studIP: StudIPViewModel
+    let onLinkStudIP: () -> Void
     let assignments: AssignmentsViewModel
     let onShowEvent: (StudyCalendarEvent) -> Void
     let onEdit: () -> Void
 
     @State private var slidesViewModel: SlidesViewModel
     @State private var learningViewModel: LearningViewModel
+    @State private var filesViewModel: CourseFilesViewModel
 
     init(
         module: StudyModule,
@@ -32,8 +35,11 @@ struct ModuleDetailView: View {
         referenceDate: Date,
         slidesRevision: Int = 0,
         assignments: AssignmentsViewModel,
+        studIP: StudIPViewModel,
         makeSlidesViewModel: SlidesViewModelFactory,
         makeLearningViewModel: LearningViewModelFactory,
+        makeCourseFilesViewModel: CourseFilesViewModelFactory,
+        onLinkStudIP: @escaping () -> Void,
         onShowEvent: @escaping (StudyCalendarEvent) -> Void,
         onEdit: @escaping () -> Void
     ) {
@@ -45,11 +51,14 @@ struct ModuleDetailView: View {
         self.liveProgress = liveProgress
         self.referenceDate = referenceDate
         self.slidesRevision = slidesRevision
+        self.studIP = studIP
+        self.onLinkStudIP = onLinkStudIP
         self.assignments = assignments
         self.onShowEvent = onShowEvent
         self.onEdit = onEdit
         _slidesViewModel = State(initialValue: makeSlidesViewModel(module.id))
         _learningViewModel = State(initialValue: makeLearningViewModel(module))
+        _filesViewModel = State(initialValue: makeCourseFilesViewModel(module))
     }
 
     /// Während ein PDF geöffnet ist, bekommt der Viewer den ganzen Platz.
@@ -82,6 +91,20 @@ struct ModuleDetailView: View {
                     FlashcardsView(viewModel: learningViewModel)
                 case .studySheets:
                     StudySheetsView(viewModel: learningViewModel)
+                case .files:
+                    CourseFilesView(
+                        viewModel: filesViewModel,
+                        isLinked: module.studIPCourseID != nil,
+                        isSyncing: studIP.isSyncing,
+                        lastSync: studIP.lastSync,
+                        onSync: { Task { await studIP.syncNow(modules: [module]) } },
+                        onLink: onLinkStudIP,
+                        onOpenSlides: { documentID in
+                            slidesViewModel.load()
+                            slidesViewModel.open(documentID: documentID)
+                            section = .slides
+                        }
+                    )
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -92,6 +115,7 @@ struct ModuleDetailView: View {
         .task {
             slidesViewModel.load()
             learningViewModel.load()
+            filesViewModel.load()
             handle(pendingIntent)
         }
         .onChange(of: pendingIntent) { _, intent in
@@ -101,6 +125,7 @@ struct ModuleDetailView: View {
             // Aus Stud.IP geladene Folien erscheinen, ohne das geöffnete PDF zu schließen.
             slidesViewModel.load()
             learningViewModel.load()
+            filesViewModel.load()
         }
         .onChange(of: section) { _, newSection in
             // Zahlen der Übersicht aktuell halten, z. B. nach dem Schreiben von Notizen im Reader.
@@ -253,6 +278,15 @@ struct ModuleDetailView: View {
                         systemImage: "doc.text",
                         tint: Theme.success
                     ) { section = .studySheets }
+                    if module.studIPCourseID != nil {
+                        StatTile(
+                            title: "Dateien",
+                            value: "\(filesViewModel.files.count)",
+                            detail: "aus Stud.IP · \(filesViewModel.downloadedCount) lokal",
+                            systemImage: "folder",
+                            tint: Theme.accent
+                        ) { section = .files }
+                    }
                 }
 
                 if !learningViewModel.dueFlashcards.isEmpty {

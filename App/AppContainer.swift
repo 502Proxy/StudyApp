@@ -18,6 +18,7 @@ final class AppContainer {
     let pdfInspector: any PDFInspector
     let studIPService: any StudIPService
     let studIPAccountStore: any StudIPAccountStore
+    let courseFileRepository: any CourseFileRepository
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
 
@@ -33,6 +34,7 @@ final class AppContainer {
         studySheetRepository = SwiftDataStudySheetRepository(context: context)
         studyCalendarRepository = SwiftDataStudyCalendarRepository(context: context)
         assignmentRepository = SwiftDataAssignmentRepository(context: context)
+        courseFileRepository = SwiftDataCourseFileRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
@@ -65,6 +67,7 @@ final class AppContainer {
             fileStorage: fileStorage,
             calendarRepository: studyCalendarRepository,
             assignmentRepository: assignmentRepository,
+            courseFileRepository: courseFileRepository,
             settings: preferences
         )
     }
@@ -89,7 +92,20 @@ final class AppContainer {
             store: studIPAccountStore,
             moduleRepository: moduleRepository,
             slideRepository: slideRepository,
-            importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector)
+            importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
+            fileRepository: courseFileRepository,
+            storage: fileStorage
+        )
+    }
+
+    func makeCourseFilesViewModel(module: StudyModule) -> CourseFilesViewModel {
+        CourseFilesViewModel(
+            module: module,
+            repository: courseFileRepository,
+            slideRepository: slideRepository,
+            service: studIPService,
+            storage: fileStorage,
+            store: studIPAccountStore
         )
     }
 

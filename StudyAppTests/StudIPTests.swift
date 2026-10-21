@@ -157,13 +157,13 @@ struct StudIPJSONAPIParserTests {
 // MARK: Abgleich
 
 @MainActor
-struct SyncStudIPSlidesTests {
+struct SyncStudIPCoursesTests {
     let slides = FakeSlideDocumentRepository()
     let storage = FakeFileStorage()
     let service = FakeStudIPService()
 
-    private var sync: SyncStudIPSlidesUseCase {
-        SyncStudIPSlidesUseCase(
+    private var sync: SyncStudIPCoursesUseCase {
+        SyncStudIPCoursesUseCase(
             slideRepository: slides,
             service: service,
             importer: ImportSlideDocumentUseCase(repository: slides, storage: storage, inspector: FakeInspector(pages: 12))
@@ -235,7 +235,7 @@ struct SyncStudIPSlidesTests {
     }
 
     @Test func unreadablePDFIsReportedAndCleanedUp() async throws {
-        let broken = SyncStudIPSlidesUseCase(
+        let broken = SyncStudIPCoursesUseCase(
             slideRepository: slides,
             service: service,
             importer: ImportSlideDocumentUseCase(repository: slides, storage: storage, inspector: FakeInspector(pages: nil))
@@ -340,7 +340,237 @@ struct StudIPViewModelTests {
         var summary = StudIPSyncSummary(imported: ["VL01", "VL02"], updated: ["VL00"], checkedModules: 2)
         #expect(StudIPViewModel.summaryText(summary) == "Stud.IP: 2 neue Foliensätze, 1 aktualisierter")
         summary = StudIPSyncSummary(checkedModules: 1)
-        #expect(StudIPViewModel.summaryText(summary) == "Stud.IP: keine neuen Folien.")
+        #expect(StudIPViewModel.summaryText(summary) == "Stud.IP: keine neuen Dateien.")
         #expect(StudIPViewModel.summaryText(StudIPSyncSummary()) == "Noch kein Modul ist mit einer Stud.IP-Veranstaltung verknüpft.")
+    }
+}
+
+// MARK: Dateibereich
+
+@MainActor
+final class FakeCourseFileRepository: CourseFileRepository {
+    var storage: [CourseFile] = []
+
+    func files(forModule moduleID: UUID) throws -> [CourseFile] {
+        storage.filter { $0.moduleID == moduleID }
+    }
+
+    func replaceCatalog(forModule moduleID: UUID, with files: [CourseFile]) throws -> [CourseFile] {
+        let stored = storage.filter { $0.moduleID == moduleID }
+        let incoming = Set(files.map(\.remoteID))
+        let removed = stored.filter { !incoming.contains($0.remoteID) }
+        var merged: [CourseFile] = []
+        for file in files {
+            var entry = file
+            if let known = stored.first(where: { $0.remoteID == file.remoteID }) {
+                entry.localFileName = known.localFileName
+                entry.downloadedVersion = known.downloadedVersion
+            }
+            merged.append(entry)
+        }
+        storage = storage.filter { $0.moduleID != moduleID } + merged
+        return removed
+    }
+
+    func update(_ file: CourseFile) throws {
+        guard let index = storage.firstIndex(where: { $0.id == file.id }) else { return }
+        storage[index] = file
+    }
+
+    func deleteFiles(forModule moduleID: UUID) throws -> [CourseFile] {
+        let removed = storage.filter { $0.moduleID == moduleID }
+        storage.removeAll { $0.moduleID == moduleID }
+        return removed
+    }
+}
+
+private func file(_ id: String, _ name: String, size: Int? = 1_000, version: String = "1", folder: String = "") -> StudIPFile {
+    StudIPFile(id: id, name: name, size: size, version: version, mimeType: nil, folderPath: folder)
+}
+
+@MainActor
+struct CourseFileSyncTests {
+    let slides = FakeSlideDocumentRepository()
+    let storage = FakeFileStorage()
+    let service = FakeStudIPService()
+    let catalog = FakeCourseFileRepository()
+
+    private var sync: SyncStudIPCoursesUseCase {
+        SyncStudIPCoursesUseCase(
+            slideRepository: slides,
+            service: service,
+            importer: ImportSlideDocumentUseCase(repository: slides, storage: storage, inspector: FakeInspector(pages: 4)),
+            fileRepository: catalog,
+            storage: storage,
+            autoDownloadLimit: 10_000
+        )
+    }
+
+    private let module = StudyModule(id: UUID(), name: "Programmierung", code: "", color: .blue, createdAt: Date(), studIPCourseID: "c1")
+
+    @Test func catalogsAllFilesAndDownloadsSmallNonPDFs() async throws {
+        service.filesByCourse["c1"] = [
+            file("f1", "VL01.pdf"),
+            file("f2", "Blatt 1.zip", folder: "Übungen"),
+            file("f3", "Aufzeichnung.mp4", size: 900_000_000, folder: "Videos"),
+        ]
+
+        let summary = try await sync(modules: [module], credentials: credentials)
+
+        #expect(summary.imported == ["VL01"])
+        #expect(summary.downloadedFiles == ["Blatt 1.zip"])
+        #expect(summary.hasChanges)
+        let files = try catalog.files(forModule: module.id)
+        #expect(files.count == 3)
+        let sheet = try #require(files.first { $0.remoteID == "f2" })
+        #expect(sheet.folderPath == "Übungen")
+        #expect(sheet.localFileName == "StudIP/\(module.id.uuidString)/f2/Blatt 1.zip")
+        #expect(storage.written[sheet.localFileName!] == Data("%PDF-f2".utf8))
+        // PDFs laufen über die Folien, große Videos nur auf Klick.
+        #expect(files.first { $0.remoteID == "f1" }?.isDownloaded == false)
+        #expect(files.first { $0.remoteID == "f3" }?.isDownloaded == false)
+    }
+
+    @Test func secondSyncDownloadsOnlyChangedFiles() async throws {
+        service.filesByCourse["c1"] = [file("f2", "Blatt 1.zip")]
+        _ = try await sync(modules: [module], credentials: credentials)
+
+        let unchanged = try await sync(modules: [module], credentials: credentials)
+        #expect(unchanged.downloadedFiles.isEmpty)
+        #expect(!unchanged.hasChanges)
+
+        service.filesByCourse["c1"] = [file("f2", "Blatt 1.zip", version: "2")]
+        let changed = try await sync(modules: [module], credentials: credentials)
+        #expect(changed.downloadedFiles == ["Blatt 1.zip"])
+        #expect(try catalog.files(forModule: module.id).first?.downloadedVersion == "2")
+    }
+
+    @Test func filesRemovedInStudIPAreDeletedLocally() async throws {
+        service.filesByCourse["c1"] = [file("f2", "Blatt 1.zip")]
+        _ = try await sync(modules: [module], credentials: credentials)
+        #expect(storage.files.count == 1)
+
+        service.filesByCourse["c1"] = []
+        _ = try await sync(modules: [module], credentials: credentials)
+
+        #expect(try catalog.files(forModule: module.id).isEmpty)
+        #expect(storage.files.isEmpty)
+    }
+
+    @Test func changingTheCourseClearsTheOldFiles() async throws {
+        let modules = FakeModuleRepository()
+        modules.storage = [module]
+        service.filesByCourse["c1"] = [file("f2", "Blatt 1.zip")]
+        _ = try await sync(modules: [module], credentials: credentials)
+
+        let link = LinkStudIPCourseUseCase(
+            repository: modules,
+            removeFiles: RemoveCourseFilesUseCase(repository: catalog, storage: storage)
+        )
+        try link(module, courseID: "c2")
+
+        #expect(catalog.storage.isEmpty)
+        #expect(storage.files.isEmpty)
+        #expect(modules.storage.first?.studIPCourseID == "c2")
+    }
+
+    @Test func storagePathKeepsTheOriginalNameSafe() {
+        let moduleID = UUID()
+        let path = DownloadCourseFileUseCase.storagePath(
+            for: CourseFile(moduleID: moduleID, remoteID: "f9", name: "Lösung 1/2: final.py", version: "1")
+        )
+        #expect(path == "StudIP/\(moduleID.uuidString)/f9/Lösung 1-2- final.py")
+    }
+}
+
+@MainActor
+struct CourseFilesViewModelTests {
+    let catalog = FakeCourseFileRepository()
+    let slides = FakeSlideDocumentRepository()
+    let storage = FakeFileStorage()
+    let service = FakeStudIPService()
+    let store = InMemoryStudIPAccountStore(credentials: credentials)
+    let module = StudyModule(id: UUID(), name: "Programmierung", code: "", color: .blue, createdAt: Date(), studIPCourseID: "c1")
+
+    private func makeViewModel() -> CourseFilesViewModel {
+        CourseFilesViewModel(module: module, repository: catalog, slideRepository: slides, service: service, storage: storage, store: store)
+    }
+
+    @Test func groupsByFolderWithMainFolderFirstAndFilters() throws {
+        _ = try catalog.replaceCatalog(forModule: module.id, with: [
+            CourseFile(moduleID: module.id, remoteID: "a", name: "Zettel.pdf", folderPath: "Übungen", version: "1"),
+            CourseFile(moduleID: module.id, remoteID: "b", name: "Info.txt", version: "1"),
+            CourseFile(moduleID: module.id, remoteID: "c", name: "Aufgabe.pdf", folderPath: "Übungen", version: "1"),
+        ])
+        let viewModel = makeViewModel()
+        viewModel.load()
+
+        #expect(viewModel.folders.map(\.title) == ["Hauptordner", "Übungen"])
+        #expect(viewModel.folders.last?.files.map(\.name) == ["Aufgabe.pdf", "Zettel.pdf"])
+
+        viewModel.searchText = "zettel"
+        #expect(viewModel.folders.map(\.title) == ["Übungen"])
+    }
+
+    @Test func openingDownloadsMissingFilesAndPrefersSlidesForPDFs() async throws {
+        _ = try catalog.replaceCatalog(forModule: module.id, with: [
+            CourseFile(moduleID: module.id, remoteID: "zip", name: "Code.zip", version: "1"),
+            CourseFile(moduleID: module.id, remoteID: "pdf", name: "VL01.pdf", version: "1"),
+        ])
+        let document = SlideDocument(
+            id: UUID(), moduleID: module.id, title: "VL01", fileName: "x.pdf", pageCount: 3, importedAt: Date(),
+            remoteID: "pdf", remoteVersion: "1"
+        )
+        try slides.add(document)
+        let viewModel = makeViewModel()
+        viewModel.load()
+
+        let zip = try #require(viewModel.files.first { $0.remoteID == "zip" })
+        let pdf = try #require(viewModel.files.first { $0.remoteID == "pdf" })
+
+        let zipAction = await viewModel.openAction(for: zip)
+        #expect(zipAction == .file(storage.url(for: "StudIP/\(module.id.uuidString)/zip/Code.zip")))
+        #expect(viewModel.downloadedCount == 1)
+        #expect(await viewModel.openAction(for: pdf) == .slides(documentID: document.id))
+    }
+
+    @Test func downloadWithoutLoginShowsAnError() async throws {
+        store.credentials = nil
+        _ = try catalog.replaceCatalog(forModule: module.id, with: [
+            CourseFile(moduleID: module.id, remoteID: "zip", name: "Code.zip", version: "1"),
+        ])
+        let viewModel = makeViewModel()
+        viewModel.load()
+
+        let result = await viewModel.fetch(viewModel.files[0])
+
+        #expect(result == nil)
+        #expect(viewModel.errorMessage == StudIPError.notConnected.localizedDescription)
+    }
+}
+
+@MainActor
+struct StudIPFolderParsingTests {
+    @Test func buildsFolderPathsBelowTheCourseRoot() throws {
+        let page = try StudIPJSONAPIParser.page(Data("""
+        {"data": [
+            {"type": "folders", "id": "root", "attributes": {"name": "Analysis I"}},
+            {"type": "folders", "id": "ex", "attributes": {"name": "Übungen"}, "relationships": {"parent": {"data": {"type": "folders", "id": "root"}}}},
+            {"type": "folders", "id": "s1", "attributes": {"name": "Blatt 1"}, "relationships": {"parent": {"data": {"type": "folders", "id": "ex"}}}}
+        ]}
+        """.utf8))
+        let paths = StudIPJSONAPIParser.folderPaths(page.resources)
+        #expect(paths == ["root": "", "ex": "Übungen", "s1": "Übungen/Blatt 1"])
+    }
+
+    @Test func readsParentFolderAndChangeDate() throws {
+        let page = try StudIPJSONAPIParser.page(Data("""
+        {"data": [{"type": "file-refs", "id": "f1",
+                   "attributes": {"name": "a.zip", "chdate": "2025-10-20T08:00:00Z"},
+                   "relationships": {"parent": {"data": {"type": "folders", "id": "ex"}}}}]}
+        """.utf8))
+        let resource = try #require(page.resources.first)
+        #expect(StudIPJSONAPIParser.parentFolderID(resource) == "ex")
+        #expect(StudIPJSONAPIParser.file(resource)?.changedAt == Date(timeIntervalSince1970: 1_760_947_200))
     }
 }

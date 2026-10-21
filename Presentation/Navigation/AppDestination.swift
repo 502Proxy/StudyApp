@@ -29,6 +29,8 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
     case assignments
     case flashcards
     case studySheets
+    /// Dateibereich der verknüpften Stud.IP-Veranstaltung. Bewusst zuletzt, damit ⌘1–⌘6 gleich bleiben.
+    case files
 
     var id: Self { self }
 
@@ -40,6 +42,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
         case .assignments: "Aufgaben"
         case .flashcards: "Karteikarten"
         case .studySheets: "Lernzettel"
+        case .files: "Dateien"
         }
     }
 
@@ -51,6 +54,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
         case .assignments: "checklist"
         case .flashcards: "rectangle.stack"
         case .studySheets: "doc.text"
+        case .files: "folder"
         }
     }
 }

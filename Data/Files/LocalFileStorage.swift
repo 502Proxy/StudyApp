@@ -39,8 +39,11 @@ struct LocalFileStorage: FileStorage {
     }
 
     func write(_ data: Data, as fileName: String) throws {
+        let target = url(for: fileName)
+        // Stud.IP-Dateien liegen in Unterordnern, die es beim ersten Schreiben noch nicht gibt.
+        try FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
         // `.atomic` schreibt zuerst in eine temporäre Datei; ein Absturz hinterlässt nie ein halbes PDF.
-        try data.write(to: url(for: fileName), options: .atomic)
+        try data.write(to: target, options: .atomic)
     }
 
     func remove(fileName: String) throws {

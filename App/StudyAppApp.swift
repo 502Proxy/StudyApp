@@ -63,6 +63,9 @@ struct StudyAppApp: App {
                 },
                 makeLearningViewModel: { module in
                     container.makeLearningViewModel(module: module)
+                },
+                makeCourseFilesViewModel: { module in
+                    container.makeCourseFilesViewModel(module: module)
                 }
             )
             .frame(minWidth: 960, minHeight: 640)
