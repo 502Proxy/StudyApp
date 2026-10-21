@@ -4,6 +4,21 @@
         <title>StudyApp</title>
         <item>
             <title>1.8</title>
+            <pubDate>Wed, 21 Oct 2026 11:09:30 +0200</pubDate>
+            <sparkle:version>202610211109</sparkle:version>
+            <sparkle:shortVersionString>1.8</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp-1.8.dmg" length="6823490" type="application/octet-stream" sparkle:edSignature="kpXjRNRqro9PJ2tvlNJnwEPy7WP3L1NTPmmCnWHf1YAF8W3TPdduRMsXn4WFeTMpPvYbYRFsUknvs5+stgjkCQ=="/>
+            <sparkle:deltas>
+                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211109-202610211027.delta" sparkle:deltaFrom="202610211027" length="723942" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="uRRyUchuQRWtn6BA6nc++Slh37bdKP+vAQ9NfFS7GSR0UtP19CDD48xHQYCBo6Y0K6dY1xyVYRwlftvCuqMoCQ=="/>
+                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211109-202610210937.delta" sparkle:deltaFrom="202610210937" length="1037538" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="ctFqWLxtFiB2w04DAANAqGpjnmsmKDz5NzELXwfYDu4lOzcbAEmGGpMsGONT6sAq8zIqhxJe0aNuxbw9sEaEBw=="/>
+                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211109-202610210934.delta" sparkle:deltaFrom="202610210934" length="1037610" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="YQMWyhIS9rF28OV62pyuLNO98nsgePXyiKliqL7CiReQRnhQCgmrcwwds1HfCrUxUByv5rwiY2z/s1Iwm3S2Dw=="/>
+                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211109-202610210928.delta" sparkle:deltaFrom="202610210928" length="1037402" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="VJmYvlgWf3G1fOG2HSWR+3t2aTHKqMOe43t7IRQrXAG3/elgz3qlQaZy/uWbjc3rrl8sin38D7L6gi1Uuq3hAQ=="/>
+                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211109-202610210003.delta" sparkle:deltaFrom="202610210003" length="1037642" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="z3wd6JJZb4XjCM1FOKIkXXEr97Jft4w9xvNh2ayMWSVxQD8mvXuYUI4m0MHaLFWnLCp66jUi/YJ8HvK3gjcJBg=="/>
+            </sparkle:deltas>
+        </item>
+        <item>
+            <title>1.8</title>
             <pubDate>Wed, 21 Oct 2026 10:58:25 +0200</pubDate>
             <sparkle:version>202610211057</sparkle:version>
             <sparkle:shortVersionString>1.8</sparkle:shortVersionString>
@@ -36,23 +51,6 @@
                 <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211027-202610210934.delta" sparkle:deltaFrom="202610210934" length="863466" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="LOrfcIIsYfQoTKI7yLqxAWVneIrlfkL72scJqRLeiXO6C+p8aAoTOW6VdbdiaS6BAOcS7mk9Xw8ZgxqH+yPAAQ=="/>
                 <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211027-202610210928.delta" sparkle:deltaFrom="202610210928" length="867806" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="xanjJnoy+dIpSY/0S+9h1wn+wy3EdN+OP+aVHBrf2R/fT2p/t4EgcSVQns3lRaTCU1IKN1f0bJQ96vtXp129BA=="/>
                 <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610211027-202610210003.delta" sparkle:deltaFrom="202610210003" length="867514" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="XU2mcJWwYZ4hcBxBTKIScDywoVSD4BQqKHqzPcWi3TDFnup2qZRx+ewxL6wTZDPDqH32EoUrJ5CW/jeVDn3VBw=="/>
-            </sparkle:deltas>
-        </item>
-        <item>
-            <title>1.6</title>
-            <pubDate>Wed, 21 Oct 2026 09:38:20 +0200</pubDate>
-            <sparkle:version>202610210937</sparkle:version>
-            <sparkle:shortVersionString>1.6</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.5</sparkle:minimumSystemVersion>
-            <description><![CDATA[<ul>
-<li>Test des automatischen Updates</li>
-</ul>
-]]></description>
-            <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp-1.6.dmg" length="6394726" type="application/octet-stream" sparkle:edSignature="jWcjiZD2triduEPjkXgTmi9d4S1mnaLMeSDfF6QMAzeA+Gow4Cxl3RfoLMk+fGc11D1UQz4zLqx5Z8uMFqhHDA=="/>
-            <sparkle:deltas>
-                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610210937-202610210934.delta" sparkle:deltaFrom="202610210934" length="1894" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="pG6JaTjCt/qW5TqH5aGVRnuFsz0RoXSpY4+nDvVAfSACN2O5BUwRTyg7Ul3i6tACpTjI6ssKfT+AUi8FchHqAw=="/>
-                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610210937-202610210928.delta" sparkle:deltaFrom="202610210928" length="292054" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="oLCljxeG03kAU98cnEZQQRpezwyxzY5DFHROOBhgadIzzySkTMcX8GkqqvsvzO7viPo7fe2xXRKApKYd3XvzBg=="/>
-                <enclosure url="https://github.com/502Proxy/StudyApp/releases/download/updates/StudyApp202610210937-202610210003.delta" sparkle:deltaFrom="202610210003" length="292470" type="application/octet-stream" sparkle:deltaFromSparkleExecutableSize="976240" sparkle:deltaFromSparkleLocales="de,he,ar,el,ja,fa,uk" sparkle:edSignature="xsCdJnQbN0FfXsj865aahIbsftfhPeTtmcykQf0/mdDiZNXkj8vNn9u0KL40EPyF/10TuUQNG1CgZwkUjmVpCw=="/>
             </sparkle:deltas>
         </item>
     </channel>
