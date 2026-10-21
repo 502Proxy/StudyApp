@@ -1,7 +1,7 @@
 import Foundation
 import Security
 
-/// Speichert Server und Nutzername in `UserDefaults`, das Passwort im Schlüsselbund.
+/// Speichert Server und Nutzername in `UserDefaults`, Passwort bzw. Sitzungs-Cookie im Schlüsselbund.
 @MainActor
 final class KeychainStudIPAccountStore: StudIPAccountStore {
     enum Key {
@@ -9,6 +9,8 @@ final class KeychainStudIPAccountStore: StudIPAccountStore {
         static let username = "studip.username"
         static let autoSyncSlides = "studip.autoSyncSlides"
         static let lastSlideSync = "studip.lastSlideSync"
+        /// „password“ oder „session“; fehlt bei Anmeldungen aus Version 1.7/1.8 (Passwort).
+        static let authorizationKind = "studip.authorizationKind"
     }
 
     private static let service = "StudyApp Stud.IP"
@@ -31,15 +33,26 @@ final class KeychainStudIPAccountStore: StudIPAccountStore {
     func load() -> StudIPCredentials? {
         guard let server = defaults.string(forKey: Key.server).flatMap(URL.init(string:)),
               let username = defaults.string(forKey: Key.username),
-              let password = password(for: username) else { return nil }
-        return StudIPCredentials(account: StudIPAccount(serverURL: server, username: username), password: password)
+              let secret = password(for: username) else { return nil }
+        let account = StudIPAccount(serverURL: server, username: username)
+        let authorization: StudIPAuthorization = defaults.string(forKey: Key.authorizationKind) == "session"
+            ? .session(cookieHeader: secret)
+            : .password(secret)
+        return StudIPCredentials(account: account, authorization: authorization)
     }
 
     func save(_ credentials: StudIPCredentials) throws {
         if let previous = defaults.string(forKey: Key.username), previous != credentials.account.username {
             deletePassword(for: previous)
         }
-        try storePassword(credentials.password, for: credentials.account.username)
+        switch credentials.authorization {
+        case .password(let password):
+            try storePassword(password, for: credentials.account.username)
+            defaults.set("password", forKey: Key.authorizationKind)
+        case .session(let cookieHeader):
+            try storePassword(cookieHeader, for: credentials.account.username)
+            defaults.set("session", forKey: Key.authorizationKind)
+        }
         defaults.set(credentials.account.serverURL.absoluteString, forKey: Key.server)
         defaults.set(credentials.account.username, forKey: Key.username)
     }

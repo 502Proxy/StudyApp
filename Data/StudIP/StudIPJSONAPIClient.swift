@@ -1,13 +1,14 @@
 import Foundation
 
-/// Spricht die JSON:API einer Stud.IP-Installation (`<Server>/jsonapi.php/v1/…`) mit HTTP-Basic-Anmeldung.
+/// Spricht die JSON:API einer Stud.IP-Installation (`<Server>/jsonapi.php/v1/…`),
+/// angemeldet per HTTP Basic oder mit dem Sitzungs-Cookie einer Browser-Anmeldung.
 struct StudIPJSONAPIClient: StudIPService {
     var session: URLSession = .shared
     /// Schutz gegen endlos verkettete Seiten-Links.
     private let maximumPages = 50
 
-    func verify(_ credentials: StudIPCredentials) async throws -> String {
-        try StudIPJSONAPIParser.currentUser(try await get("users/me", credentials)).name
+    func verify(_ credentials: StudIPCredentials) async throws -> StudIPUser {
+        try StudIPJSONAPIParser.currentUser(try await get("users/me", credentials)).user
     }
 
     func courses(_ credentials: StudIPCredentials) async throws -> [StudIPCourse] {
@@ -60,8 +61,15 @@ struct StudIPJSONAPIClient: StudIPService {
         var request = URLRequest(url: url)
         request.timeoutInterval = 60
         request.setValue(accept, forHTTPHeaderField: "Accept")
-        let token = Data("\(credentials.account.username):\(credentials.password)".utf8).base64EncodedString()
-        request.setValue("Basic \(token)", forHTTPHeaderField: "Authorization")
+        switch credentials.authorization {
+        case .password(let password):
+            let token = Data("\(credentials.account.username):\(password)".utf8).base64EncodedString()
+            request.setValue("Basic \(token)", forHTTPHeaderField: "Authorization")
+        case .session(let cookieHeader):
+            // Genau die Cookies der Browser-Anmeldung senden, nicht die des gemeinsamen Cookie-Speichers.
+            request.httpShouldHandleCookies = false
+            request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
+        }
 
         let data: Data
         let response: URLResponse
@@ -71,6 +79,11 @@ struct StudIPJSONAPIClient: StudIPService {
             throw StudIPError.offline
         }
         guard let http = response as? HTTPURLResponse else { throw StudIPError.invalidResponse }
+        // Eine abgelaufene Sitzung landet je nach Server auf 401 oder auf der HTML-Anmeldeseite.
+        let isLoginPage = accept.contains("json") && http.mimeType == "text/html"
+        if credentials.usesSession, http.statusCode == 401 || isLoginPage {
+            throw StudIPError.sessionExpired
+        }
         switch http.statusCode {
         case 200...299: return data
         case 401: throw StudIPError.unauthorized
