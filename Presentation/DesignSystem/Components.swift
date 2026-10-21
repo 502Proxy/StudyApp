@@ -251,6 +251,14 @@ struct PillTabBar<Item: Hashable & Identifiable>: View {
     }
 
     var body: some View {
+        // Wird es eng, zeigen nur noch der gewählte Bereich Titel und Symbol, die übrigen nur ihr Symbol.
+        ViewThatFits(in: .horizontal) {
+            bar(compact: false)
+            bar(compact: true)
+        }
+    }
+
+    private func bar(compact: Bool) -> some View {
         HStack(spacing: 4) {
             ForEach(items) { item in
                 let isSelected = item == selection
@@ -258,6 +266,7 @@ struct PillTabBar<Item: Hashable & Identifiable>: View {
                     withAnimation(.snappy(duration: 0.22)) { selection = item }
                 } label: {
                     Label(title(item), systemImage: systemImage(item))
+                        .labelStyle(TabLabelStyle(showsTitle: !compact || isSelected))
                         .font(.system(size: 12.5, weight: isSelected ? .semibold : .medium))
                         .foregroundStyle(isSelected ? Theme.textPrimary : Theme.textSecondary)
                         .padding(.horizontal, 12)
@@ -273,11 +282,24 @@ struct PillTabBar<Item: Hashable & Identifiable>: View {
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .help(title(item))
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
         .padding(4)
         .background(Theme.surfaceSecondary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+private struct TabLabelStyle: LabelStyle {
+    let showsTitle: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        if showsTitle {
+            Label(configuration)
+        } else {
+            configuration.icon
+        }
     }
 }
 

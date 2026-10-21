@@ -21,8 +21,15 @@ struct StudIPJSONAPIClient: StudIPService {
     }
 
     func files(inCourse courseID: String, _ credentials: StudIPCredentials) async throws -> [StudIPFile] {
-        try await allResources("courses/\(courseID)/file-refs", credentials)
-            .compactMap(StudIPJSONAPIParser.file)
+        let resources = try await allResources("courses/\(courseID)/file-refs", credentials)
+        // Ohne Ordnerliste landen alle Dateien im Hauptordner – kein Grund, den Abgleich abzubrechen.
+        let folders = (try? await allResources("courses/\(courseID)/folders", credentials)) ?? []
+        let paths = StudIPJSONAPIParser.folderPaths(folders)
+        return resources.compactMap { resource in
+            guard var file = StudIPJSONAPIParser.file(resource) else { return nil }
+            file.folderPath = StudIPJSONAPIParser.parentFolderID(resource).flatMap { paths[$0] } ?? ""
+            return file
+        }
     }
 
     func download(_ file: StudIPFile, _ credentials: StudIPCredentials) async throws -> Data {
