@@ -65,6 +65,16 @@ xcodebuild -project StudyApp.xcodeproj -scheme StudyApp -configuration Release \
 APP="$ARCHIVE/Products/Applications/StudyApp.app"
 [[ -d "$APP" ]] || { echo "✗ StudyApp.app wurde nicht gefunden: $APP" >&2; exit 1; }
 
+# Startet die App überhaupt? dyld lädt Sparkle nur bei gleicher Team-ID oder abgeschalteter Library Validation.
+team_id() { codesign -dv "$1" 2>&1 | sed -n 's/^TeamIdentifier=//p'; }
+SPARKLE_FRAMEWORK="$APP/Contents/Frameworks/Sparkle.framework"
+if [[ -d "$SPARKLE_FRAMEWORK" && "$(team_id "$APP")" != "$(team_id "$SPARKLE_FRAMEWORK")" ]] \
+    && ! codesign -d --entitlements - "$APP" 2>/dev/null | grep -q "disable-library-validation"; then
+    echo "✗ App und Sparkle.framework haben verschiedene Team-IDs – die App würde beim Start abstürzen." >&2
+    echo "  Entitlement com.apple.security.cs.disable-library-validation fehlt (Config/StudyApp.entitlements)." >&2
+    exit 1
+fi
+
 # 3. DMG mit Verknüpfung auf „Programme“
 echo "→ Erzeuge $(basename "$DMG") …"
 mkdir -p "$UPDATES_DIR"
