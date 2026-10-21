@@ -35,7 +35,7 @@ enum MarkdownHTMLRenderer {
     // MARK: Markdown
 
     private static func markdownHTML(_ source: String) -> String {
-        MarkdownBlockParser.parse(source).map(blockHTML).joined(separator: "\n")
+        MarkdownBlockParser.parse(source).map { blockHTML($0) }.joined(separator: "\n")
     }
 
     private static func blockHTML(_ block: MarkdownBlock) -> String {
@@ -49,7 +49,7 @@ enum MarkdownHTMLRenderer {
         case .horizontalRule:
             inner = "<hr>"
         case .table:
-            inner = block.table.map(tableHTML) ?? ""
+            inner = block.table.map { tableHTML($0) } ?? ""
         case .paragraph:
             if let marker = block.listMarker {
                 inner = "<div class=\"li\"><span class=\"marker\">\(escape(marker))</span><span>\(inlineHTML(block))</span></div>"

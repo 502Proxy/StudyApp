@@ -35,9 +35,9 @@ enum ViewPreferences {
 
 /// Schriftgröße für Notizen (Editor und Vorschau), einstellbar über ⌘+ / ⌘−.
 enum NoteFontSize {
-    static let standard: Double = 14
-    static let range: ClosedRange<Double> = 10...28
-    static let step: Double = 1
+    nonisolated static let standard: Double = 14
+    nonisolated static let range: ClosedRange<Double> = 10...28
+    nonisolated static let step: Double = 1
 
     static func larger(_ size: Double) -> Double { min(range.upperBound, size + step) }
     static func smaller(_ size: Double) -> Double { max(range.lowerBound, size - step) }

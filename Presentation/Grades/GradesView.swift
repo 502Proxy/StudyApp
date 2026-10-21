@@ -14,7 +14,7 @@ struct GradesView: View {
                 HStack(spacing: 14) {
                     metric(
                         title: "Notenschnitt",
-                        value: summary.weightedAverage.map(GradeScale.format) ?? "–",
+                        value: summary.weightedAverage.map { GradeScale.format($0) } ?? "–",
                         detail: summary.gradedModuleCount == 0 ? "Noch keine Noten" : "aus \(summary.gradedModuleCount - summary.failedModuleCount) bestandenen Modulen",
                         systemImage: "graduationcap",
                         tint: Theme.accent
@@ -127,8 +127,8 @@ private struct GradeRow: View {
         self.module = module
         self.viewModel = viewModel
         self.onOpen = onOpen
-        _creditsText = State(initialValue: module.credits.map(GradeScale.formatCredits) ?? "")
-        _gradeText = State(initialValue: module.grade.map(GradeScale.format) ?? "")
+        _creditsText = State(initialValue: module.credits.map { GradeScale.formatCredits($0) } ?? "")
+        _gradeText = State(initialValue: module.grade.map { GradeScale.format($0) } ?? "")
     }
 
     var body: some View {
@@ -193,8 +193,8 @@ private struct GradeRow: View {
     }
 
     private func commit() {
-        let currentCredits = module.credits.map(GradeScale.formatCredits) ?? ""
-        let currentGrade = module.grade.map(GradeScale.format) ?? ""
+        let currentCredits = module.credits.map { GradeScale.formatCredits($0) } ?? ""
+        let currentGrade = module.grade.map { GradeScale.format($0) } ?? ""
         guard creditsText.trimmed != currentCredits || gradeText.trimmed != currentGrade else { return }
         if !viewModel.updateGrade(of: module, creditsText: creditsText, gradeText: gradeText) {
             // Ungültige Eingabe: auf den gespeicherten Wert zurücksetzen, die Meldung zeigt RootView.
