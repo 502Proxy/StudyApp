@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4038669E3086CEC500EC91D7 /* Assets.xcassets in Copy Files */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		409391DB30881A720098AA8C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 409391DA30881A720098AA8C /* Sparkle */; };
 		409BB5C430801406004EC161 /* KaTeX in Resources */ = {isa = PBXBuildFile; fileRef = 409BB5C330801406004EC161 /* KaTeX */; };
 /* End PBXBuildFile section */
 
@@ -144,6 +145,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				409391DB30881A720098AA8C /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +217,7 @@
 			);
 			name = StudyApp;
 			packageProductDependencies = (
+				409391DA30881A720098AA8C /* Sparkle */,
 			);
 			productName = StudyApp;
 			productReference = 40336C1F307F945700D308EF /* StudyApp.app */;
@@ -295,6 +298,9 @@
 			);
 			mainGroup = 40F4A65A307EDDEA009E2F4B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				409391D930881A720098AA8C /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 40F4A65A307EDDEA009E2F4B;
 			projectDirPath = "";
@@ -497,6 +503,7 @@
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/StudyApp.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -518,7 +525,6 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
-				CODE_SIGN_ENTITLEMENTS = Config/StudyApp.entitlements;
 				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -546,6 +552,7 @@
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=macosx*]" = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/StudyApp.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -567,7 +574,6 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Config/Info.plist;
-				CODE_SIGN_ENTITLEMENTS = Config/StudyApp.entitlements;
 				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -708,6 +714,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		409391D930881A720098AA8C /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		409391DA30881A720098AA8C /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 409391D930881A720098AA8C /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 40F4A65B307EDDEA009E2F4B /* Project object */;
 }
