@@ -86,15 +86,16 @@ enum ICalendarParser {
                     continue
                 }
 
-                var event = base.event
-                event.externalID = externalID
-                event.startDate = start
-                if base.event.isAllDay {
-                    event.endDate = calendar.date(byAdding: .day, value: dayLength, to: start) ?? start.addingTimeInterval(86_400)
-                } else {
-                    event.endDate = start.addingTimeInterval(duration)
-                }
-                events.append(event)
+                // Jedes Vorkommen braucht eine eigene ID: SwiftData speichert Termine eindeutig nach `id`,
+                // eine kopierte ID ließe von einer Serie nur einen Termin übrig.
+                let end = base.event.isAllDay
+                    ? calendar.date(byAdding: .day, value: dayLength, to: start) ?? start.addingTimeInterval(86_400)
+                    : start.addingTimeInterval(duration)
+                events.append(StudyCalendarEvent(
+                    id: UUID(), externalID: externalID, sourceID: base.event.sourceID,
+                    title: base.event.title, details: base.event.details, location: base.event.location,
+                    startDate: start, endDate: end, moduleID: base.event.moduleID, isAllDay: base.event.isAllDay
+                ))
             }
 
             // Ausnahmen, die keinem regulären Vorkommen entsprechen (z. B. außerhalb des Zeitfensters).
