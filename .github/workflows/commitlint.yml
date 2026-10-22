@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          # commitlint braucht die Commits des PRs, nicht nur den letzten.
+          fetch-depth: 0
 
       - name: Validate commit messages
         uses: wagoid/commitlint-github-action@v6

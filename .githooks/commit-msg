@@ -1,0 +1,3 @@
+#!/bin/bash
+# Prüft jede Commit-Nachricht auf Conventional Commits (wie die CI mit commitlint).
+exec "$(git rev-parse --show-toplevel)/scripts/qa.sh" commit-msg "$1"

@@ -185,7 +185,7 @@ struct QuickNavigatorIndexTests {
         let reference = NoteReference(note: note, module: analysis, sourceTitle: note.title)
         let items = QuickNavigatorIndex.items(modules: [analysis], notes: [reference])
 
-        #expect(!QuickNavigatorIndex.filter(items, query: "").contains(where: \.isNote))
+        #expect(!QuickNavigatorIndex.filter(items, query: "").contains { $0.isNote })
         let result = QuickNavigatorIndex.filter(items, query: "rolle")
         #expect(result.map(\.noteID) == [note.id])
         #expect(result.first?.location == .module(analysis.id, section: .notes))

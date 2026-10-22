@@ -20,6 +20,24 @@ struct ICalendarRecurrenceTests {
         berlin.dateComponents([.year, .month, .day, .hour, .minute], from: date)
     }
 
+    @Test func everyOccurrenceHasItsOwnID() throws {
+        let events = try parse("""
+        BEGIN:VCALENDAR
+        BEGIN:VEVENT
+        UID:ana
+        DTSTART:20261013T080000Z
+        DTEND:20261013T093000Z
+        RRULE:FREQ=WEEKLY;COUNT=6
+        SUMMARY:Analysis I
+        END:VEVENT
+        END:VCALENDAR
+        """)
+        #expect(events.count == 6)
+        // Die Datenbank speichert Termine eindeutig nach ID – gleiche IDs ließen nur einen übrig.
+        #expect(Set(events.map(\.id)).count == 6)
+        #expect(Set(events.map(\.externalID)).count == 6)
+    }
+
     @Test func weeklyLectureIsExpandedWithExceptionsAndMovedOccurrences() throws {
         let events = try parse("""
         BEGIN:VCALENDAR

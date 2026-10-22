@@ -25,10 +25,9 @@ struct FlashcardsView: View {
                 initialDraft: editorDraft,
                 initialCard: editingCard,
                 notes: viewModel.notes,
-                sourceLabel: { note in viewModel.sourceLabel(for: note) }
-            ) { draft in
-                viewModel.saveCard(draft)
-            }
+                sourceLabel: { note in viewModel.sourceLabel(for: note) },
+                onSave: { draft in viewModel.saveCard(draft) }
+            )
         }
         .confirmationDialog(
             "Karteikarte löschen?",

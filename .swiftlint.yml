@@ -1,0 +1,58 @@
+# SwiftLint-Regeln für StudyApp. Lokal: `scripts/qa.sh lint`, in der CI läuft es mit `--strict`.
+included:
+  - App
+  - Data
+  - Domain
+  - Presentation
+  - StudyAppTests
+excluded:
+  - Presentation/Resources
+  - build
+  - DerivedData
+
+disabled_rules:
+  # Mehrzeilige Aufrufe enden mal mit, mal ohne Komma – beides ist hier üblich.
+  - trailing_comma
+  # Kurze Namen wie `x`, `id` oder `i` sind in SwiftUI-Layouts und Tests lesbar genug.
+  - identifier_name
+
+opt_in_rules:
+  - empty_count
+  - first_where
+  - contains_over_first_not_nil
+  - sorted_first_last
+  - toggle_bool
+  - redundant_nil_coalescing
+  - fatal_error_message
+
+# Lange Zeilen sind hier fast immer deutsche UI-Texte; die Grenze fängt nur echte Ausreißer.
+line_length:
+  warning: 250
+  error: 300
+  ignores_comments: true
+  ignores_urls: true
+  ignores_interpolated_strings: true
+
+file_length:
+  warning: 700
+  error: 1000
+
+type_body_length:
+  warning: 450
+  error: 700
+
+function_body_length:
+  warning: 100
+  error: 150
+
+cyclomatic_complexity:
+  warning: 25
+  error: 35
+  ignores_case_statements: true
+
+large_tuple:
+  warning: 4
+  error: 5
+
+nesting:
+  type_level: 3

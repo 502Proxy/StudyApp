@@ -1,0 +1,9 @@
+# Hält die GitHub Actions der CI aktuell (Sparkle wird über Package.resolved bewusst von Hand angehoben).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci

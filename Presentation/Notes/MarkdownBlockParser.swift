@@ -333,8 +333,11 @@ enum MarkdownBlockParser {
                 var end = index
                 while end < line.endIndex, line[end] == "`" { end = line.index(after: end) }
                 let runLength = line.distance(from: index, to: end)
-                if backtickRun == 0 { backtickRun = runLength }
-                else if backtickRun == runLength { backtickRun = 0 }
+                if backtickRun == 0 {
+                    backtickRun = runLength
+                } else if backtickRun == runLength {
+                    backtickRun = 0
+                }
                 current += line[index..<end]
                 index = end
                 continue

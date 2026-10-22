@@ -1,0 +1,3 @@
+#!/bin/bash
+# Vor dem Push das ganze Projekt linten; die Tests laufen in der CI (lokal: scripts/qa.sh test).
+exec "$(git rev-parse --show-toplevel)/scripts/qa.sh" lint

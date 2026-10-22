@@ -28,19 +28,19 @@ enum ICalendarParser {
 
         // Verschobene oder geänderte Einzeltermine einer Serie, nach UID gruppiert.
         var overrides: [String: [[String: [Field]]]] = [:]
-        var masters: [[String: [Field]]] = []
+        var seriesEvents: [[String: [Field]]] = []
         for fields in components {
             if fields["RECURRENCE-ID"] != nil, let uid = fields["UID"]?.first?.value {
                 overrides[uid, default: []].append(fields)
             } else {
-                masters.append(fields)
+                seriesEvents.append(fields)
             }
         }
 
         var events: [StudyCalendarEvent] = []
         var consumedOverrides = Set<String>()
 
-        for fields in masters {
+        for fields in seriesEvents {
             guard let base = context.makeEvent(fields, sourceID: sourceID) else { continue }
             let uid = fields["UID"]?.first?.value
             if base.isCancelled {
@@ -86,15 +86,16 @@ enum ICalendarParser {
                     continue
                 }
 
-                var event = base.event
-                event.externalID = externalID
-                event.startDate = start
-                if base.event.isAllDay {
-                    event.endDate = calendar.date(byAdding: .day, value: dayLength, to: start) ?? start.addingTimeInterval(86_400)
-                } else {
-                    event.endDate = start.addingTimeInterval(duration)
-                }
-                events.append(event)
+                // Jedes Vorkommen braucht eine eigene ID: SwiftData speichert Termine eindeutig nach `id`,
+                // eine kopierte ID ließe von einer Serie nur einen Termin übrig.
+                let end = base.event.isAllDay
+                    ? calendar.date(byAdding: .day, value: dayLength, to: start) ?? start.addingTimeInterval(86_400)
+                    : start.addingTimeInterval(duration)
+                events.append(StudyCalendarEvent(
+                    id: UUID(), externalID: externalID, sourceID: base.event.sourceID,
+                    title: base.event.title, details: base.event.details, location: base.event.location,
+                    startDate: start, endDate: end, moduleID: base.event.moduleID, isAllDay: base.event.isAllDay
+                ))
             }
 
             // Ausnahmen, die keinem regulären Vorkommen entsprechen (z. B. außerhalb des Zeitfensters).
