@@ -49,14 +49,14 @@
 		40336C21307F945700D308EF /* StudyAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StudyAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40993992307FF19B00F43C4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		409BB5C330801406004EC161 /* KaTeX */ = {isa = PBXFileReference; lastKnownFileType = folder; name = KaTeX; path = Presentation/Resources/KaTeX; sourceTree = "<group>"; };
-		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = StudyApp_README.md; sourceTree = "<group>"; };
+		40AC6A0A307FCE0D0025452A /* StudyApp_README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = StudyApp_README.md; path = docs/history/StudyApp_README.md; sourceTree = "<group>"; };
 		40AC6A15307FD03D0025452A /* commitlint.config.mjs */ = {isa = PBXFileReference; lastKnownFileType = text; path = commitlint.config.mjs; sourceTree = "<group>"; };
 		40E753193087592100CA2C5A /* LICENSE 2 */ = {isa = PBXFileReference; lastKnownFileType = text; path = "LICENSE 2"; sourceTree = "<group>"; };
-		40E7531A3087592100CA2C5A /* MILESTONE2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE2.md; sourceTree = "<group>"; };
-		40E7531B3087592100CA2C5A /* MILESTONE3.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE3.md; sourceTree = "<group>"; };
-		40E7531C3087592100CA2C5A /* MILESTONE4_LEARNING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE4_LEARNING.md; sourceTree = "<group>"; };
-		40E7531D3087592100CA2C5A /* MILESTONE5_CALENDAR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE5_CALENDAR.md; sourceTree = "<group>"; };
-		40E7531E3087592100CA2C5A /* MILESTONE6_UNI_WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = MILESTONE6_UNI_WORKFLOW.md; sourceTree = "<group>"; };
+		40E7531A3087592100CA2C5A /* MILESTONE2.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE2.md; path = docs/history/MILESTONE2.md; sourceTree = "<group>"; };
+		40E7531B3087592100CA2C5A /* MILESTONE3.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE3.md; path = docs/history/MILESTONE3.md; sourceTree = "<group>"; };
+		40E7531C3087592100CA2C5A /* MILESTONE4_LEARNING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE4_LEARNING.md; path = docs/history/MILESTONE4_LEARNING.md; sourceTree = "<group>"; };
+		40E7531D3087592100CA2C5A /* MILESTONE5_CALENDAR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE5_CALENDAR.md; path = docs/history/MILESTONE5_CALENDAR.md; sourceTree = "<group>"; };
+		40E7531E3087592100CA2C5A /* MILESTONE6_UNI_WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE6_UNI_WORKFLOW.md; path = docs/history/MILESTONE6_UNI_WORKFLOW.md; sourceTree = "<group>"; };
 		40E7537A3087592100CA2C5A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
