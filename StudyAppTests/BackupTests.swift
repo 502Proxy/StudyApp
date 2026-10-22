@@ -234,6 +234,13 @@ struct BackupTests {
         }
     }
 
+    /// Arbitrary sub-second timestamps must survive; converting to seconds since 1970 loses the last bit.
+    @Test func datesRoundTripExactly() throws {
+        let dates = (0..<200).map { Date(timeIntervalSinceReferenceDate: 783_000_000 + Double($0) * 0.123_456_789) } + [Date()]
+        let decoded = try BackupJSONCoding.decode([Date].self, from: BackupJSONCoding.encode(dates))
+        #expect(decoded == dates)
+    }
+
     @Test func semesterIsEncodedCompactly() throws {
         let json = try #require(String(bytes: BackupJSONCoding.encode([Semester(term: .winter, year: 2025)]), encoding: .utf8))
         #expect(json.contains("\"2025W\""))

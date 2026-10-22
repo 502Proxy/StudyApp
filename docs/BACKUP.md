@@ -19,7 +19,7 @@ data.json       BackupSnapshot: modules, slideDocuments, notes, flashcards, stud
 files/…         stored files with the same relative paths as in the app's storage
 ```
 
-- JSON uses sorted keys; dates are seconds since 1970 (exact, unlike ISO 8601 without fractions); a semester is its raw value such as `"2025W"`.
+- JSON uses sorted keys; dates are seconds since 1 January 2001, Foundation's native representation (exact, unlike ISO 8601 or seconds since 1970); a semester is its raw value such as `"2025W"`.
 - Entities are encoded with their `Codable` conformance. New optional properties keep older backups readable. Incompatible changes require increasing `BackupManifest.currentFormatVersion`; archives with a newer version are rejected with a clear message.
 
 ## Restore
