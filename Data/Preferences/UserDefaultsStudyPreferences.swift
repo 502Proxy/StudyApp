@@ -11,6 +11,7 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         static let lectureLeadMinutes = "settings.lectureLeadMinutes"
         static let ignoredCourseKeys = "moduleDetection.ignoredKeys"
         static let lastAutoOpenedLecture = "autopilot.lastHandledLecture"
+        static let notificationSettings = "notifications.settings"
         static func lastPage(_ documentID: UUID) -> String { "reading.page.\(documentID.uuidString)" }
         static func lastDocument(_ moduleID: UUID) -> String { "reading.document.\(moduleID.uuidString)" }
     }
@@ -51,6 +52,15 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
     var lastAutoOpenedLecture: String? {
         get { defaults.string(forKey: Key.lastAutoOpenedLecture) }
         set { defaults.set(newValue, forKey: Key.lastAutoOpenedLecture) }
+    }
+
+    /// Stored as JSON; unreadable or missing data falls back to the defaults.
+    var notificationSettings: NotificationSettings {
+        get {
+            defaults.data(forKey: Key.notificationSettings)
+                .flatMap { try? JSONDecoder().decode(NotificationSettings.self, from: $0) } ?? NotificationSettings()
+        }
+        set { defaults.set(try? JSONEncoder().encode(newValue), forKey: Key.notificationSettings) }
     }
 
     func lastPage(for documentID: UUID) -> Int? {
