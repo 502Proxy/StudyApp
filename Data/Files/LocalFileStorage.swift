@@ -31,7 +31,10 @@ struct LocalFileStorage: FileStorage {
         defer {
             if accessing { sourceURL.stopAccessingSecurityScopedResource() }
         }
-        try FileManager.default.copyItem(at: sourceURL, to: url(for: fileName))
+        let target = url(for: fileName)
+        // Restored Stud.IP files live in subfolders that may not exist yet.
+        try FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: sourceURL, to: target)
     }
 
     func url(for fileName: String) -> URL {

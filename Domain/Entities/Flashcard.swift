@@ -1,7 +1,7 @@
 import Foundation
 
 /// A question/answer card owned by a module and optionally linked to its source note.
-struct Flashcard: Identifiable, Hashable, Sendable {
+struct Flashcard: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     let moduleID: UUID
     var sourceNoteID: UUID?

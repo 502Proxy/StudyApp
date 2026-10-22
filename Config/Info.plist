@@ -12,5 +12,26 @@
 	<string>bx/CxB630oeZ/rwfnxVVjoUkspYJ3NZN/ADFIlQG8f4=</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>86400</integer>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>germany.oldenburg.mueller.tristan.studyapp.backup</string>
+			<key>UTTypeDescription</key>
+			<string>StudyApp-Backup</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.archive</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>studyappbackup</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

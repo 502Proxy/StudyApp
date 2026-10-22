@@ -7,7 +7,7 @@ import Foundation
 ///
 /// Free module notes (e.g. a note per lecture, written without any PDF) use the module's ID
 /// as `slideDocumentID`. This keeps the storage schema unchanged; `isModuleNote(of:)` tells them apart.
-struct LectureNote: Identifiable, Hashable, Sendable {
+struct LectureNote: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     /// ID of the slide document, or the module's ID for a free module note.
     let slideDocumentID: UUID

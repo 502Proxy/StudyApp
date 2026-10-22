@@ -5,6 +5,7 @@ struct SettingsView: View {
     let settings: any StudySettingsStore
     let updater: AppUpdater
     let studIP: StudIPViewModel
+    let backup: BackupViewModel
 
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
@@ -51,6 +52,8 @@ struct SettingsView: View {
             }
 
             StudIPSettingsSection(viewModel: studIP)
+
+            BackupSettingsSection(viewModel: backup)
 
             Section {
                 LabeledContent("Installiert", value: AppUpdater.versionText())

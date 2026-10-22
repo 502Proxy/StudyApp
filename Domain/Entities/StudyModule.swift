@@ -1,7 +1,7 @@
 import Foundation
 
 /// Ein Studienmodul, z. B. "Analysis I" mit Kürzel "MAT101".
-struct StudyModule: Identifiable, Hashable, Sendable {
+struct StudyModule: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     var name: String
     var code: String

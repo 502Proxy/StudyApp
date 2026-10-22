@@ -11,6 +11,7 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         static let lectureLeadMinutes = "settings.lectureLeadMinutes"
         static let ignoredCourseKeys = "moduleDetection.ignoredKeys"
         static let lastAutoOpenedLecture = "autopilot.lastHandledLecture"
+        static let automaticBackups = "backup.automatic"
         static func lastPage(_ documentID: UUID) -> String { "reading.page.\(documentID.uuidString)" }
         static func lastDocument(_ moduleID: UUID) -> String { "reading.document.\(moduleID.uuidString)" }
     }
@@ -51,6 +52,11 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
     var lastAutoOpenedLecture: String? {
         get { defaults.string(forKey: Key.lastAutoOpenedLecture) }
         set { defaults.set(newValue, forKey: Key.lastAutoOpenedLecture) }
+    }
+
+    var automaticBackups: Bool {
+        get { bool(Key.automaticBackups, default: true) }
+        set { defaults.set(newValue, forKey: Key.automaticBackups) }
     }
 
     func lastPage(for documentID: UUID) -> Int? {

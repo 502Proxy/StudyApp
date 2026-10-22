@@ -1,7 +1,7 @@
 import Foundation
 
 /// Eine Datei aus dem Stud.IP-Dateibereich eines Moduls, mit Stand der lokalen Kopie.
-struct CourseFile: Identifiable, Hashable, Sendable {
+struct CourseFile: Identifiable, Hashable, Codable, Sendable {
     let moduleID: UUID
     /// ID der Datei in Stud.IP.
     let remoteID: String
