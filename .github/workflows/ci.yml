@@ -45,7 +45,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Swift-Pakete aus dem Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .spm
           key: spm-${{ hashFiles('StudyApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
