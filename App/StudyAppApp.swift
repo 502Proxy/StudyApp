@@ -5,12 +5,15 @@ import SwiftUI
 struct StudyAppApp: App {
     private let container: AppContainer
     private let autopilot: LectureAutopilot
+    /// Installed in `init` so a click that launches the app is not lost.
+    private let notificationResponder: NotificationResponder
     @State private var modulesViewModel: ModulesViewModel
     @State private var calendarViewModel: StudyCalendarViewModel
     @State private var todayViewModel: TodayViewModel
     @State private var assignmentsViewModel: AssignmentsViewModel
     @State private var navigation: AppNavigation
     @State private var studIPViewModel: StudIPViewModel
+    @State private var notificationsViewModel: NotificationsViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
 
@@ -44,6 +47,17 @@ struct StudyAppApp: App {
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
             _studIPViewModel = State(initialValue: studIP)
+            let notifications = container.makeNotificationsViewModel()
+            studIP.onBackgroundSyncChanges = { summary in
+                Task { await notifications.notifyNewFiles(summary) }
+            }
+            _notificationsViewModel = State(initialValue: notifications)
+            let responder = NotificationResponder()
+            responder.onOpen = { target in
+                Self.open(target, navigation: navigation)
+            }
+            responder.install()
+            notificationResponder = responder
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -94,9 +108,14 @@ struct StudyAppApp: App {
         }
 
         Settings {
-            SettingsView(settings: container.preferences, updater: updater, studIP: studIPViewModel)
-                .tint(Theme.accent)
-                .preferredColorScheme(appearance.colorScheme)
+            SettingsView(
+                settings: container.preferences,
+                updater: updater,
+                studIP: studIPViewModel,
+                notifications: notificationsViewModel
+            )
+            .tint(Theme.accent)
+            .preferredColorScheme(appearance.colorScheme)
         }
     }
 
@@ -116,6 +135,17 @@ struct StudyAppApp: App {
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
         await studIPViewModel.syncIfDue()
+        await notificationsViewModel.refresh()
+    }
+
+    /// Opens what a clicked notification refers to.
+    private static func open(_ target: NotificationTarget, navigation: AppNavigation) {
+        NSApplication.shared.activate()
+        switch target {
+        case .lecture(let moduleID): navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
+        case .assignment(let moduleID): navigation.show(module: moduleID, section: .assignments)
+        case .today: navigation.showToday()
+        }
     }
 
     /// Hält „läuft gerade“, Fortschrittsbalken und „als Nächstes“ aktuell.
@@ -134,6 +164,8 @@ struct StudyAppApp: App {
             try? await Task.sleep(for: .seconds(300))
             await calendarViewModel.refreshStaleSubscriptions()
             await studIPViewModel.syncIfDue()
+            // Picks up new or moved lectures and assignments.
+            await notificationsViewModel.refresh()
         }
     }
 }
