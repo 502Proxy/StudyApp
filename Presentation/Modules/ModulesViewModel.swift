@@ -76,6 +76,7 @@ final class ModulesViewModel {
         calendarRepository: (any StudyCalendarRepository)? = nil,
         assignmentRepository: (any AssignmentRepository)? = nil,
         courseFileRepository: (any CourseFileRepository)? = nil,
+        examRepository: (any ExamRepository)? = nil,
         settings: any StudySettingsStore
     ) {
         self.settings = settings
@@ -93,7 +94,8 @@ final class ModulesViewModel {
             fileStorage: fileStorage,
             calendarRepository: calendarRepository,
             assignmentRepository: assignmentRepository,
-            courseFileRepository: courseFileRepository
+            courseFileRepository: courseFileRepository,
+            examRepository: examRepository
         )
     }
 
