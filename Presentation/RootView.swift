@@ -7,6 +7,7 @@ struct RootView: View {
     let todayViewModel: TodayViewModel
     @Bindable var assignmentsViewModel: AssignmentsViewModel
     @Bindable var studIPViewModel: StudIPViewModel
+    @Bindable var backupViewModel: BackupViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
     let makeCourseFilesViewModel: CourseFilesViewModelFactory
@@ -74,7 +75,9 @@ struct RootView: View {
             if destination == .today || destination == nil { todayViewModel.load() }
         }
         .overlay(alignment: .bottom) {
-            if let message = studIPViewModel.statusMessage {
+            if let message = backupViewModel.statusMessage {
+                StatusToast(message: message, systemImage: "externaldrive.badge.checkmark")
+            } else if let message = studIPViewModel.statusMessage {
                 StatusToast(message: message, systemImage: "arrow.down.doc")
             } else if navigation.destination != .calendar, let message = calendarViewModel.statusMessage {
                 StatusToast(message: message, systemImage: "wand.and.stars")
@@ -82,11 +85,14 @@ struct RootView: View {
         }
         .animation(.default, value: calendarViewModel.statusMessage)
         .animation(.default, value: studIPViewModel.statusMessage)
-        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage ?? studIPViewModel.errorMessage) {
+        .animation(.default, value: backupViewModel.statusMessage)
+        .backupRestoreConfirmation(backupViewModel)
+        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage ?? studIPViewModel.errorMessage ?? backupViewModel.errorMessage) {
             viewModel.errorMessage = nil
             todayViewModel.errorMessage = nil
             assignmentsViewModel.errorMessage = nil
             studIPViewModel.errorMessage = nil
+            backupViewModel.errorMessage = nil
         }
     }
 

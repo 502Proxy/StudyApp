@@ -11,6 +11,7 @@ struct StudyAppApp: App {
     @State private var assignmentsViewModel: AssignmentsViewModel
     @State private var navigation: AppNavigation
     @State private var studIPViewModel: StudIPViewModel
+    @State private var backupViewModel: BackupViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
 
@@ -44,6 +45,15 @@ struct StudyAppApp: App {
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
             _studIPViewModel = State(initialValue: studIP)
+            let backup = container.makeBackupViewModel()
+            // After a restore every screen shows the restored data.
+            backup.onRestored = {
+                modules.load()
+                calendar.load()
+                today.load()
+                assignments.load()
+            }
+            _backupViewModel = State(initialValue: backup)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -58,6 +68,7 @@ struct StudyAppApp: App {
                 todayViewModel: todayViewModel,
                 assignmentsViewModel: assignmentsViewModel,
                 studIPViewModel: studIPViewModel,
+                backupViewModel: backupViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -91,10 +102,11 @@ struct StudyAppApp: App {
                     .disabled(!updater.canCheckForUpdates)
             }
             AppCommands(navigation: navigation, calendar: calendarViewModel, assignments: assignmentsViewModel)
+            BackupCommands(viewModel: backupViewModel)
         }
 
         Settings {
-            SettingsView(settings: container.preferences, updater: updater, studIP: studIPViewModel)
+            SettingsView(settings: container.preferences, updater: updater, studIP: studIPViewModel, backup: backupViewModel)
                 .tint(Theme.accent)
                 .preferredColorScheme(appearance.colorScheme)
         }
@@ -116,6 +128,7 @@ struct StudyAppApp: App {
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
         await studIPViewModel.syncIfDue()
+        await backupViewModel.runAutomaticBackupIfDue()
     }
 
     /// Hält „läuft gerade“, Fortschrittsbalken und „als Nächstes“ aktuell.

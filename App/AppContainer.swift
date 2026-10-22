@@ -19,6 +19,8 @@ final class AppContainer {
     let studIPService: any StudIPService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
+    let backupArchiver: any BackupArchiving
+    let backupFolder: any BackupFolder
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
 
@@ -47,13 +49,16 @@ final class AppContainer {
             studIPAccountStore = KeychainStudIPAccountStore()
         }
 
+        backupArchiver = AppleArchiveBackupArchiver()
         if inMemory {
             // Für Previews und Tests: Dateien landen im temporären Ordner.
             let directory = FileManager.default.temporaryDirectory
                 .appending(path: "StudyApp-\(UUID().uuidString)", directoryHint: .isDirectory)
             fileStorage = try LocalFileStorage(baseDirectory: directory)
+            backupFolder = try LocalBackupFolder(directory: directory.appending(path: "Backups", directoryHint: .isDirectory))
         } else {
             fileStorage = try LocalFileStorage.applicationDefault()
+            backupFolder = try LocalBackupFolder.applicationDefault()
         }
     }
 
@@ -69,6 +74,31 @@ final class AppContainer {
             assignmentRepository: assignmentRepository,
             courseFileRepository: courseFileRepository,
             settings: preferences
+        )
+    }
+
+    /// Every repository holding user data, for operations such as backups that touch all of them.
+    var studyDataRepositories: StudyDataRepositories {
+        StudyDataRepositories(
+            modules: moduleRepository,
+            slides: slideRepository,
+            notes: noteRepository,
+            flashcards: flashcardRepository,
+            studySheets: studySheetRepository,
+            assignments: assignmentRepository,
+            calendar: studyCalendarRepository,
+            courseFiles: courseFileRepository,
+            files: fileStorage
+        )
+    }
+
+    func makeBackupViewModel() -> BackupViewModel {
+        BackupViewModel(
+            repositories: studyDataRepositories,
+            archiver: backupArchiver,
+            folder: backupFolder,
+            settings: preferences,
+            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
         )
     }
 

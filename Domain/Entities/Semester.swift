@@ -115,3 +115,22 @@ struct Semester: Hashable, Comparable, Sendable {
         return result
     }
 }
+
+// MARK: - Codable
+
+/// Encoded as its compact raw value (`"2025W"`), the same form the database uses.
+extension Semester: Codable {
+    nonisolated init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let rawValue = try container.decode(String.self)
+        guard let semester = Semester(rawValue: rawValue) else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid semester \(rawValue)")
+        }
+        self = semester
+    }
+
+    nonisolated func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(rawValue)
+    }
+}

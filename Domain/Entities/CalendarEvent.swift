@@ -1,6 +1,6 @@
 import Foundation
 
-struct StudyCalendarEvent: Identifiable, Hashable, Sendable {
+struct StudyCalendarEvent: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     var externalID: String
     var sourceID: UUID
@@ -14,7 +14,7 @@ struct StudyCalendarEvent: Identifiable, Hashable, Sendable {
     var isAllDay: Bool = false
 }
 
-struct CalendarSource: Identifiable, Hashable, Sendable {
+struct CalendarSource: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     var name: String
     var url: URL?

@@ -1,7 +1,7 @@
 import Foundation
 
 /// A structured, editable learning sheet compiled from selected lecture notes.
-struct StudySheet: Identifiable, Hashable, Sendable {
+struct StudySheet: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     let moduleID: UUID
     var title: String
