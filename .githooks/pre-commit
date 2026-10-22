@@ -1,0 +1,8 @@
+#!/bin/bash
+# SwiftLint nur für die vorgemerkten Swift-Dateien – schnell genug für jeden Commit.
+set -euo pipefail
+command -v swiftlint >/dev/null || { echo "Hinweis: SwiftLint fehlt (brew install swiftlint), Prüfung übersprungen."; exit 0; }
+files=()
+while IFS= read -r file; do files+=("$file"); done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
+((${#files[@]} == 0)) && exit 0
+swiftlint lint --strict --quiet --force-exclude "${files[@]}"

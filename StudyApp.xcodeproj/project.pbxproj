@@ -64,6 +64,9 @@
 		409BB5C1308013F0004EC161 /* Exceptions for ".github" folder in "StudyApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				dependabot.yml,
+				pull_request_template.md,
+				workflows/ci.yml,
 				workflows/commitlint.yml,
 			);
 			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;

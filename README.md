@@ -18,6 +18,7 @@ The application is built with SwiftUI and SwiftData, uses PDFKit to display and 
 - [Installation and setup](#installation-and-setup)
 - [Running the app](#running-the-app)
 - [Running tests](#running-tests)
+- [Quality assurance](#quality-assurance)
 - [Architecture](#architecture)
 - [Project structure](#project-structure)
 - [Data storage and privacy](#data-storage-and-privacy)
@@ -244,6 +245,24 @@ The test suite uses Apple's **Swift Testing** framework (`import Testing`, `@Tes
 4. Run **Product → Test** (`⌘U`).
 
 Tests cover domain use cases, note handling, Markdown parsing, flashcard scheduling, learning-sheet generation, and repository behavior. The source-only environment used to prepare this README allowed syntax and selected source-level checks, but not a full macOS app build. Run the entire suite locally on macOS before relying on release status.
+
+## Quality assurance
+
+`scripts/qa.sh` runs the same checks locally and in CI:
+
+| Command | What it does |
+| --- | --- |
+| `scripts/qa.sh` | SwiftLint (strict) and unit tests – run before pushing |
+| `scripts/qa.sh lint [--fix]` | SwiftLint with `.swiftlint.yml`; every warning fails |
+| `scripts/qa.sh test` | `xcodebuild test` without signing, result in `build/qa/Tests.xcresult` |
+| `scripts/qa.sh build` | Unsigned Release build |
+| `scripts/qa.sh release-check` | Sparkle key, feed URL, entitlement, valid appcast, release notes |
+| `scripts/qa.sh commit-msg "<message>"` | Conventional Commit check (same rules as commitlint) |
+| `scripts/qa.sh hooks` | Enables the Git hooks in `.githooks/` |
+
+One-time setup on a Mac: `brew install swiftlint xcbeautify` and `scripts/qa.sh hooks`. The hooks check every commit message, lint staged Swift files before a commit and lint the project before a push.
+
+GitHub Actions (`.github/workflows/ci.yml`) runs SwiftLint, the release check, the unit tests and a Release build on every pull request and on `main`; `commitlint.yml` checks the commit messages of a pull request. Dependabot keeps the actions up to date. To block merging red pull requests, add the checks **SwiftLint**, **Build & Tests (macOS)** and **commitlint** as required status checks in the ruleset for `main`.
 
 ## Architecture
 

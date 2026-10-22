@@ -42,3 +42,6 @@ private-key*.txt
 *.provisionprofile
 .env
 .env.*
+
+# QA: lokal geklonte Swift-Pakete und Testergebnisse
+.spm/

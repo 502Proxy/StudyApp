@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Ein neuer Push bricht den noch laufenden Lauf desselben Branches ab.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: SwiftLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - name: SwiftLint (streng)
+        run: scripts/qa.sh lint --ci
+
+  release-check:
+    name: Release-Voraussetzungen
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - run: scripts/qa.sh release-check
+
+  test:
+    name: Build & Tests (macOS)
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Xcode wählen
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Swift-Pakete aus dem Cache
+        uses: actions/cache@v4
+        with:
+          path: .spm
+          key: spm-${{ hashFiles('StudyApp.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+
+      - name: Unit-Tests
+        run: scripts/qa.sh test --ci
+
+      - name: Release-Build
+        run: scripts/qa.sh build --ci
+
+      - name: Testergebnis hochladen
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tests.xcresult
+          path: build/qa/Tests.xcresult
+          retention-days: 7
