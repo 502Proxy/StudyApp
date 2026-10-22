@@ -34,7 +34,7 @@ struct SwiftDataModuleRepositoryTests {
 
     @Test func updateUnknownModuleThrowsNotFound() throws {
         let container = try Persistence.makeContainer(inMemory: true)
-        try withExtendedLifetime(container) {
+        withExtendedLifetime(container) {
             let repository = SwiftDataModuleRepository(context: container.mainContext)
             let ghost = StudyModule(
                 id: UUID(), name: "Ghost", code: "",

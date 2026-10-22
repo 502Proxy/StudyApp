@@ -6,8 +6,9 @@ struct CalendarMonthGridTests {
     private func makeCalendar(firstWeekday: Int) -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Berlin") ?? .gmt
-        calendar.firstWeekday = firstWeekday
+        // Erst das Gebietsschema, dann der Wochenbeginn: `locale` setzt `firstWeekday` sonst zurück.
         calendar.locale = Locale(identifier: "de_DE")
+        calendar.firstWeekday = firstWeekday
         return calendar
     }
 

@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import StudyApp
 
+@MainActor
 struct StudyCalendarEventTests {
     private var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)

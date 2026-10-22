@@ -68,14 +68,33 @@ run_tests() {
     rm -rf "$RESULTS/Tests.xcresult"
     mkdir -p "$RESULTS"
     # UI-Tests brauchen Bedienungshilfen-Rechte, die es auf CI-Runnern nicht gibt.
-    xcodebuild test \
+    if ! xcodebuild test \
         -project StudyApp.xcodeproj -scheme StudyApp \
-        -destination "platform=macOS" \
+        -destination "platform=macOS,arch=$(uname -m)" \
         -skip-testing:StudyAppUITests \
         -clonedSourcePackagesDirPath "$ROOT/.spm" \
         -resultBundlePath "$RESULTS/Tests.xcresult" \
-        "${UNSIGNED[@]}" | pretty
+        "${UNSIGNED[@]}" | pretty; then
+        test_failures
+        fail "Tests fehlgeschlagen (Details: build/qa/Tests.xcresult)"
+    fi
     ok "Alle Tests bestanden (Ergebnis: build/qa/Tests.xcresult)"
+}
+
+# Fehlermeldungen der fehlgeschlagenen Tests mit Datei und Zeile – die xcodebuild-Ausgabe nennt nur die Namen.
+test_failures() {
+    [[ -d "$RESULTS/Tests.xcresult" ]] || return 0
+    xcrun xcresulttool get test-results summary --path "$RESULTS/Tests.xcresult" 2>/dev/null | python3 -c '
+import json, os, sys
+try:
+    failures = json.load(sys.stdin).get("testFailures", [])
+except ValueError:
+    sys.exit(0)
+ci = os.environ.get("GITHUB_ACTIONS") == "true"
+for failure in failures:
+    name, text = failure.get("testName", "?"), failure.get("failureText", "").strip()
+    print(f"::error title={name}::{text}" if ci else f"✗ {name}: {text}")
+' || true
 }
 
 release_check() {

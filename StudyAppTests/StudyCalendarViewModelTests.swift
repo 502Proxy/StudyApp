@@ -153,7 +153,9 @@ struct StudyCalendarViewModelTests {
         setup.viewModel.searchText = "analysis"
         #expect(setup.viewModel.searchResults.map(\.title) == ["Übung 3"])
         #expect(setup.viewModel.upcomingEvents(forModule: module.id).map(\.title) == ["Übung 3"])
-        #expect(setup.viewModel.module(for: event)?.id == module.id)
+        // `event` ist der Stand vor dem Verknüpfen; die Zuordnung steckt im neu geladenen Termin.
+        let linked = try #require(setup.viewModel.events.first { $0.id == event.id })
+        #expect(setup.viewModel.module(for: linked)?.id == module.id)
     }
 
     @Test func revealClearsSearchAndShowsTheEventsMonth() async throws {
