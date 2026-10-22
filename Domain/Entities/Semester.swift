@@ -3,7 +3,7 @@ import Foundation
 /// Ein Hochschulsemester nach deutscher Zählung: Sommersemester April–September,
 /// Wintersemester Oktober bis März des Folgejahres.
 struct Semester: Hashable, Comparable, Sendable {
-    enum Term: String, Sendable {
+    nonisolated enum Term: String, Sendable {
         case summer = "S"
         case winter = "W"
     }
@@ -12,7 +12,8 @@ struct Semester: Hashable, Comparable, Sendable {
     /// Jahr, in dem das Semester beginnt (WiSe 2025/26 → 2025).
     let year: Int
 
-    init(term: Term, year: Int) {
+    // `nonisolated`, weil SwiftData-Modelle (nicht auf dem Main Actor) Semester aus der Datenbank lesen.
+    nonisolated init(term: Term, year: Int) {
         self.term = term
         self.year = year
     }
@@ -48,9 +49,9 @@ struct Semester: Hashable, Comparable, Sendable {
     // MARK: Speicherung
 
     /// Kompakte Form für die Datenbank, z. B. „2025W“.
-    var rawValue: String { "\(year)\(term.rawValue)" }
+    nonisolated var rawValue: String { "\(year)\(term.rawValue)" }
 
-    init?(rawValue: String) {
+    nonisolated init?(rawValue: String) {
         guard let termCharacter = rawValue.last,
               let term = Term(rawValue: String(termCharacter)),
               let year = Int(rawValue.dropLast()) else { return nil }

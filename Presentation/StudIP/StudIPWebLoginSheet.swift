@@ -6,7 +6,7 @@ import WebKit
 struct StudIPWebLoginSheet: View {
     let server: URL
     /// Prüft einen Cookie-Header und übernimmt ihn bei Erfolg.
-    let onSession: (String) async -> Bool
+    let onSession: @MainActor @Sendable (String) async -> Bool
 
     @Environment(\.dismiss) private var dismiss
     @State private var isChecking = false
@@ -55,7 +55,7 @@ struct StudIPWebLoginSheet: View {
 private struct StudIPLoginWebView: NSViewRepresentable {
     let url: URL
     let server: URL
-    let probe: @MainActor (String) async -> Bool
+    let probe: @MainActor @Sendable (String) async -> Bool
 
     func makeCoordinator() -> Coordinator {
         Coordinator(server: server, probe: probe)
@@ -76,13 +76,13 @@ private struct StudIPLoginWebView: NSViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
         private let server: URL
-        private let probe: @MainActor (String) async -> Bool
+        private let probe: @MainActor @Sendable (String) async -> Bool
         private var isProbing = false
         /// Eine weitere Seite wurde geladen, während noch geprüft wurde – danach erneut prüfen.
         private var needsRecheck = false
         private var isDone = false
 
-        init(server: URL, probe: @escaping @MainActor (String) async -> Bool) {
+        init(server: URL, probe: @escaping @MainActor @Sendable (String) async -> Bool) {
             self.server = server
             self.probe = probe
         }
