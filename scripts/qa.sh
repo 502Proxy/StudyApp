@@ -58,9 +58,19 @@ build() {
     xcodebuild build \
         -project StudyApp.xcodeproj -scheme StudyApp -configuration Release \
         -destination "generic/platform=macOS" \
+        -derivedDataPath "$RESULTS/DerivedData" \
         -clonedSourcePackagesDirPath "$ROOT/.spm" \
         "${UNSIGNED[@]}" | pretty
+    check_bundle "$RESULTS/DerivedData/Build/Products/Release/StudyApp.app"
     ok "Build erfolgreich"
+}
+
+# Inhalte, die nur ein korrekt eingerichtetes Projekt ins App-Bundle bringt.
+check_bundle() {
+    local resources="$1/Contents/Resources"
+    [[ -f "$resources/AppIcon.icns" ]] || fail "App-Icon fehlt im Bundle – liegt Assets.xcassets in „Copy Bundle Resources“?"
+    [[ -f "$resources/Assets.car" ]] || fail "Kompilierter Asset-Katalog (Assets.car) fehlt im Bundle."
+    ok "App-Icon und Asset-Katalog im Bundle"
 }
 
 run_tests() {

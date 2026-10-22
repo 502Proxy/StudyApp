@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4038669E3086CEC500EC91D7 /* Assets.xcassets in Copy Files */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4038669E3086CEC500EC91D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; };
 		409391DB30881A720098AA8C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 409391DA30881A720098AA8C /* Sparkle */; };
 		409BB5C430801406004EC161 /* KaTeX in Resources */ = {isa = PBXBuildFile; fileRef = 409BB5C330801406004EC161 /* KaTeX */; };
 /* End PBXBuildFile section */
@@ -28,20 +28,6 @@
 			remoteInfo = StudyApp;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		40A8DB2A307FC2E300F682DE /* Copy Files */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 8;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-				4038669E3086CEC500EC91D7 /* Assets.xcassets in Copy Files */,
-			);
-			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 1;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		40336C1F307F945700D308EF /* StudyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StudyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -204,7 +190,6 @@
 			buildPhases = (
 				40F4A65F307EDDEA009E2F4B /* Sources */,
 				40F4A660307EDDEA009E2F4B /* Frameworks */,
-				40A8DB2A307FC2E300F682DE /* Copy Files */,
 				409BB5C0308013EF004EC161 /* Resources */,
 			);
 			buildRules = (
@@ -321,6 +306,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4038669E3086CEC500EC91D7 /* Assets.xcassets in Resources */,
 				409BB5C430801406004EC161 /* KaTeX in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
