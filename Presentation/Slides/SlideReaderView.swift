@@ -523,6 +523,7 @@ private struct AnnotationListView: View {
 
     var body: some View {
         // Das Lesen von `annotationRevision` sorgt dafür, dass die Liste nach jeder Änderung neu berechnet wird.
+        // swiftlint:disable:next redundant_discardable_let
         let _ = controller.annotationRevision
         let summaries = controller.annotationSummaries()
         if summaries.isEmpty {

@@ -28,19 +28,19 @@ enum ICalendarParser {
 
         // Verschobene oder geänderte Einzeltermine einer Serie, nach UID gruppiert.
         var overrides: [String: [[String: [Field]]]] = [:]
-        var masters: [[String: [Field]]] = []
+        var seriesEvents: [[String: [Field]]] = []
         for fields in components {
             if fields["RECURRENCE-ID"] != nil, let uid = fields["UID"]?.first?.value {
                 overrides[uid, default: []].append(fields)
             } else {
-                masters.append(fields)
+                seriesEvents.append(fields)
             }
         }
 
         var events: [StudyCalendarEvent] = []
         var consumedOverrides = Set<String>()
 
-        for fields in masters {
+        for fields in seriesEvents {
             guard let base = context.makeEvent(fields, sourceID: sourceID) else { continue }
             let uid = fields["UID"]?.first?.value
             if base.isCancelled {

@@ -10,6 +10,6 @@ struct SlideDocument: Identifiable, Hashable, Sendable {
     let pageCount: Int
     let importedAt: Date
     /// Herkunft aus Stud.IP (Datei-ID und `chdate`), damit der Abgleich nichts doppelt lädt.
-    var remoteID: String? = nil
-    var remoteVersion: String? = nil
+    var remoteID: String?
+    var remoteVersion: String?
 }

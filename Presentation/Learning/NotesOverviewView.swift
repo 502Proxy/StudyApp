@@ -58,10 +58,9 @@ struct NotesOverviewView: View {
                 initialDraft: cardDraft,
                 initialCard: nil,
                 notes: viewModel.notes,
-                sourceLabel: { note in viewModel.sourceLabel(for: note) }
-            ) { draft in
-                viewModel.saveCard(draft)
-            }
+                sourceLabel: { note in viewModel.sourceLabel(for: note) },
+                onSave: { draft in viewModel.saveCard(draft) }
+            )
         }
         .confirmationDialog(
             "Notiz löschen?",

@@ -80,7 +80,7 @@ struct StudIPFile: Identifiable, Hashable, Sendable {
     var mimeType: String?
     /// Ordner innerhalb der Veranstaltung, z. B. „Übungen/Blatt 1“. Leer für den Hauptordner.
     var folderPath: String = ""
-    var changedAt: Date? = nil
+    var changedAt: Date?
 
     var isPDF: Bool {
         mimeType?.lowercased().contains("pdf") == true || name.lowercased().hasSuffix(".pdf")

@@ -68,7 +68,7 @@ struct ConnectStudIPUseCase {
 struct LinkStudIPCourseUseCase {
     let repository: any ModuleRepository
     /// Beim Wechsel der Veranstaltung gehören die bisher geladenen Dateien nicht mehr zum Modul.
-    var removeFiles: RemoveCourseFilesUseCase? = nil
+    var removeFiles: RemoveCourseFilesUseCase?
 
     @discardableResult
     func callAsFunction(_ module: StudyModule, courseID: String?) throws -> StudyModule {
@@ -147,8 +147,8 @@ struct SyncStudIPCoursesUseCase {
     let slideRepository: any SlideDocumentRepository
     let service: any StudIPService
     let importer: ImportSlideDocumentUseCase
-    var fileRepository: (any CourseFileRepository)? = nil
-    var storage: (any FileStorage)? = nil
+    var fileRepository: (any CourseFileRepository)?
+    var storage: (any FileStorage)?
     var autoDownloadLimit = Self.defaultAutoDownloadLimit
 
     func callAsFunction(modules: [StudyModule], credentials: StudIPCredentials) async throws -> StudIPSyncSummary {
