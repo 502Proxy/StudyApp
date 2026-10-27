@@ -64,6 +64,8 @@ xcodebuild -project StudyApp.xcodeproj -scheme StudyApp -configuration Release \
 
 APP="$ARCHIVE/Products/Applications/StudyApp.app"
 [[ -d "$APP" ]] || { echo "✗ StudyApp.app wurde nicht gefunden: $APP" >&2; exit 1; }
+[[ -f "$APP/Contents/Resources/AppIcon.icns" ]] \
+    || { echo "✗ App-Icon fehlt im Bundle – liegt Assets.xcassets in „Copy Bundle Resources“?" >&2; exit 1; }
 
 # Startet die App überhaupt? dyld lädt Sparkle nur bei gleicher Team-ID oder abgeschalteter Library Validation.
 team_id() { codesign -dv "$1" 2>&1 | sed -n 's/^TeamIdentifier=//p'; }
