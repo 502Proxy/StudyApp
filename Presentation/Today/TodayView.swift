@@ -5,6 +5,7 @@ struct TodayView: View {
     @Bindable var calendar: StudyCalendarViewModel
     @Bindable var today: TodayViewModel
     @Bindable var assignments: AssignmentsViewModel
+    @Bindable var exams: ExamsViewModel
     let onOpenModule: (UUID, ModuleSection, ModuleIntent?) -> Void
     let onShowCalendar: () -> Void
     let onCreateModule: () -> Void
@@ -19,6 +20,11 @@ struct TodayView: View {
                     scheduleCard
                         .frame(maxWidth: .infinity)
                     VStack(spacing: 18) {
+                        if !exams.upcoming.isEmpty {
+                            UpcomingExamsCard(exams: exams.upcoming) { overview in
+                                onOpenModule(overview.module.id, .exam, nil)
+                            }
+                        }
                         assignmentsCard
                         reviewCard
                     }
@@ -35,7 +41,10 @@ struct TodayView: View {
         }
         .background(Theme.background)
         .navigationTitle("Heute")
-        .task { today.load() }
+        .task {
+            today.load()
+            exams.load()
+        }
     }
 
     // MARK: Kopf
