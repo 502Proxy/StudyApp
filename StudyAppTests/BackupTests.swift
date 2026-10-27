@@ -58,12 +58,13 @@ private struct DataStore {
     let assignments = FakeAssignmentRepository()
     let calendar = InMemoryCalendarRepository()
     let courseFiles = FakeCourseFileRepository()
+    let exams = InMemoryExamRepository()
     let files = FakeFileStorage()
 
     var repositories: StudyDataRepositories {
         StudyDataRepositories(
             modules: modules, slides: slides, notes: notes, flashcards: flashcards, studySheets: studySheets,
-            assignments: assignments, calendar: calendar, courseFiles: courseFiles, files: files
+            assignments: assignments, calendar: calendar, courseFiles: courseFiles, exams: exams, files: files
         )
     }
 
@@ -107,6 +108,10 @@ private struct DataStore {
             localFileName: "StudIP/\(module.id.uuidString)/z1/Blatt1.zip", downloadedVersion: "1"
         )])
         try files.store(copyOf: URL(fileURLWithPath: "/tmp/Blatt1.zip"), as: "StudIP/\(module.id.uuidString)/z1/Blatt1.zip")
+        try exams.save(Exam(
+            id: UUID(), moduleID: module.id, title: "Klausur Analysis I", startDate: now.addingTimeInterval(14 * 86_400),
+            location: "Audimax", calendarEventKey: nil, completedPlanItems: ["review.final"]
+        ))
         return module
     }
 }
@@ -133,6 +138,7 @@ struct BackupTests {
         #expect(snapshot.calendarSources.count == 1)
         #expect(snapshot.calendarEvents.count == 1)
         #expect(snapshot.courseFiles.count == 1)
+        #expect(snapshot.exams.map(\.title) == ["Klausur Analysis I"])
         #expect(snapshot.referencedFiles == ["StudIP/\(module.id.uuidString)/z1/Blatt1.zip", "doc.pdf"])
     }
 

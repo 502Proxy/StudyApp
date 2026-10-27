@@ -22,6 +22,7 @@ struct MakeBackupSnapshotUseCase {
         snapshot.assignments = try repositories.assignments.all()
         snapshot.calendarSources = try repositories.calendar.sources()
         snapshot.calendarEvents = try repositories.calendar.events()
+        snapshot.exams = try repositories.exams.all()
         return snapshot
     }
 }
@@ -121,7 +122,8 @@ struct RestoreBackupUseCase {
             fileStorage: repositories.files,
             calendarRepository: repositories.calendar,
             assignmentRepository: repositories.assignments,
-            courseFileRepository: repositories.courseFiles
+            courseFileRepository: repositories.courseFiles,
+            examRepository: repositories.exams
         )
         for module in try repositories.modules.all() {
             try deleteModule(module)
@@ -132,6 +134,9 @@ struct RestoreBackupUseCase {
         }
         for source in try repositories.calendar.sources() {
             try repositories.calendar.deleteSource(id: source.id)
+        }
+        for exam in try repositories.exams.all() {
+            try repositories.exams.delete(id: exam.id)
         }
     }
 
@@ -149,6 +154,7 @@ struct RestoreBackupUseCase {
                 with: snapshot.calendarEvents.filter { $0.sourceID == source.id }
             )
         }
+        for exam in snapshot.exams { try repositories.exams.save(exam) }
         for (moduleID, files) in Dictionary(grouping: snapshot.courseFiles, by: \.moduleID) {
             try repositories.courseFiles.replaceCatalog(forModule: moduleID, with: files)
         }

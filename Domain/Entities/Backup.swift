@@ -15,6 +15,8 @@ struct BackupSnapshot: Codable, Equatable, Sendable {
     var calendarSources: [CalendarSource] = []
     var calendarEvents: [StudyCalendarEvent] = []
     var courseFiles: [CourseFile] = []
+    /// Manual exams plus the stored state (hidden, study plan progress) of detected ones.
+    var exams: [Exam] = []
 
     /// Names of the stored files (`FileStorage`) the snapshot refers to: slide PDFs and downloaded course files.
     var referencedFiles: [String] {

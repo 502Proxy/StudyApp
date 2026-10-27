@@ -12,6 +12,7 @@ struct StudyAppApp: App {
     @State private var navigation: AppNavigation
     @State private var studIPViewModel: StudIPViewModel
     @State private var backupViewModel: BackupViewModel
+    @State private var examsViewModel: ExamsViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
 
@@ -22,6 +23,7 @@ struct StudyAppApp: App {
             let calendar = container.makeStudyCalendarViewModel()
             let today = container.makeTodayViewModel()
             let assignments = container.makeAssignmentsViewModel()
+            let exams = container.makeExamsViewModel()
             let navigation = AppNavigation()
             let studIP = container.makeStudIPViewModel()
             // Neu verknüpfte Veranstaltungen und geladene Folien sofort in Seitenleiste und Startseite zeigen.
@@ -34,6 +36,7 @@ struct StudyAppApp: App {
                 modules.load()
                 today.load()
                 assignments.load()
+                exams.load()
             }
             self.container = container
             autopilot = LectureAutopilot(
@@ -52,8 +55,10 @@ struct StudyAppApp: App {
                 calendar.load()
                 today.load()
                 assignments.load()
+                exams.load()
             }
             _backupViewModel = State(initialValue: backup)
+            _examsViewModel = State(initialValue: exams)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -69,6 +74,7 @@ struct StudyAppApp: App {
                 assignmentsViewModel: assignmentsViewModel,
                 studIPViewModel: studIPViewModel,
                 backupViewModel: backupViewModel,
+                examsViewModel: examsViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -119,6 +125,7 @@ struct StudyAppApp: App {
         assignmentsViewModel.load()
         calendarViewModel.synchronizeModules()
         todayViewModel.load()
+        examsViewModel.load()
         if navigation.destination == nil {
             navigation.showToday()
         }

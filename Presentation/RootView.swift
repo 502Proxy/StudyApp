@@ -8,6 +8,7 @@ struct RootView: View {
     @Bindable var assignmentsViewModel: AssignmentsViewModel
     @Bindable var studIPViewModel: StudIPViewModel
     @Bindable var backupViewModel: BackupViewModel
+    @Bindable var examsViewModel: ExamsViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
     let makeCourseFilesViewModel: CourseFilesViewModelFactory
@@ -62,6 +63,9 @@ struct RootView: View {
         .sheet(isPresented: $isDetectingModules) {
             ModuleDetectionSheet(viewModel: calendarViewModel)
         }
+        .sheet(item: $examsViewModel.editor) { draft in
+            ExamEditorSheet(draft: draft) { examsViewModel.save($0) }
+        }
         .sheet(isPresented: $isLinkingStudIP) {
             StudIPCoursesSheet(viewModel: studIPViewModel, modules: viewModel.activeModules)
         }
@@ -69,6 +73,11 @@ struct RootView: View {
             navigation.prune(validModuleIDs: Set(modules.map(\.id)))
             calendarViewModel.load()
             todayViewModel.load()
+            examsViewModel.load()
+        }
+        .onChange(of: calendarViewModel.events) {
+            // New, moved or cancelled exam dates from a calendar refresh.
+            examsViewModel.load()
         }
         .onChange(of: navigation.destination) { _, destination in
             // Zähler (fällige Karten, Notizen) aktuell halten, wenn man zur Startseite oder in ein Modul wechselt.
@@ -87,12 +96,13 @@ struct RootView: View {
         .animation(.default, value: studIPViewModel.statusMessage)
         .animation(.default, value: backupViewModel.statusMessage)
         .backupRestoreConfirmation(backupViewModel)
-        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage ?? studIPViewModel.errorMessage ?? backupViewModel.errorMessage) {
+        .errorAlert(message: viewModel.errorMessage ?? todayViewModel.errorMessage ?? assignmentsViewModel.errorMessage ?? studIPViewModel.errorMessage ?? backupViewModel.errorMessage ?? examsViewModel.errorMessage) {
             viewModel.errorMessage = nil
             todayViewModel.errorMessage = nil
             assignmentsViewModel.errorMessage = nil
             studIPViewModel.errorMessage = nil
             backupViewModel.errorMessage = nil
+            examsViewModel.errorMessage = nil
         }
     }
 
@@ -106,6 +116,7 @@ struct RootView: View {
                 calendar: calendarViewModel,
                 today: todayViewModel,
                 assignments: assignmentsViewModel,
+                exams: examsViewModel,
                 onOpenModule: { moduleID, section, intent in
                     navigation.show(module: moduleID, section: section, intent: intent)
                 },
@@ -142,6 +153,7 @@ struct RootView: View {
                     slidesRevision: studIPViewModel.slidesRevision,
                     assignments: assignmentsViewModel,
                     studIP: studIPViewModel,
+                    exams: examsViewModel,
                     makeSlidesViewModel: makeSlidesViewModel,
                     makeLearningViewModel: makeLearningViewModel,
                     makeCourseFilesViewModel: makeCourseFilesViewModel,

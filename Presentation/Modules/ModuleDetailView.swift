@@ -16,6 +16,7 @@ struct ModuleDetailView: View {
     let referenceDate: Date
     let slidesRevision: Int
     let studIP: StudIPViewModel
+    let exams: ExamsViewModel
     let onLinkStudIP: () -> Void
     let assignments: AssignmentsViewModel
     let onShowEvent: (StudyCalendarEvent) -> Void
@@ -36,6 +37,7 @@ struct ModuleDetailView: View {
         slidesRevision: Int = 0,
         assignments: AssignmentsViewModel,
         studIP: StudIPViewModel,
+        exams: ExamsViewModel,
         makeSlidesViewModel: SlidesViewModelFactory,
         makeLearningViewModel: LearningViewModelFactory,
         makeCourseFilesViewModel: CourseFilesViewModelFactory,
@@ -52,6 +54,7 @@ struct ModuleDetailView: View {
         self.referenceDate = referenceDate
         self.slidesRevision = slidesRevision
         self.studIP = studIP
+        self.exams = exams
         self.onLinkStudIP = onLinkStudIP
         self.assignments = assignments
         self.onShowEvent = onShowEvent
@@ -91,6 +94,8 @@ struct ModuleDetailView: View {
                     FlashcardsView(viewModel: learningViewModel)
                 case .studySheets:
                     StudySheetsView(viewModel: learningViewModel)
+                case .exam:
+                    ExamSectionView(viewModel: exams, module: module)
                 case .files:
                     CourseFilesView(
                         viewModel: filesViewModel,
@@ -278,6 +283,15 @@ struct ModuleDetailView: View {
                         systemImage: "doc.text",
                         tint: Theme.success
                     ) { section = .studySheets }
+                    if let next = exams.exams(forModule: module.id).first {
+                        StatTile(
+                            title: "Klausur",
+                            value: next.countdown,
+                            detail: "\(Int((next.plan.progress * 100).rounded())) % des Lernplans erledigt",
+                            systemImage: "flag.checkered",
+                            tint: next.daysLeft <= 3 ? Theme.danger : Theme.accent
+                        ) { section = .exam }
+                    }
                     if module.studIPCourseID != nil {
                         StatTile(
                             title: "Dateien",

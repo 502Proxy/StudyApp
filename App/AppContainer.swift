@@ -21,6 +21,7 @@ final class AppContainer {
     let courseFileRepository: any CourseFileRepository
     let backupArchiver: any BackupArchiving
     let backupFolder: any BackupFolder
+    let examRepository: any ExamRepository
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
 
@@ -37,6 +38,7 @@ final class AppContainer {
         studyCalendarRepository = SwiftDataStudyCalendarRepository(context: context)
         assignmentRepository = SwiftDataAssignmentRepository(context: context)
         courseFileRepository = SwiftDataCourseFileRepository(context: context)
+        examRepository = SwiftDataExamRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
@@ -73,6 +75,7 @@ final class AppContainer {
             calendarRepository: studyCalendarRepository,
             assignmentRepository: assignmentRepository,
             courseFileRepository: courseFileRepository,
+            examRepository: examRepository,
             settings: preferences
         )
     }
@@ -88,6 +91,7 @@ final class AppContainer {
             assignments: assignmentRepository,
             calendar: studyCalendarRepository,
             courseFiles: courseFileRepository,
+            exams: examRepository,
             files: fileStorage
         )
     }
@@ -99,6 +103,16 @@ final class AppContainer {
             folder: backupFolder,
             settings: preferences,
             appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        )
+    }
+
+    func makeExamsViewModel() -> ExamsViewModel {
+        ExamsViewModel(
+            exams: examRepository,
+            calendarRepository: studyCalendarRepository,
+            modules: moduleRepository,
+            slides: slideRepository,
+            flashcards: flashcardRepository
         )
     }
 
