@@ -17,7 +17,7 @@ struct StudyAppApp: App {
     @State private var notificationsViewModel: NotificationsViewModel
     @State private var examsViewModel: ExamsViewModel
     @State private var updater = AppUpdater()
-    @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
+    @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
 
     init() {
         do {
