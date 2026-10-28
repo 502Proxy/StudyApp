@@ -11,6 +11,7 @@ import SwiftUI
 final class MenuBarController: NSObject {
     private let calendar: StudyCalendarViewModel
     private let today: TodayViewModel
+    private let studyTimer: StudyTimerViewModel
     private let navigation: AppNavigation
     private let defaults: UserDefaults
     private var statusItem: NSStatusItem?
@@ -20,11 +21,13 @@ final class MenuBarController: NSObject {
     init(
         calendar: StudyCalendarViewModel,
         today: TodayViewModel,
+        studyTimer: StudyTimerViewModel,
         navigation: AppNavigation,
         defaults: UserDefaults = .standard
     ) {
         self.calendar = calendar
         self.today = today
+        self.studyTimer = studyTimer
         self.navigation = navigation
         self.defaults = defaults
     }
@@ -63,11 +66,11 @@ final class MenuBarController: NSObject {
 
     // MARK: Label
 
-    /// Updates the label now and again whenever the lecture or the due cards change.
+    /// Updates the label now and again whenever the lecture, the due cards or the study timer change.
     private func observeSummary() {
         guard statusItem != nil else { return }
         let summary = withObservationTracking {
-            MenuBarSummary(calendar: calendar, dueCards: today.totalDue)
+            MenuBarSummary(calendar: calendar, dueCards: today.totalDue, studyTimer: studyTimer)
         } onChange: { [weak self] in
             Task { @MainActor in self?.observeSummary() }
         }
@@ -76,8 +79,7 @@ final class MenuBarController: NSObject {
 
     private func updateLabel(_ summary: MenuBarSummary) {
         guard let button = statusItem?.button else { return }
-        let symbol = summary.title.isEmpty ? "graduationcap" : "record.circle"
-        button.image = NSImage(systemSymbolName: symbol, accessibilityDescription: "StudyApp")
+        button.image = NSImage(systemSymbolName: summary.symbolName, accessibilityDescription: "StudyApp")
         button.title = summary.title.isEmpty ? "" : " \(summary.title)"
     }
 
@@ -98,6 +100,7 @@ final class MenuBarController: NSObject {
         popover.contentViewController = NSHostingController(rootView: MenuBarPopoverView(
             calendar: calendar,
             today: today,
+            studyTimer: studyTimer,
             onOpenLecture: { [weak self] moduleID in
                 self?.openMainWindow()
                 self?.navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)

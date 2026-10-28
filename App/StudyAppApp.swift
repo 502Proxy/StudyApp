@@ -33,7 +33,8 @@ struct StudyAppApp: App {
             let assignments = container.makeAssignmentsViewModel()
             let exams = container.makeExamsViewModel()
             let navigation = AppNavigation()
-            menuBar = MenuBarController(calendar: calendar, today: today, navigation: navigation)
+            let studyTimer = container.makeStudyTimerViewModel()
+            menuBar = MenuBarController(calendar: calendar, today: today, studyTimer: studyTimer, navigation: navigation)
             let studIP = container.makeStudIPViewModel()
             let announcements = container.makeAnnouncementsViewModel()
             studIP.onAnnouncementsSynced = { announcements.load() }
@@ -73,7 +74,6 @@ struct StudyAppApp: App {
             }
             responder.install()
             notificationResponder = responder
-            let studyTimer = container.makeStudyTimerViewModel()
             let backup = container.makeBackupViewModel()
             // After a restore every screen shows the restored data.
             backup.onRestored = {
