@@ -1,6 +1,6 @@
 import Foundation
 
-/// A canteen listed by OpenMensa.
+/// A canteen whose menu the app can show.
 struct Canteen: Identifiable, Hashable, Codable, Sendable {
     let id: Int
     var name: String

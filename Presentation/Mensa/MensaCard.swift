@@ -106,7 +106,7 @@ struct MensaSettingsSection: View {
         } header: {
             Text("Mensa")
         } footer: {
-            Text("Der Speiseplan kommt von OpenMensa. Nach dem Mittagessen zeigt „Heute“ schon den Plan für morgen.")
+            Text("Der Speiseplan kommt vom Studierendenwerk Oldenburg. Nach dem Mittagessen zeigt „Heute“ schon den Plan für morgen.")
         }
         .task { await viewModel.loadCanteens() }
     }

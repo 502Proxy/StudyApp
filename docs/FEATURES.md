@@ -103,9 +103,11 @@ Code: `App/Intents/`, `Domain/UseCases/QuickInfoUseCases.swift`
 
 ## Mensa
 
-Settings → Allgemein → Mensa picks a canteen near the University of Oldenburg (list from OpenMensa, nearest first). „Heute“ then shows its menu grouped by category with the student price; after 15:00 it shows tomorrow's menu. Closed days and missing menus are shown as such; the menu of a day is cached, and the app works without it offline.
+Settings → Allgemein → Mensa picks one of the university's canteens: **Mensa Uhlhornsweg** (Campus Haarentor) or **Mensa Wechloy**. „Heute“ then shows its menu grouped by counter with the student price and hints such as „vegan“; after 15:00 it shows tomorrow's menu. Closed days and missing menus are shown as such; the menu of a day is cached, and the app works without it offline.
 
-Code: `Domain/UseCases/MensaUseCases.swift`, `Data/Mensa/` (OpenMensa API v2), `Presentation/Mensa/`
+The menu comes from the Studierendenwerk Oldenburg (studierendenwerk-oldenburg.de/essen/speiseplaene-mensen). Its pages embed a menu system that returns a day as HTML (`POST inc/ajax-php_konnektor.inc.php`, `func=make_spl`, location 2 = Uhlhornsweg, 3 = Wechloy); `StudierendenwerkMenuParser` reads counters, meals, prices and icons from it. A canteen chosen from OpenMensa in an earlier version is replaced by Mensa Uhlhornsweg.
+
+Code: `Domain/UseCases/MensaUseCases.swift`, `Data/Mensa/` (Studierendenwerk Oldenburg), `Presentation/Mensa/`
 
 ## Spotlight
 

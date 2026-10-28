@@ -12,14 +12,6 @@ enum MensaSchedule {
     }
 }
 
-/// Canteens of the Studierendenwerk Oldenburg area, nearest first.
-enum MensaLocation {
-    /// University of Oldenburg, campus Haarentor.
-    static let oldenburgLatitude = 53.1478
-    static let oldenburgLongitude = 8.1814
-    static let searchRadius = 15.0
-}
-
 /// Loads a menu and keeps it for the rest of the day, so „Heute“ does not ask the server on every visit.
 @MainActor
 final class LoadCanteenMenuUseCase {

@@ -6,6 +6,7 @@ import SwiftUI
 struct MenuBarPopoverView: View {
     let calendar: StudyCalendarViewModel
     let today: TodayViewModel
+    let studyTimer: StudyTimerViewModel
     let onOpenLecture: (UUID) -> Void
     let onReviewCards: () -> Void
     let onOpenApp: () -> Void
@@ -13,13 +14,23 @@ struct MenuBarPopoverView: View {
 
     var body: some View {
         MenuBarContent(
-            summary: MenuBarSummary(calendar: calendar, dueCards: today.totalDue),
+            summary: MenuBarSummary(calendar: calendar, dueCards: today.totalDue, studyTimer: studyTimer),
             onOpenLecture: onOpenLecture,
             onReviewCards: onReviewCards,
+            onToggleTimer: toggleTimer,
             onOpenApp: onOpenApp
         )
         .tint(Theme.accent)
         .preferredColorScheme(appearance.colorScheme)
+    }
+
+    /// Starts or continues the timer, or pauses it while it runs.
+    private func toggleTimer() {
+        if studyTimer.timer.isRunning {
+            studyTimer.pause()
+        } else {
+            Task { await studyTimer.start() }
+        }
     }
 }
 
@@ -28,6 +39,7 @@ struct MenuBarContent: View {
     let summary: MenuBarSummary
     let onOpenLecture: (UUID) -> Void
     let onReviewCards: () -> Void
+    let onToggleTimer: () -> Void
     let onOpenApp: () -> Void
 
     var body: some View {
@@ -48,6 +60,8 @@ struct MenuBarContent: View {
             .buttonStyle(.plain)
             .disabled(summary.dueCards == 0)
             Divider()
+            timerSection
+            Divider()
             HStack {
                 Button("StudyApp öffnen", action: onOpenApp)
                 Spacer()
@@ -57,6 +71,29 @@ struct MenuBarContent: View {
         }
         .padding(14)
         .frame(width: 280)
+    }
+
+    @ViewBuilder
+    private var timerSection: some View {
+        if let timer = summary.studyTimer {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Lerntimer · \(timer.phaseTitle)")
+                        .font(Theme.Typography.small)
+                        .foregroundStyle(Theme.textSecondary)
+                    Text(timer.remainingText)
+                        .font(Theme.Typography.headline.monospacedDigit())
+                }
+                Spacer()
+                Button(timer.isRunning ? "Pause" : "Weiter", action: onToggleTimer)
+                    .controlSize(.small)
+            }
+        } else {
+            Button(action: onToggleTimer) {
+                Label("Lerntimer starten", systemImage: "timer")
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private func lectureSection(_ lecture: MenuBarSummary.Lecture) -> some View {

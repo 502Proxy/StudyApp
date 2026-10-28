@@ -33,7 +33,8 @@ struct StudyAppApp: App {
             let assignments = container.makeAssignmentsViewModel()
             let exams = container.makeExamsViewModel()
             let navigation = AppNavigation()
-            menuBar = MenuBarController(calendar: calendar, today: today, navigation: navigation)
+            let studyTimer = container.makeStudyTimerViewModel()
+            menuBar = MenuBarController(calendar: calendar, today: today, studyTimer: studyTimer, navigation: navigation)
             let studIP = container.makeStudIPViewModel()
             let announcements = container.makeAnnouncementsViewModel()
             studIP.onAnnouncementsSynced = { announcements.load() }
@@ -59,7 +60,6 @@ struct StudyAppApp: App {
             _todayViewModel = State(initialValue: today)
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
-            let studyTimer = container.makeStudyTimerViewModel()
             let intentServices = StudyAppIntentServices(container: container, studyTimer: studyTimer, navigation: navigation)
             AppDependencyManager.shared.add(dependency: intentServices)
             _studIPViewModel = State(initialValue: studIP)

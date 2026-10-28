@@ -56,7 +56,7 @@ final class AppContainer {
         studIPService = studIPClient
         studIPAnnouncementService = studIPClient
         studIPScheduleService = studIPClient
-        canteenService = OpenMensaClient()
+        canteenService = StudierendenwerkOldenburgClient()
         if inMemory {
             preferences = InMemoryStudyPreferences()
             studIPAccountStore = InMemoryStudIPAccountStore()

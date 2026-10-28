@@ -53,6 +53,7 @@ final class MensaViewModel {
     }
 
     func refresh() async {
+        await loadCanteens()
         guard let canteenID else {
             state = .off
             return
@@ -68,16 +69,19 @@ final class MensaViewModel {
         }
     }
 
-    /// Canteens around Oldenburg for the settings, nearest first.
+    /// The canteens for the settings, the default one first.
     func loadCanteens() async {
         guard canteens.isEmpty, !isLoadingCanteens else { return }
         isLoadingCanteens = true
         defer { isLoadingCanteens = false }
-        canteens = (try? await service.canteens(
-            nearLatitude: MensaLocation.oldenburgLatitude,
-            longitude: MensaLocation.oldenburgLongitude,
-            radius: MensaLocation.searchRadius
-        )) ?? []
+        canteens = (try? await service.canteens()) ?? []
+        adoptSupportedCanteen()
+    }
+
+    /// A canteen chosen from an earlier source (OpenMensa) is no longer offered; the default one replaces it.
+    private func adoptSupportedCanteen() {
+        guard let canteenID, let fallback = canteens.first, !canteens.contains(where: { $0.id == canteenID }) else { return }
+        settings.canteenID = fallback.id
     }
 
     static func priceText(_ price: Double?) -> String? {
