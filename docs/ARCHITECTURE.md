@@ -6,7 +6,7 @@ StudyApp follows a pragmatic Clean Architecture (ports and adapters). The goal i
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│ App            StudyAppApp (@main) · AppContainer · AppUpdater │  wires everything together
+│ App            AppLauncher (@main) · StudyAppApp · AppContainer │  wires everything together
 ├──────────────────────────────────────────────────────────────┤
 │ Presentation   SwiftUI views · @Observable view models         │
 ├──────────────────────────────────────────────────────────────┤
@@ -26,13 +26,15 @@ Dependencies point **inward**: Presentation and Data both depend on Domain, Doma
 | Presentation | `Presentation/` | Domain, SwiftUI, AppKit, WebKit | One folder per feature with views and view models; `DesignSystem/` for shared components and `Theme` |
 | Shared | `Shared/` | Foundation | Data contract between app and widget extension (`WidgetSnapshot`, `StudyAppLink`) |
 | Widgets | `Widgets/` | Shared, WidgetKit, SwiftUI | Widget extension; reads the snapshot only |
-| App | `App/` | everything | `AppContainer` (composition root), `StudyAppApp`, `AppUpdater` |
+| App | `App/` | everything | `AppContainer` (composition root), `AppLauncher`, `StudyAppApp`, `AppUpdater` |
 
 ## Composition root
 
 `App/AppContainer.swift` is the only place that knows concrete implementations. It creates the SwiftData container, every repository and adapter, and offers factory methods such as `makeModulesViewModel()` or `makeCourseFilesViewModel(module:)`. Views receive view models or factory closures (`SlidesViewModelFactory`, `CourseFilesViewModelFactory`) instead of creating dependencies themselves.
 
 `AppContainer(inMemory: true)` swaps in in-memory persistence and preferences for previews and tests.
+
+`AppLauncher` is the entry point: under XCTest it starts an empty host app instead of `StudyAppApp`, so launch work (database, sync, menu bar item) never runs during unit tests. On CI runners the menu bar scene kept the test host from finishing its launch.
 
 ## Data flow example: calendar subscription → module
 
