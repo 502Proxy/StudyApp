@@ -8,6 +8,7 @@ struct StudyAppApp: App {
     private let autopilot: LectureAutopilot
     /// Installed in `init` so a click that launches the app is not lost.
     private let notificationResponder: NotificationResponder
+    private let menuBar: MenuBarController
     @State private var modulesViewModel: ModulesViewModel
     @State private var calendarViewModel: StudyCalendarViewModel
     @State private var todayViewModel: TodayViewModel
@@ -22,7 +23,6 @@ struct StudyAppApp: App {
     @State private var mensaViewModel: MensaViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
-    @AppStorage(ViewPreferences.showsMenuBarItemKey) private var showsMenuBarItem = true
 
     init() {
         do {
@@ -33,6 +33,7 @@ struct StudyAppApp: App {
             let assignments = container.makeAssignmentsViewModel()
             let exams = container.makeExamsViewModel()
             let navigation = AppNavigation()
+            menuBar = MenuBarController(calendar: calendar, today: today, navigation: navigation)
             let studIP = container.makeStudIPViewModel()
             let announcements = container.makeAnnouncementsViewModel()
             studIP.onAnnouncementsSynced = { announcements.load() }
@@ -155,33 +156,6 @@ struct StudyAppApp: App {
             BackupCommands(viewModel: backupViewModel)
         }
 
-        MenuBarExtra(isInserted: $showsMenuBarItem) {
-            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
-                MenuBarContent(
-                    summary: summary,
-                    onOpenLecture: { moduleID in
-                        Self.bringToFront()
-                        navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
-                    },
-                    onReviewCards: {
-                        Self.bringToFront()
-                        // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
-                        if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
-                            navigation.show(module: moduleID, section: .flashcards)
-                        }
-                    },
-                    onOpenApp: { Self.bringToFront() }
-                )
-                .tint(Theme.accent)
-                .preferredColorScheme(appearance.colorScheme)
-            }
-        } label: {
-            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
-                MenuBarLabel(summary: summary)
-            }
-        }
-        .menuBarExtraStyle(.window)
-
         Settings {
             SettingsView(
                 settings: container.preferences,
@@ -210,6 +184,7 @@ struct StudyAppApp: App {
         if navigation.destination == nil {
             navigation.showToday()
         }
+        menuBar.install()
         autopilot.run(isLaunch: true)
 
         // Abonnements im Hintergrund auffrischen; eine dabei neu erkannte Vorlesung wird ebenfalls geöffnet.
@@ -221,12 +196,6 @@ struct StudyAppApp: App {
         publishWidgetSnapshot()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
-    }
-
-    /// Shows the main window, e.g. after a click in the menu bar.
-    private static func bringToFront() {
-        NSApplication.shared.activate()
-        NSApplication.shared.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
     }
 
     /// Keeps Spotlight in line with notes and study sheets; failures only cost search results.
