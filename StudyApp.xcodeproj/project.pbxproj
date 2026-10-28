@@ -10,6 +10,7 @@
 		4038669E3086CEC500EC91D7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 40993992307FF19B00F43C4C /* Assets.xcassets */; };
 		409391DB30881A720098AA8C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 409391DA30881A720098AA8C /* Sparkle */; };
 		409BB5C430801406004EC161 /* KaTeX in Resources */ = {isa = PBXBuildFile; fileRef = 409BB5C330801406004EC161 /* KaTeX */; };
+		4EFA4AD772182BAE3B4BB0ED /* StudyAppWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8344644A76E5CBB87DCF5E0C /* StudyAppWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,7 +28,28 @@
 			remoteGlobalIDString = 40F4A662307EDDEA009E2F4B;
 			remoteInfo = StudyApp;
 		};
+		F920A1E111FEE15BD8890576 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 40F4A65B307EDDEA009E2F4B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7244174F28632C5EF0D4C196;
+			remoteInfo = StudyAppWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A273B08A88DE205EB5A882DD /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4EFA4AD772182BAE3B4BB0ED /* StudyAppWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		40336C1F307F945700D308EF /* StudyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StudyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -44,6 +66,7 @@
 		40E7531D3087592100CA2C5A /* MILESTONE5_CALENDAR.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE5_CALENDAR.md; path = docs/history/MILESTONE5_CALENDAR.md; sourceTree = "<group>"; };
 		40E7531E3087592100CA2C5A /* MILESTONE6_UNI_WORKFLOW.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = MILESTONE6_UNI_WORKFLOW.md; path = docs/history/MILESTONE6_UNI_WORKFLOW.md; sourceTree = "<group>"; };
 		40E7537A3087592100CA2C5A /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		8344644A76E5CBB87DCF5E0C /* StudyAppWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = StudyAppWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -136,6 +159,11 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
+		42CE8B06CD5E242A1AE98810 /* Widgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Widgets;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,6 +189,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E50997D8BB7D8528B04E7884 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -173,6 +208,7 @@
 				40BE88793087BD9B00C94AF8 /* Presentation */,
 				98FF6A2F130A10CD02192AAC /* Shared */,
 				40BE88903087BD9B00C94AF8 /* StudyAppTests */,
+				42CE8B06CD5E242A1AE98810 /* Widgets */,
 				40E753193087592100CA2C5A /* LICENSE 2 */,
 				40E7531A3087592100CA2C5A /* MILESTONE2.md */,
 				40E7531B3087592100CA2C5A /* MILESTONE3.md */,
@@ -186,6 +222,7 @@
 				40336C1F307F945700D308EF /* StudyApp.app */,
 				40336C20307F945700D308EF /* StudyAppTests.xctest */,
 				40336C21307F945700D308EF /* StudyAppUITests.xctest */,
+				8344644A76E5CBB87DCF5E0C /* StudyAppWidgets.appex */,
 				40AC6A0A307FCE0D0025452A /* StudyApp_README.md */,
 				40993992307FF19B00F43C4C /* Assets.xcassets */,
 			);
@@ -201,10 +238,12 @@
 				40F4A65F307EDDEA009E2F4B /* Sources */,
 				40F4A660307EDDEA009E2F4B /* Frameworks */,
 				409BB5C0308013EF004EC161 /* Resources */,
+				A273B08A88DE205EB5A882DD /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0D4ACFB3F5210074AA55EAB8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				40AC6A0E307FCF7B0025452A /* .github */,
@@ -265,6 +304,29 @@
 			productReference = 40336C21307F945700D308EF /* StudyAppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		7244174F28632C5EF0D4C196 /* StudyAppWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1D10BC3ACAE537D3A624384D /* Build configuration list for PBXNativeTarget "StudyAppWidgets" */;
+			buildPhases = (
+				8DA1049C15C90627E0A768A1 /* Sources */,
+				E50997D8BB7D8528B04E7884 /* Frameworks */,
+				937DD9D39BE01777817AAA09 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				98FF6A2F130A10CD02192AAC /* Shared */,
+				42CE8B06CD5E242A1AE98810 /* Widgets */,
+			);
+			name = StudyAppWidgets;
+			packageProductDependencies = (
+			);
+			productName = StudyAppWidgets;
+			productReference = 8344644A76E5CBB87DCF5E0C /* StudyAppWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -285,6 +347,9 @@
 					40F4A67B307EDDEB009E2F4B = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 40F4A662307EDDEA009E2F4B;
+					};
+					7244174F28632C5EF0D4C196 = {
+						CreatedOnToolsVersion = 26.6;
 					};
 				};
 			};
@@ -308,6 +373,7 @@
 				40F4A662307EDDEA009E2F4B /* StudyApp */,
 				40F4A671307EDDEB009E2F4B /* StudyAppTests */,
 				40F4A67B307EDDEB009E2F4B /* StudyAppUITests */,
+				7244174F28632C5EF0D4C196 /* StudyAppWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -330,6 +396,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		40F4A67A307EDDEB009E2F4B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		937DD9D39BE01777817AAA09 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -360,6 +433,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8DA1049C15C90627E0A768A1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -372,6 +452,11 @@
 			isa = PBXTargetDependency;
 			target = 40F4A662307EDDEA009E2F4B /* StudyApp */;
 			targetProxy = 40F4A67D307EDDEB009E2F4B /* PBXContainerItemProxy */;
+		};
+		0D4ACFB3F5210074AA55EAB8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7244174F28632C5EF0D4C196 /* StudyAppWidgets */;
+			targetProxy = F920A1E111FEE15BD8890576 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -674,6 +759,68 @@
 			};
 			name = Release;
 		};
+		2F3ACFF49996E2D04BFA9AD9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/StudyAppWidgets.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VF66Y42L4U;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/StudyAppWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = germany.oldenburg.mueller.tristan.StudyApp.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		EA987C273C4C93D8791A1520 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/StudyAppWidgets.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VF66Y42L4U;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/StudyAppWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = StudyApp;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = germany.oldenburg.mueller.tristan.StudyApp.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -709,6 +856,15 @@
 			buildConfigurations = (
 				40F4A68D307EDDEB009E2F4B /* Debug */,
 				40F4A68E307EDDEB009E2F4B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1D10BC3ACAE537D3A624384D /* Build configuration list for PBXNativeTarget "StudyAppWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F3ACFF49996E2D04BFA9AD9 /* Debug */,
+				EA987C273C4C93D8791A1520 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
