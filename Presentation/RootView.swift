@@ -36,23 +36,16 @@ struct RootView: View {
             )
             .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 340)
         } detail: {
-            detail
-                .safeAreaInset(edge: .top, spacing: 0) {
-                    if studIPViewModel.sessionExpired, !isSessionBannerDismissed {
-                        StudIPSessionBanner(viewModel: studIPViewModel) { isSessionBannerDismissed = true }
-                    }
+            // The banner sits above the content instead of in a top safe-area inset: changing that inset
+            // under the window toolbar made SwiftUI rebuild the toolbar in an endless loop at launch.
+            VStack(spacing: 0) {
+                if studIPViewModel.sessionExpired, !isSessionBannerDismissed {
+                    StudIPSessionBanner(viewModel: studIPViewModel) { isSessionBannerDismissed = true }
                 }
-        }
-        .toolbar { historyButtons }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                StudyTimerToolbarButton(
-                    viewModel: studyTimerViewModel,
-                    modules: viewModel.activeModules,
-                    currentModuleID: navigation.selectedModuleID
-                )
+                detail
             }
         }
+        .toolbar { windowToolbar }
         .sheet(item: $assignmentsViewModel.editor) { draft in
             AssignmentEditorSheet(
                 draft: draft,
@@ -228,10 +221,11 @@ struct RootView: View {
         )
     }
 
-    // MARK: Verlauf
+    // MARK: Toolbar
 
+    /// One toolbar for the whole window; separate `.toolbar` modifiers have to be merged on every update.
     @ToolbarContentBuilder
-    private var historyButtons: some ToolbarContent {
+    private var windowToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
             Button { navigation.goBack() } label: {
                 Label("Zurück", systemImage: "chevron.backward")
@@ -250,6 +244,13 @@ struct RootView: View {
                 Label("Suchen", systemImage: "magnifyingglass")
             }
             .help("Gehe zu Modul oder Notiz (⌘K)")
+        }
+        ToolbarItem(placement: .primaryAction) {
+            StudyTimerToolbarButton(
+                viewModel: studyTimerViewModel,
+                modules: viewModel.activeModules,
+                currentModuleID: navigation.selectedModuleID
+            )
         }
     }
 }
