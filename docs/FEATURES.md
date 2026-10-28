@@ -98,6 +98,12 @@ StudyApp offers actions in the Shortcuts app and to Siri without any setup:
 
 Code: `App/Intents/`, `Domain/UseCases/QuickInfoUseCases.swift`
 
+## Mensa
+
+Settings → Allgemein → Mensa picks a canteen near the University of Oldenburg (list from OpenMensa, nearest first). „Heute“ then shows its menu grouped by category with the student price; after 15:00 it shows tomorrow's menu. Closed days and missing menus are shown as such; the menu of a day is cached, and the app works without it offline.
+
+Code: `Domain/UseCases/MensaUseCases.swift`, `Data/Mensa/` (OpenMensa API v2), `Presentation/Mensa/`
+
 ## Updates and settings
 
 - Automatic updates through Sparkle („Nach Updates suchen …“ in the app menu). See [RELEASING.md](RELEASING.md).
