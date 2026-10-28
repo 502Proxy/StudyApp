@@ -20,6 +20,7 @@ final class AppContainer {
     let studIPAnnouncementService: any StudIPAnnouncementService
     let announcementRepository: any AnnouncementRepository
     let studIPScheduleService: any StudIPScheduleService
+    let canteenService: any CanteenService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
     let backupArchiver: any BackupArchiving
@@ -55,6 +56,7 @@ final class AppContainer {
         studIPService = studIPClient
         studIPAnnouncementService = studIPClient
         studIPScheduleService = studIPClient
+        canteenService = OpenMensaClient()
         if inMemory {
             preferences = InMemoryStudyPreferences()
             studIPAccountStore = InMemoryStudIPAccountStore()
@@ -145,6 +147,10 @@ final class AppContainer {
 
     func makeStudyTimerViewModel() -> StudyTimerViewModel {
         StudyTimerViewModel(repository: studySessionRepository, settings: preferences, scheduler: notificationScheduler)
+    }
+
+    func makeMensaViewModel() -> MensaViewModel {
+        MensaViewModel(service: canteenService, settings: preferences)
     }
 
     /// Rebuilds the Spotlight index from the current data.

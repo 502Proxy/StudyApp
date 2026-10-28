@@ -20,6 +20,7 @@ struct StudyAppApp: App {
     @State private var examsViewModel: ExamsViewModel
     @State private var announcementsViewModel: AnnouncementsViewModel
     @State private var studyTimerViewModel: StudyTimerViewModel
+    @State private var mensaViewModel: MensaViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
     @AppStorage(ViewPreferences.showsMenuBarItemKey) private var showsMenuBarItem = true
@@ -89,6 +90,7 @@ struct StudyAppApp: App {
             _examsViewModel = State(initialValue: exams)
             _announcementsViewModel = State(initialValue: announcements)
             _studyTimerViewModel = State(initialValue: studyTimer)
+            _mensaViewModel = State(initialValue: container.makeMensaViewModel())
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -107,6 +109,7 @@ struct StudyAppApp: App {
                 examsViewModel: examsViewModel,
                 announcementsViewModel: announcementsViewModel,
                 studyTimerViewModel: studyTimerViewModel,
+                mensaViewModel: mensaViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -182,7 +185,8 @@ struct StudyAppApp: App {
                 updater: updater,
                 studIP: studIPViewModel,
                 backup: backupViewModel,
-                notifications: notificationsViewModel
+                notifications: notificationsViewModel,
+                mensa: mensaViewModel
             )
             .tint(Theme.accent)
             .preferredColorScheme(appearance.colorScheme)
@@ -252,6 +256,8 @@ struct StudyAppApp: App {
             try? await Task.sleep(for: .seconds(300))
             await calendarViewModel.refreshStaleSubscriptions()
             await studIPViewModel.syncIfDue()
+            // Switches to tomorrow's menu after lunch; cached, so usually no request.
+            await mensaViewModel.refresh()
             await reindexSearch()
             // Picks up new or moved lectures and assignments.
             await notificationsViewModel.refresh()

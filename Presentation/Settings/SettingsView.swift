@@ -8,6 +8,7 @@ struct SettingsView: View {
     let studIP: StudIPViewModel
     let backup: BackupViewModel
     let notifications: NotificationsViewModel
+    let mensa: MensaViewModel
 
     @AppStorage(ViewPreferences.settingsPaneKey) private var selection = SettingsPane.general
 
@@ -25,7 +26,7 @@ struct SettingsView: View {
     private func content(for pane: SettingsPane) -> some View {
         switch pane {
         case .general:
-            GeneralSettingsPane(settings: settings)
+            GeneralSettingsPane(settings: settings, mensa: mensa)
         case .schedule:
             ScheduleSettingsPane(settings: settings)
         case .studIP:
