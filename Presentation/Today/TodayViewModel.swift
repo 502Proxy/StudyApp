@@ -32,7 +32,6 @@ final class TodayViewModel {
     private(set) var modules: [StudyModule] = []
     private(set) var dueCounts: [UUID: Int] = [:]
     private(set) var cardCounts: [UUID: Int] = [:]
-    private(set) var documentCounts: [UUID: Int] = [:]
     /// Alle Notizen mit Inhalt, zuletzt bearbeitete zuerst.
     private(set) var notes: [NoteReference] = []
     var errorMessage: String?
@@ -70,7 +69,6 @@ final class TodayViewModel {
             let reference = now()
             var due: [UUID: Int] = [:]
             var cards: [UUID: Int] = [:]
-            var documents: [UUID: Int] = [:]
             var references: [NoteReference] = []
 
             for module in modules {
@@ -79,7 +77,6 @@ final class TodayViewModel {
                 due[module.id] = moduleCards.filter { $0.isDue(at: reference) }.count
 
                 let slideDocuments = try slideRepository.documents(forModule: module.id)
-                documents[module.id] = slideDocuments.count
                 for document in slideDocuments {
                     for note in try noteRepository.notes(forSlideDocument: document.id) where note.hasContent {
                         references.append(NoteReference(note: note, module: module, sourceTitle: document.title))
@@ -92,7 +89,6 @@ final class TodayViewModel {
 
             dueCounts = due
             cardCounts = cards
-            documentCounts = documents
             notes = references.sorted { $0.note.updatedAt > $1.note.updatedAt }
         } catch {
             errorMessage = error.localizedDescription

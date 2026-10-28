@@ -4,7 +4,7 @@ The interface is in German; this document uses the German labels in quotes where
 
 ## Today
 
-A start page with the lecture running right now (progress and room) or the next one, today's timeline, due flashcards, open assignments, recently edited notes and all active modules. One click opens the slides of the current lecture or creates a lecture note for it.
+A start page in two columns, titled with the date and a one-line summary. Left: the lecture running right now (progress and room) or the next one, today's timeline and recently edited notes. Right: assignments due within a week, due flashcards with „Lernen starten“ and upcoming exams. Narrow windows show one column. One click opens the slides of the current lecture or creates a lecture note for it.
 
 Code: `Presentation/Today/`
 
