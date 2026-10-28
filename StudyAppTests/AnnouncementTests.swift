@@ -198,3 +198,27 @@ struct AnnouncementNotificationTests {
         #expect(StudIPViewModel.summaryText(summary) == "Stud.IP: 1 neue Ankündigung")
     }
 }
+
+@MainActor
+struct AnnouncementsViewModelTests {
+    let repository = InMemoryAnnouncementRepository()
+    let modules = FakeModuleRepository()
+
+    @Test func showsAnnouncementsOfExistingModulesAndMarksThemRead() throws {
+        let module = StudyModule(id: UUID(), name: "Analysis I", code: "", color: .blue, createdAt: .now)
+        try modules.add(module)
+        try repository.upsert([
+            CourseAnnouncement(id: "a", moduleID: module.id, title: "A", body: "", publishedAt: .now, isRead: false),
+            CourseAnnouncement(id: "orphan", moduleID: UUID(), title: "B", body: "", publishedAt: .now, isRead: false),
+        ])
+        let viewModel = AnnouncementsViewModel(repository: repository, modules: modules)
+
+        viewModel.load()
+        #expect(viewModel.items.map(\.id) == ["a"])
+        #expect(viewModel.unread.count == 1)
+
+        viewModel.open(try #require(viewModel.items.first))
+        #expect(viewModel.selected?.id == "a")
+        #expect(viewModel.unread.isEmpty)
+    }
+}
