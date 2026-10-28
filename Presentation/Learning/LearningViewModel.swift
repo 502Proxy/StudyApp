@@ -22,6 +22,8 @@ struct FlashcardDraft {
 @Observable
 final class LearningViewModel {
     let module: StudyModule
+    /// Anki import and export of this module's cards; `nil` in previews and tests that do not need it.
+    let flashcardExchange: FlashcardExchangeViewModel?
 
     private(set) var documents: [SlideDocument] = []
     private(set) var notes: [LectureNote] = []
@@ -56,9 +58,11 @@ final class LearningViewModel {
         slideRepository: any SlideDocumentRepository,
         noteRepository: any NoteRepository,
         flashcardRepository: any FlashcardRepository,
-        studySheetRepository: any StudySheetRepository
+        studySheetRepository: any StudySheetRepository,
+        flashcardExchange: FlashcardExchangeViewModel? = nil
     ) {
         self.module = module
+        self.flashcardExchange = flashcardExchange
         self.slideRepository = slideRepository
         self.noteRepository = noteRepository
         createModuleNote = CreateModuleNoteUseCase(repository: noteRepository)
@@ -70,6 +74,7 @@ final class LearningViewModel {
         listStudySheets = ListStudySheetsUseCase(repository: studySheetRepository)
         createStudySheet = CreateStudySheetUseCase(repository: studySheetRepository)
         deleteStudySheet = DeleteStudySheetUseCase(repository: studySheetRepository)
+        flashcardExchange?.onImported = { [weak self] in self?.load() }
     }
 
     var visibleNotes: [LectureNote] {

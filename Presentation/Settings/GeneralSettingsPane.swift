@@ -6,6 +6,7 @@ struct GeneralSettingsPane: View {
 
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
+    @AppStorage(ViewPreferences.showsMenuBarItemKey) private var showsMenuBarItem = true
     @State private var autoOpenLecture = true
     @State private var leadMinutes = 10
 
@@ -18,6 +19,7 @@ struct GeneralSettingsPane: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                Toggle("In der Menüleiste anzeigen (laufende Vorlesung, fällige Karten)", isOn: $showsMenuBarItem)
                 LabeledContent("Schriftgröße der Notizen") {
                     HStack(spacing: 10) {
                         Slider(value: $noteFontSize, in: NoteFontSize.range, step: NoteFontSize.step)
