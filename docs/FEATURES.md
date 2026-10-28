@@ -72,7 +72,7 @@ Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/Stud
 ## Updates and settings
 
 - Automatic updates through Sparkle („Nach Updates suchen …“ in the app menu). See [RELEASING.md](RELEASING.md).
-- Settings (⌘,): appearance, note font size, timetable automation, Stud.IP account, updates and lecture autopilot.
+- Settings (⌘,): one toolbar tab per topic – Allgemein (appearance, note font size, lecture autopilot), Stundenplan, Stud.IP, Mitteilungen, Backup and Updates. The window remembers the last tab; each tab has a fixed height and scrolls, so the window fits on a laptop display.
 
 Code: `App/AppUpdater.swift`, `Presentation/Settings/`
 

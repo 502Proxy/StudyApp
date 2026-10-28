@@ -31,6 +31,8 @@ enum ViewPreferences {
     static let appearanceKey = "settings.appearance"
     static let noteFontSizeKey = "notes.fontSize"
     static let slideReaderShowsNotesKey = "slideReader.showsNotes"
+    /// Last opened pane of the settings window.
+    static let settingsPaneKey = "settings.selectedPane"
 }
 
 /// Schriftgröße für Notizen (Editor und Vorschau), einstellbar über ⌘+ / ⌘−.
