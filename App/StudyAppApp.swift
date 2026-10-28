@@ -135,25 +135,29 @@ struct StudyAppApp: App {
         }
 
         MenuBarExtra(isInserted: $showsMenuBarItem) {
-            MenuBarContent(
-                summary: menuBarSummary,
-                onOpenLecture: { moduleID in
-                    Self.bringToFront()
-                    navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
-                },
-                onReviewCards: {
-                    Self.bringToFront()
-                    // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
-                    if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
-                        navigation.show(module: moduleID, section: .flashcards)
-                    }
-                },
-                onOpenApp: { Self.bringToFront() }
-            )
-            .tint(Theme.accent)
-            .preferredColorScheme(appearance.colorScheme)
+            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
+                MenuBarContent(
+                    summary: summary,
+                    onOpenLecture: { moduleID in
+                        Self.bringToFront()
+                        navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
+                    },
+                    onReviewCards: {
+                        Self.bringToFront()
+                        // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
+                        if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
+                            navigation.show(module: moduleID, section: .flashcards)
+                        }
+                    },
+                    onOpenApp: { Self.bringToFront() }
+                )
+                .tint(Theme.accent)
+                .preferredColorScheme(appearance.colorScheme)
+            }
         } label: {
-            MenuBarLabel(summary: menuBarSummary)
+            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
+                MenuBarLabel(summary: summary)
+            }
         }
         .menuBarExtraStyle(.window)
 
@@ -191,10 +195,6 @@ struct StudyAppApp: App {
         await studIPViewModel.syncIfDue()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
-    }
-
-    private var menuBarSummary: MenuBarSummary {
-        MenuBarSummary(calendar: calendarViewModel, dueCards: todayViewModel.totalDue)
     }
 
     /// Shows the main window, e.g. after a click in the menu bar.
