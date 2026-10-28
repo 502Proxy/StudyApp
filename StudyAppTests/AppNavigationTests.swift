@@ -181,6 +181,23 @@ struct AppNavigationTodayTests {
     }
 }
 
+struct ModuleTabTests {
+    @Test func everySectionBelongsToExactlyTheTabThatListsIt() {
+        let listed = ModuleTab.allCases.flatMap(\.sections)
+        #expect(listed.count == ModuleSection.allCases.count)
+        #expect(Set(listed) == Set(ModuleSection.allCases))
+        for tab in ModuleTab.allCases {
+            #expect(tab.sections.allSatisfy { $0.tab == tab })
+        }
+    }
+
+    @Test func tabsOpenTheirMainSectionFirst() {
+        #expect(ModuleTab.overview.sections.first == .overview)
+        #expect(ModuleTab.material.sections.first == .slides)
+        #expect(ModuleTab.learning.sections.first == .notes)
+    }
+}
+
 @MainActor
 struct QuickNavigatorIndexTests {
     private let analysis = StudyModule(id: UUID(), name: "Analysis I", code: "MAT101", color: .blue, createdAt: Date())
