@@ -127,7 +127,7 @@ struct StudyAppApp: App {
             BackupCommands(viewModel: backupViewModel)
         }
 
-        MenuBarExtra(isInserted: $showsMenuBarItem) {
+        MenuBarExtra(isInserted: menuBarItemInserted) {
             MenuBarContent(
                 summary: menuBarSummary,
                 onOpenLecture: { moduleID in
@@ -182,6 +182,19 @@ struct StudyAppApp: App {
         await studIPViewModel.syncIfDue()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
+    }
+
+    /// Keeps the menu bar item out of the unit test host: on CI runners its status item
+    /// blocks the launch, so the test runner never connects.
+    private var menuBarItemInserted: Binding<Bool> {
+        Binding(
+            get: { showsMenuBarItem && !Self.isRunningAsTestHost },
+            set: { showsMenuBarItem = $0 }
+        )
+    }
+
+    private static var isRunningAsTestHost: Bool {
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 
     private var menuBarSummary: MenuBarSummary {
