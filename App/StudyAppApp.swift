@@ -156,32 +156,36 @@ struct StudyAppApp: App {
             BackupCommands(viewModel: backupViewModel)
         }
 
-        MenuBarExtra(isInserted: $showsMenuBarItem) {
-            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
-                MenuBarContent(
-                    summary: summary,
-                    onOpenLecture: { moduleID in
-                        Self.bringToFront()
-                        navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
-                    },
-                    onReviewCards: {
-                        Self.bringToFront()
-                        // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
-                        if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
-                            navigation.show(module: moduleID, section: .flashcards)
-                        }
-                    },
-                    onOpenApp: { Self.bringToFront() }
-                )
-                .tint(Theme.accent)
-                .preferredColorScheme(appearance.colorScheme)
+        // Inserted conditionally instead of through `isInserted`: that binding is written while the
+        // scene is set up, which re-evaluated this body and rebuilt the scene in a loop at launch.
+        if showsMenuBarItem {
+            MenuBarExtra {
+                MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
+                    MenuBarContent(
+                        summary: summary,
+                        onOpenLecture: { moduleID in
+                            Self.bringToFront()
+                            navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
+                        },
+                        onReviewCards: {
+                            Self.bringToFront()
+                            // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
+                            if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
+                                navigation.show(module: moduleID, section: .flashcards)
+                            }
+                        },
+                        onOpenApp: { Self.bringToFront() }
+                    )
+                    .tint(Theme.accent)
+                    .preferredColorScheme(appearance.colorScheme)
+                }
+            } label: {
+                MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
+                    MenuBarLabel(summary: summary)
+                }
             }
-        } label: {
-            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
-                MenuBarLabel(summary: summary)
-            }
+            .menuBarExtraStyle(.window)
         }
-        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView(
