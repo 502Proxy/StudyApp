@@ -1,0 +1,17 @@
+# Categories for GitHub's generated release notes ("Generate release notes"), based on pull request labels.
+changelog:
+  exclude:
+    labels: [duplicate, invalid, wontfix]
+  categories:
+    - title: New features
+      labels: [enhancement]
+    - title: Design
+      labels: [design]
+    - title: Bug fixes
+      labels: [bug]
+    - title: Documentation
+      labels: [documentation]
+    - title: Maintenance
+      labels: [maintenance, refactor, dependencies]
+    - title: Other changes
+      labels: ["*"]

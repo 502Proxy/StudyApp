@@ -51,7 +51,11 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				dependabot.yml,
+				ISSUE_TEMPLATE/bug_report.yml,
+				ISSUE_TEMPLATE/config.yml,
+				ISSUE_TEMPLATE/feature_request.yml,
 				pull_request_template.md,
+				release.yml,
 				workflows/ci.yml,
 				workflows/commitlint.yml,
 			);

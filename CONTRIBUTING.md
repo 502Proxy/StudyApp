@@ -2,12 +2,29 @@
 
 ## Workflow
 
-1. Open or pick an issue; reference it in branch, commits and pull request.
-2. Branch from `main`: `feat/<topic>`, `fix/<topic>`, `docs/<topic>`, `chore/<topic>`.
-3. Keep a pull request focused on one change. Separate refactorings from behaviour changes.
-4. Run `scripts/qa.sh` before pushing; CI must be green before merging.
-5. Fill in the pull request template and close issues with `Fixes #<n>` / `Closes #<n>`.
-6. User-visible changes get a line in `docs/release-notes/<next version>.md`.
+Every change starts as an issue – features, bugs, design work and housekeeping alike.
+
+1. **Issue:** open it through a form (bug report or feature request). Give it a type label, an area label and the milestone of the release it should ship in.
+2. **Branch** from `main`: `feat/<topic>`, `fix/<topic>`, `docs/<topic>`, `chore/<topic>`.
+3. **Pull request:** focused on one change; separate refactorings from behaviour changes. The title is a Conventional Commit, the body starts with `Closes #<n>`, labels and milestone match the issue.
+4. **Checks:** run `scripts/qa.sh` before pushing; CI must be green before merging.
+5. **Release notes:** user-visible changes get a line in `docs/release-notes/<next version>.md` and `CHANGELOG.md`.
+6. **Merge** with a merge commit; the issue closes automatically.
+
+## Labels
+
+| Kind | Labels |
+| --- | --- |
+| Type (exactly one) | `bug`, `enhancement`, `design`, `documentation`, `refactor`, `maintenance` |
+| Area (one or more) | `area: calendar`, `area: modules`, `area: slides`, `area: notes`, `area: learning`, `area: studip`, `area: exams`, `area: notifications`, `area: backup`, `area: settings`, `area: updates` |
+| Priority | `priority: high` – should go into the next release |
+| Triage | `question`, `duplicate`, `invalid`, `wontfix`, `good first issue`, `help wanted` |
+
+Dependabot adds `dependencies` and `github_actions` itself. GitHub's generated release notes are grouped by type label (`.github/release.yml`).
+
+## Milestones
+
+One milestone per release, named after the version (`1.12`). An issue gets the milestone of the release it is planned for; what does not fit is moved to the next one. A milestone is closed when its release is published, so the milestone page shows what each version contained.
 
 ## Commit messages
 

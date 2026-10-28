@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in StudyApp does not work as intended.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+      placeholder: |
+        1. Open …
+        2. Click …
+        Expected: …
+        Actual: …
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Calendar / timetable
+        - Modules / semesters / grades
+        - Slides
+        - Notes
+        - Flashcards / study sheets
+        - Stud.IP
+        - Exams
+        - Notifications
+        - Backup
+        - Settings
+        - Updates / installation
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: StudyApp version
+      description: Settings → Updates → Installiert
+      placeholder: "1.11 (202610281200)"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "26.5"
+  - type: dropdown
+    id: appearance
+    attributes:
+      label: Appearance
+      options:
+        - Light
+        - Dark
+        - Both / not relevant
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or logs
+      description: Drag images here. Remove personal data such as names, grades or Stud.IP content.
