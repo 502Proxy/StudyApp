@@ -47,6 +47,14 @@ Code: `Presentation/Notes/`, `Presentation/Learning/NotesOverviewView.swift`, `D
 
 Code: `Presentation/Learning/`, `Domain/UseCases/FlashcardUseCases.swift`, `Domain/UseCases/StudySheetUseCases.swift`
 
+## Study timer and statistics
+
+- The timer in the toolbar runs Pomodoro phases: focus (25 min), short break (5 min) and a long break (15 min) after every fourth focus phase; all lengths are adjustable. It counts focus time for the open module (or another one, or none) and notifies when a phase ends if notifications are allowed.
+- Completed focus phases are stored as study sessions (part of backups).
+- „Statistik“ in the sidebar shows today, this week, the streak of study days, a chart of the last seven days, minutes per module this week and the progress of every study plan.
+
+Code: `Domain/UseCases/StudyTimer.swift`, `Domain/UseCases/StudyStatistics.swift`, `Presentation/StudyTimer/`
+
 ## Assignments
 
 Assignments and submissions per module with due dates, shown on „Heute“, in the calendar, in the module and in „Aufgaben“ in the sidebar, which lists the assignments of all modules. The sidebar badge counts open assignments due within a week.
