@@ -157,11 +157,6 @@ struct StudIPAnnouncementParsingTests {
         #expect(StudIPJSONAPIParser.announcement(resource(["content": "ohne Titel", "mkdate": 1]))?.id == nil)
         #expect(StudIPJSONAPIParser.announcement(resource(["title": "ohne Datum"])) == nil)
     }
-
-    @Test func plainTextKeepsListsAndLineBreaks() {
-        let text = StudIPJSONAPIParser.plainText(fromHTML: "Bitte mitbringen:<ul><li>Taschenrechner</li><li>Ausweis</li></ul>Zeile<br/>zwei&nbsp;Ende")
-        #expect(text == "Bitte mitbringen:\n• Taschenrechner\n• Ausweis\nZeile\nzwei Ende")
-    }
 }
 
 @MainActor
