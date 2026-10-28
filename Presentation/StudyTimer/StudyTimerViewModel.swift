@@ -67,6 +67,16 @@ final class StudyTimerViewModel {
         await scheduleEndNotification()
     }
 
+    /// Starts or continues the timer for Shortcuts and Siri and returns what to say. A running timer keeps
+    /// running; the module only applies to a timer that was idle.
+    func startFromShortcut(moduleID: UUID?) async -> String {
+        if timer.isRunning { return "Der Lerntimer läuft schon: \(timer.phase.title), noch \(remainingText)." }
+        if !isActive, let moduleID { self.moduleID = moduleID }
+        let resumes = timer.isPaused
+        await start()
+        return "Lerntimer läuft\(resumes ? " weiter" : ""): \(timer.phase.title), noch \(remainingText)."
+    }
+
     func pause() {
         now = clock()
         timer.pause(at: now)
