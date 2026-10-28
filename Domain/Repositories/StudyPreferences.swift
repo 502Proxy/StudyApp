@@ -18,6 +18,8 @@ protocol StudySettingsStore: AnyObject {
     var lastAutoOpenedLecture: String? { get set }
     /// Create a weekly backup in the app's backup folder.
     var automaticBackups: Bool { get set }
+    /// OpenMensa canteen shown on „Heute“; `nil` hides the menu.
+    var canteenID: Int? { get set }
     var notificationSettings: NotificationSettings { get set }
 }
 
@@ -44,6 +46,7 @@ final class InMemoryStudyPreferences: StudySettingsStore, ReadingProgressStore {
     var ignoredCourseKeys: Set<String> = []
     var lastAutoOpenedLecture: String?
     var automaticBackups = true
+    var canteenID: Int?
     var notificationSettings = NotificationSettings()
     private var pages: [UUID: Int] = [:]
     private var documents: [UUID: UUID] = [:]
