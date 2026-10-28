@@ -16,6 +16,7 @@ struct StudyAppApp: App {
     @State private var backupViewModel: BackupViewModel
     @State private var notificationsViewModel: NotificationsViewModel
     @State private var examsViewModel: ExamsViewModel
+    @State private var mensaViewModel: MensaViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
 
@@ -74,6 +75,7 @@ struct StudyAppApp: App {
             }
             _backupViewModel = State(initialValue: backup)
             _examsViewModel = State(initialValue: exams)
+            _mensaViewModel = State(initialValue: container.makeMensaViewModel())
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -90,6 +92,7 @@ struct StudyAppApp: App {
                 studIPViewModel: studIPViewModel,
                 backupViewModel: backupViewModel,
                 examsViewModel: examsViewModel,
+                mensaViewModel: mensaViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -132,7 +135,8 @@ struct StudyAppApp: App {
                 updater: updater,
                 studIP: studIPViewModel,
                 backup: backupViewModel,
-                notifications: notificationsViewModel
+                notifications: notificationsViewModel,
+                mensa: mensaViewModel
             )
             .tint(Theme.accent)
             .preferredColorScheme(appearance.colorScheme)
@@ -186,6 +190,8 @@ struct StudyAppApp: App {
             try? await Task.sleep(for: .seconds(300))
             await calendarViewModel.refreshStaleSubscriptions()
             await studIPViewModel.syncIfDue()
+            // Switches to tomorrow's menu after lunch; cached, so usually no request.
+            await mensaViewModel.refresh()
             // Picks up new or moved lectures and assignments.
             await notificationsViewModel.refresh()
         }

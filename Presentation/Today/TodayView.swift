@@ -6,6 +6,7 @@ struct TodayView: View {
     @Bindable var today: TodayViewModel
     @Bindable var assignments: AssignmentsViewModel
     @Bindable var exams: ExamsViewModel
+    let mensa: MensaViewModel
     let onOpenModule: (UUID, ModuleSection, ModuleIntent?) -> Void
     let onShowCalendar: () -> Void
     let onCreateModule: () -> Void
@@ -38,6 +39,7 @@ struct TodayView: View {
         .task {
             today.load()
             exams.load()
+            await mensa.refresh()
         }
     }
 
@@ -63,6 +65,9 @@ struct TodayView: View {
                 UpcomingExamsCard(exams: exams.upcoming) { overview in
                     onOpenModule(overview.module.id, .exam, nil)
                 }
+            }
+            if mensa.isEnabled {
+                MensaCard(viewModel: mensa)
             }
         }
     }

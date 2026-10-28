@@ -17,6 +17,7 @@ final class AppContainer {
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
     let studIPService: any StudIPService
+    let canteenService: any CanteenService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
     let backupArchiver: any BackupArchiving
@@ -45,6 +46,7 @@ final class AppContainer {
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
         studIPService = StudIPJSONAPIClient()
+        canteenService = OpenMensaClient()
         if inMemory {
             preferences = InMemoryStudyPreferences()
             studIPAccountStore = InMemoryStudIPAccountStore()
@@ -126,6 +128,10 @@ final class AppContainer {
             slides: slideRepository,
             flashcards: flashcardRepository
         )
+    }
+
+    func makeMensaViewModel() -> MensaViewModel {
+        MensaViewModel(service: canteenService, settings: preferences)
     }
 
     func makeAssignmentsViewModel() -> AssignmentsViewModel {
