@@ -25,6 +25,8 @@ struct ModuleDetailView: View {
     @State private var slidesViewModel: SlidesViewModel
     @State private var learningViewModel: LearningViewModel
     @State private var filesViewModel: CourseFilesViewModel
+    /// Last section per tab, so switching tabs returns to e.g. the flashcards instead of the notes.
+    @State private var lastSections: [ModuleTab: ModuleSection] = [:]
 
     init(
         module: StudyModule,
@@ -133,6 +135,7 @@ struct ModuleDetailView: View {
             filesViewModel.load()
         }
         .onChange(of: section) { _, newSection in
+            lastSections[newSection.tab] = newSection
             // Zahlen der Übersicht aktuell halten, z. B. nach dem Schreiben von Notizen im Reader.
             if newSection == .overview { learningViewModel.load() }
         }
@@ -217,12 +220,34 @@ struct ModuleDetailView: View {
             }
 
             PillTabBar(
-                items: ModuleSection.allCases,
-                selection: $section,
+                items: ModuleTab.allCases,
+                selection: tabSelection,
                 title: \.title,
                 systemImage: \.systemImage
             )
+
+            if section.tab.sections.count > 1 {
+                Picker("Bereich", selection: $section) {
+                    ForEach(section.tab.sections) { section in
+                        Text(section.title).tag(section)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+            }
         }
+    }
+
+    /// Selecting a tab opens the section last used in it, otherwise its first section.
+    private var tabSelection: Binding<ModuleTab> {
+        Binding(
+            get: { section.tab },
+            set: { tab in
+                guard tab != section.tab else { return }
+                section = lastSections[tab] ?? tab.sections[0]
+            }
+        )
     }
 
     // MARK: Übersicht

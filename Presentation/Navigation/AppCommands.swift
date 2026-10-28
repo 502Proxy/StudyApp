@@ -38,8 +38,8 @@ struct AppCommands: Commands {
 
             Divider()
 
-            ForEach(Array(ModuleSection.allCases.enumerated()), id: \.element) { index, section in
-                Button(section.title) { navigation.show(section: section) }
+            ForEach(Array(ModuleTab.allCases.enumerated()), id: \.element) { index, tab in
+                Button(tab.title) { navigation.show(section: tab.sections[0]) }
                     .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")), modifiers: .command)
                     .disabled(navigation.selectedModuleID == nil)
             }

@@ -58,7 +58,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
     case assignments
     case flashcards
     case studySheets
-    /// Dateibereich der verknüpften Stud.IP-Veranstaltung. Bewusst zuletzt, damit ⌘1–⌘6 gleich bleiben.
+    /// Files of the linked Stud.IP course.
     case files
     /// Exam countdown and study plan.
     case exam
