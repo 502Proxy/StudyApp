@@ -34,6 +34,14 @@ enum QuickNavigatorIndex {
                 systemImage: "calendar", moduleColor: nil, location: .calendar
             ),
             QuickNavigatorItem(
+                id: "assignments", title: "Aufgaben", subtitle: "Abgaben aller Module",
+                systemImage: "checklist", moduleColor: nil, location: .assignments
+            ),
+            QuickNavigatorItem(
+                id: "exams", title: "Klausuren", subtitle: "Countdown und Lernpläne",
+                systemImage: "flag.checkered", moduleColor: nil, location: .exams
+            ),
+            QuickNavigatorItem(
                 id: "grades", title: "Noten & ECTS", subtitle: "Notenschnitt und Leistungspunkte",
                 systemImage: "graduationcap", moduleColor: nil, location: .grades
             ),

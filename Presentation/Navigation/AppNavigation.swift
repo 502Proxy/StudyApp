@@ -55,10 +55,8 @@ final class AppNavigation {
     func show(_ destination: AppDestination?) {
         guard let destination else { return }
         switch destination {
-        case .today: navigate(to: .today)
-        case .calendar: navigate(to: .calendar)
-        case .grades: navigate(to: .grades)
         case .module(let id): navigate(to: .module(id, section: section(for: id)))
+        default: navigate(to: NavigationLocation(destination: destination, section: nil))
         }
     }
 
@@ -72,6 +70,14 @@ final class AppNavigation {
 
     func showGrades() {
         navigate(to: .grades)
+    }
+
+    func showAssignments() {
+        navigate(to: .assignments)
+    }
+
+    func showExams() {
+        navigate(to: .exams)
     }
 
     /// Öffnet ein Modul und gibt der Modulansicht einen Auftrag mit.
@@ -146,23 +152,17 @@ final class AppNavigation {
     // MARK: Persistenz
 
     private func persist() {
-        switch destination {
-        case .today: defaults.set("today", forKey: Self.destinationKey)
-        case .grades: defaults.set("grades", forKey: Self.destinationKey)
-        case .calendar: defaults.set("calendar", forKey: Self.destinationKey)
-        case .module(let id): defaults.set(id.uuidString, forKey: Self.destinationKey)
-        case nil: defaults.removeObject(forKey: Self.destinationKey)
+        if let destination {
+            defaults.set(destination.storageKey, forKey: Self.destinationKey)
+        } else {
+            defaults.removeObject(forKey: Self.destinationKey)
         }
         let raw = Dictionary(uniqueKeysWithValues: sections.map { ($0.key.uuidString, $0.value.rawValue) })
         defaults.set(raw, forKey: Self.sectionsKey)
     }
 
     private static func restoreDestination(from defaults: UserDefaults) -> AppDestination? {
-        guard let raw = defaults.string(forKey: destinationKey) else { return nil }
-        if raw == "today" { return .today }
-        if raw == "grades" { return .grades }
-        if raw == "calendar" { return .calendar }
-        return UUID(uuidString: raw).map(AppDestination.module)
+        defaults.string(forKey: destinationKey).flatMap(AppDestination.init(storageKey:))
     }
 
     private static func restoreSections(from defaults: UserDefaults) -> [UUID: ModuleSection] {

@@ -135,6 +135,10 @@ struct RootView: View {
             StudyCalendarView(viewModel: calendarViewModel, assignments: assignmentsViewModel) { moduleID, section in
                 navigation.show(module: moduleID, section: section)
             }
+        case .assignments:
+            AssignmentsView(viewModel: assignmentsViewModel, module: nil, modules: viewModel.modules)
+        case .exams:
+            ExamSectionView(viewModel: examsViewModel, module: nil)
         case .grades:
             GradesView(viewModel: viewModel) { moduleID in
                 navigation.show(module: moduleID, section: .overview)
