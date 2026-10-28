@@ -34,7 +34,7 @@ Dependencies point **inward**: Presentation and Data both depend on Domain, Doma
 
 `AppContainer(inMemory: true)` swaps in in-memory persistence and preferences for previews and tests.
 
-`AppLauncher` is the entry point: under XCTest it starts an empty host app instead of `StudyAppApp`, so launch work (database, sync, menu bar item) never runs during unit tests. On CI runners the menu bar scene kept the test host from finishing its launch.
+`AppLauncher` is the entry point: under XCTest it starts an empty host app instead of `StudyAppApp`, so launch work (database, sync, menu bar item) never runs during unit tests. This keeps the unit tests independent of the window, the menu bar item and the network.
 
 ## Data flow example: calendar subscription → module
 

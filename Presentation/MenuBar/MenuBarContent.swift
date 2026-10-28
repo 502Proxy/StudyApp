@@ -1,29 +1,25 @@
 import AppKit
 import SwiftUI
 
-/// Builds the summary inside a view, so only the menu bar item observes the calendar and the due cards.
-/// Reading them in the App body would rebuild every scene on each change, already while the app launches.
-struct MenuBarSummaryReader<Content: View>: View {
+/// Content of the menu bar popover: builds the summary inside the view, so it follows the calendar
+/// and the due cards, and applies the chosen appearance.
+struct MenuBarPopoverView: View {
     let calendar: StudyCalendarViewModel
     let today: TodayViewModel
-    @ViewBuilder let content: (MenuBarSummary) -> Content
+    let onOpenLecture: (UUID) -> Void
+    let onReviewCards: () -> Void
+    let onOpenApp: () -> Void
+    @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
 
     var body: some View {
-        content(MenuBarSummary(calendar: calendar, dueCards: today.totalDue))
-    }
-}
-
-/// The menu bar item's label: an icon, plus the remaining minutes while a lecture runs.
-struct MenuBarLabel: View {
-    let summary: MenuBarSummary
-
-    var body: some View {
-        if summary.title.isEmpty {
-            Image(systemName: "graduationcap")
-        } else {
-            Label(summary.title, systemImage: "record.circle")
-                .labelStyle(.titleAndIcon)
-        }
+        MenuBarContent(
+            summary: MenuBarSummary(calendar: calendar, dueCards: today.totalDue),
+            onOpenLecture: onOpenLecture,
+            onReviewCards: onReviewCards,
+            onOpenApp: onOpenApp
+        )
+        .tint(Theme.accent)
+        .preferredColorScheme(appearance.colorScheme)
     }
 }
 
