@@ -1,4 +1,5 @@
 import AppKit
+import AppIntents
 import SwiftUI
 
 @main
@@ -50,6 +51,8 @@ struct StudyAppApp: App {
             _todayViewModel = State(initialValue: today)
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
+            let intentServices = StudyAppIntentServices(container: container, navigation: navigation)
+            AppDependencyManager.shared.add(dependency: intentServices)
             _studIPViewModel = State(initialValue: studIP)
             let notifications = container.makeNotificationsViewModel()
             studIP.onBackgroundSyncChanges = { summary in
@@ -147,6 +150,8 @@ struct StudyAppApp: App {
         calendarViewModel.synchronizeModules()
         todayViewModel.load()
         examsViewModel.load()
+        // Lets Siri offer the current modules in „Starte Karteikarten …“.
+        StudyAppShortcuts.updateAppShortcutParameters()
         if navigation.destination == nil {
             navigation.showToday()
         }
