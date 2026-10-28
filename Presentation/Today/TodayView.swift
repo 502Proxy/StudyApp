@@ -47,45 +47,35 @@ struct TodayView: View {
         }
     }
 
-    // MARK: Kopf
+    // MARK: Header
 
+    /// Date as the title and one line with what is due, instead of a greeting and a row of pills.
     private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(calendar.referenceDate, format: .dateTime.weekday(.wide).day().month(.wide))
-                .font(Theme.Typography.overline)
-                .textCase(.uppercase)
-                .foregroundStyle(Theme.textSecondary)
-            Text(greeting)
                 .font(Theme.Typography.largeTitle)
                 .foregroundStyle(Theme.textPrimary)
-            HStack(spacing: 8) {
-                Pill(text: StudyCalendarViewModel.eventCountText(calendar.todayEvents.count) + " heute", systemImage: "calendar", tint: Theme.accent)
-                if assignments.overdueCount > 0 {
-                    Pill(text: "\(assignments.overdueCount) überfällig", systemImage: "exclamationmark.circle", tint: Theme.danger)
-                }
-                if today.totalDue > 0 {
-                    Pill(text: "\(today.totalDue) Karten fällig", systemImage: "rectangle.stack", tint: Theme.warning)
-                }
-                if let average = GradeSummary(modules: today.modules).weightedAverage {
-                    Pill(text: "Ø \(GradeScale.format(average))", systemImage: "graduationcap", tint: Theme.accent)
-                }
-                let activeCount = today.modules.filter { !$0.isArchived }.count
-                if activeCount > 0 {
-                    Pill(text: activeCount == 1 ? "1 Modul" : "\(activeCount) Module", systemImage: "books.vertical")
-                }
+            if !summary.isEmpty {
+                Text(summary)
+                    .font(Theme.Typography.caption)
+                    .foregroundStyle(Theme.textSecondary)
             }
-            .padding(.top, 4)
         }
     }
 
-    private var greeting: String {
-        let hour = calendar.calendar.component(.hour, from: calendar.referenceDate)
-        switch hour {
-        case 5..<11: return "Guten Morgen"
-        case 11..<17: return "Guten Tag"
-        case 17..<23: return "Guten Abend"
-        default: return "Gute Nacht"
+    private var summary: String {
+        var parts = [StudyCalendarViewModel.eventCountText(calendar.todayEvents.count) + " heute"]
+        let dueThisWeek = assignments.upcoming(days: 7).count
+        if dueThisWeek > 0 {
+            parts.append(dueThisWeek == 1 ? "1 Abgabe diese Woche" : "\(dueThisWeek) Abgaben diese Woche")
         }
+        if assignments.overdueCount > 0 {
+            parts.append("\(assignments.overdueCount) überfällig")
+        }
+        if today.totalDue > 0 {
+            parts.append("\(today.totalDue) Karten fällig")
+        }
+        return parts.joined(separator: " · ")
     }
 
     // MARK: Jetzt / Als Nächstes
