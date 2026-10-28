@@ -154,7 +154,7 @@ struct AppNavigationTodayTests {
     }
 
     @Test func storageKeyRoundTripsEveryDestination() {
-        let destinations: [AppDestination] = [.today, .calendar, .assignments, .exams, .grades, .module(UUID())]
+        let destinations: [AppDestination] = [.today, .calendar, .assignments, .exams, .grades, .statistics, .module(UUID())]
         for destination in destinations {
             #expect(AppDestination(storageKey: destination.storageKey) == destination)
         }
@@ -205,8 +205,8 @@ struct QuickNavigatorIndexTests {
 
     @Test func indexContainsTheOverviewsAndEverySectionOfEveryModule() {
         let items = QuickNavigatorIndex.items(modules: [analysis, algebra])
-        #expect(items.count == 5 + 2 * ModuleSection.allCases.count)
-        #expect(items.map(\.location).prefix(5) == [.today, .calendar, .assignments, .exams, .grades])
+        #expect(items.count == 6 + 2 * ModuleSection.allCases.count)
+        #expect(items.map(\.location).prefix(6) == [.today, .calendar, .assignments, .exams, .grades, .statistics])
         #expect(Set(items.map(\.id)).count == items.count)
     }
 

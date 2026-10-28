@@ -131,6 +131,10 @@ final class AppContainer {
         )
     }
 
+    func makeStudyTimerViewModel() -> StudyTimerViewModel {
+        StudyTimerViewModel(repository: studySessionRepository, settings: preferences, scheduler: notificationScheduler)
+    }
+
     func makeAssignmentsViewModel() -> AssignmentsViewModel {
         AssignmentsViewModel(repository: assignmentRepository)
     }

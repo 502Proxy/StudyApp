@@ -16,6 +16,7 @@ struct StudyAppApp: App {
     @State private var backupViewModel: BackupViewModel
     @State private var notificationsViewModel: NotificationsViewModel
     @State private var examsViewModel: ExamsViewModel
+    @State private var studyTimerViewModel: StudyTimerViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
 
@@ -62,6 +63,7 @@ struct StudyAppApp: App {
             }
             responder.install()
             notificationResponder = responder
+            let studyTimer = container.makeStudyTimerViewModel()
             let backup = container.makeBackupViewModel()
             // After a restore every screen shows the restored data.
             backup.onRestored = {
@@ -70,10 +72,12 @@ struct StudyAppApp: App {
                 today.load()
                 assignments.load()
                 exams.load()
+                studyTimer.load()
                 Task { await notifications.refresh() }
             }
             _backupViewModel = State(initialValue: backup)
             _examsViewModel = State(initialValue: exams)
+            _studyTimerViewModel = State(initialValue: studyTimer)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -90,6 +94,7 @@ struct StudyAppApp: App {
                 studIPViewModel: studIPViewModel,
                 backupViewModel: backupViewModel,
                 examsViewModel: examsViewModel,
+                studyTimerViewModel: studyTimerViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
