@@ -69,6 +69,12 @@ Code: `Presentation/Grades/`, `Domain/UseCases/GradeUseCases.swift`, `Domain/Ent
 
 Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/StudIP/` · Details: [STUDIP.md](STUDIP.md)
 
+## Spotlight
+
+Active modules, notes with content and study sheets appear in the macOS search (Spotlight). The index is rebuilt on launch and every five minutes; deleted notes disappear with the next rebuild. Choosing a result opens StudyApp at the module, note or study sheet. Spotlight can be limited in System Settings → Spotlight.
+
+Code: `Domain/UseCases/SearchIndexUseCases.swift`, `Data/Spotlight/`
+
 ## Updates and settings
 
 - Automatic updates through Sparkle („Nach Updates suchen …“ in the app menu). See [RELEASING.md](RELEASING.md).
