@@ -33,15 +33,15 @@ struct SidebarView: View {
     var body: some View {
         List(selection: selection) {
             if let lecture = calendar.currentLecture, let module = calendar.module(for: lecture) {
-                LiveLectureCard(
+                LiveLectureRow(
                     module: module,
                     event: lecture,
-                    isLive: lecture.startDate <= calendar.referenceDate,
+                    referenceDate: calendar.referenceDate,
                     progress: calendar.progress(of: lecture)
                 ) {
                     navigation.show(module: module.id, section: .slides, intent: .resumeSlides)
                 }
-                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 10, trailing: 0))
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
                 .selectionDisabled()
             }
 
@@ -262,60 +262,54 @@ private struct ModuleRow: View {
     }
 }
 
-/// Hervorgehobene Karte oben in der Seitenleiste, solange eine Vorlesung läuft.
-private struct LiveLectureCard: View {
+/// Compact row at the top of the sidebar while a lecture is running or about to start.
+private struct LiveLectureRow: View {
     let module: StudyModule
     let event: StudyCalendarEvent
-    let isLive: Bool
+    let referenceDate: Date
     let progress: Double
     let action: () -> Void
 
+    private var isLive: Bool { event.startDate <= referenceDate }
+    private var tint: Color { isLive ? Theme.live : module.color.color }
+
+    private var status: String {
+        if isLive {
+            let minutes = max(Int(event.endDate.timeIntervalSince(referenceDate) / 60), 0)
+            return "Läuft · noch \(minutes) Min."
+        }
+        return "Gleich · \(event.startDate.formatted(date: .omitted, time: .shortened))"
+    }
+
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    if isLive {
-                        LiveBadge()
-                    } else {
-                        Pill(text: "Gleich", systemImage: "clock", tint: module.color.color)
-                    }
-                    Spacer()
-                    Text(event.timeDescription())
-                        .font(.system(size: 10.5).monospacedDigit())
-                        .foregroundStyle(Theme.textSecondary)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(tint)
+                        .frame(width: 7, height: 7)
+                    Text(status)
+                        .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+                        .textCase(.uppercase)
+                        .foregroundStyle(isLive ? Theme.live : Theme.textSecondary)
                 }
-                HStack(spacing: 8) {
-                    ModuleBadge(name: module.name, color: module.color, size: 26)
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(module.name)
-                            .font(Theme.Typography.headline)
-                            .foregroundStyle(Theme.textPrimary)
-                            .lineLimit(1)
-                        if !event.location.isEmpty {
-                            Text(event.location)
-                                .font(.system(size: 10.5))
-                                .foregroundStyle(Theme.textSecondary)
-                                .lineLimit(1)
-                        }
-                    }
-                }
+                Text(module.name)
+                    .font(Theme.Typography.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
                 if isLive {
-                    SlimProgressBar(progress: progress, tint: module.color.color)
+                    SlimProgressBar(progress: progress, tint: Theme.live)
                 }
-                Label("Folien öffnen", systemImage: "doc.richtext")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(module.color.color)
             }
-            .padding(10)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(module.color.color.opacity(0.35))
-            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Folien der laufenden Vorlesung öffnen")
+        .help("Folien der Vorlesung öffnen\(event.location.isEmpty ? "" : " · \(event.location)")")
+        .accessibilityLabel("\(status), \(module.name). Folien öffnen")
     }
 }
 
