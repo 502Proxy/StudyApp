@@ -37,10 +37,10 @@ enum SettingsPane: String, CaseIterable, Identifiable {
     /// content taller than this scrolls, so the window never outgrows a laptop display.
     var preferredHeight: CGFloat {
         switch self {
-        case .general: 340
+        case .general: 370
         case .schedule: 260
         case .studIP: 400
-        case .notifications: 290
+        case .notifications: 320
         case .backup: 270
         case .updates: 240
         }

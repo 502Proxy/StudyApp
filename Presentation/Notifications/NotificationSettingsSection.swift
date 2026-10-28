@@ -14,6 +14,7 @@ struct NotificationSettingsSection: View {
             .disabled(!viewModel.settings.lectures)
             Toggle("An Abgaben erinnern (am Vortag und 3 Stunden vorher)", isOn: $viewModel.settings.assignments)
             Toggle("Neue Dateien aus Stud.IP melden", isOn: $viewModel.settings.newFiles)
+            Toggle("Neue Ankündigungen aus Stud.IP melden", isOn: $viewModel.settings.announcements)
             if viewModel.authorization == .denied && viewModel.settings.isAnyEnabled {
                 HStack {
                     Label("Mitteilungen sind in den Systemeinstellungen ausgeschaltet.", systemImage: "bell.slash")
