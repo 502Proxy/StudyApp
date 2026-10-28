@@ -111,6 +111,7 @@ struct StudyAppApp: App {
                 Task {
                     await calendarViewModel.refreshStaleSubscriptions()
                     autopilot.run(isLaunch: false)
+                    await studIPViewModel.refreshSessionState(force: false)
                 }
             }
         }
@@ -155,6 +156,7 @@ struct StudyAppApp: App {
         // Abonnements im Hintergrund auffrischen; eine dabei neu erkannte Vorlesung wird ebenfalls geöffnet.
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
+        await studIPViewModel.refreshSessionState()
         await studIPViewModel.syncIfDue()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()

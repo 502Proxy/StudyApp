@@ -15,6 +15,8 @@ struct RootView: View {
 
     @State private var isDetectingModules = false
     @State private var isLinkingStudIP = false
+    /// „Später“ on the expired-session banner hides it until the next launch.
+    @State private var isSessionBannerDismissed = false
 
     var body: some View {
         NavigationSplitView {
@@ -32,6 +34,11 @@ struct RootView: View {
             .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 340)
         } detail: {
             detail
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if studIPViewModel.sessionExpired, !isSessionBannerDismissed {
+                        StudIPSessionBanner(viewModel: studIPViewModel) { isSessionBannerDismissed = true }
+                    }
+                }
         }
         .toolbar { historyButtons }
         .sheet(item: $assignmentsViewModel.editor) { draft in

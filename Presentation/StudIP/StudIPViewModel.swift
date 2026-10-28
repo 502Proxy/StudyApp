@@ -47,6 +47,9 @@ final class StudIPViewModel {
     private let service: any StudIPService
     private let now: () -> Date
     @ObservationIgnored private var statusTask: Task<Void, Never>?
+    @ObservationIgnored private var lastSessionCheck: Date?
+    /// Checking on every app activation would mean a request per app switch.
+    static let sessionCheckInterval: TimeInterval = 15 * 60
 
     init(
         service: any StudIPService,
@@ -101,7 +104,10 @@ final class StudIPViewModel {
 
     /// Checks the stored sign-in on launch and when the app becomes active. Offline results leave the
     /// state unchanged, so a missing network does not ask for a new sign-in.
-    func refreshSessionState() async {
+    func refreshSessionState(force: Bool = true) async {
+        let reference = now()
+        if !force, let lastSessionCheck, reference.timeIntervalSince(lastSessionCheck) < Self.sessionCheckInterval { return }
+        lastSessionCheck = reference
         switch await checkSession() {
         case .valid: sessionExpired = false
         case .expired: sessionExpired = true
