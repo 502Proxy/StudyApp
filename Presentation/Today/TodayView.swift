@@ -245,8 +245,32 @@ struct TodayView: View {
     private var reviewCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader("Wiederholen", systemImage: "brain.head.profile")
-            let modules = today.modules.filter { (today.dueCounts[$0.id] ?? 0) > 0 }
-            if modules.isEmpty {
+            let modules = today.modules
+                .filter { (today.dueCounts[$0.id] ?? 0) > 0 }
+                .sorted { (today.dueCounts[$0.id] ?? 0) > (today.dueCounts[$1.id] ?? 0) }
+            if let first = modules.first {
+                HStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text("\(today.totalDue)")
+                                .font(Theme.Typography.metric)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(today.totalDue == 1 ? "Karte fällig" : "Karten fällig")
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        Text(modules.map { "\($0.name) \(today.dueCounts[$0.id] ?? 0)" }.joined(separator: " · "))
+                            .font(Theme.Typography.small)
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(2)
+                    }
+                    Spacer(minLength: 8)
+                    // Starts with the module that has the most due cards.
+                    Button("Lernen starten") { onOpenModule(first.id, .flashcards, nil) }
+                        .buttonStyle(.borderedProminent)
+                        .help("Karteikarten von „\(first.name)“ wiederholen")
+                }
+            } else {
                 VStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.system(size: 26))
@@ -256,30 +280,6 @@ struct TodayView: View {
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .frame(maxWidth: .infinity, minHeight: 80)
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(modules) { module in
-                        Button {
-                            onOpenModule(module.id, .flashcards, nil)
-                        } label: {
-                            HStack(spacing: 12) {
-                                ModuleBadge(name: module.name, color: module.color, size: 30)
-                                Text(module.name)
-                                    .font(Theme.Typography.headline)
-                                    .foregroundStyle(Theme.textPrimary)
-                                    .lineLimit(1)
-                                Spacer()
-                                Pill(text: "\(today.dueCounts[module.id] ?? 0) fällig", tint: Theme.warning)
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(10)
-                            .background(Theme.surfaceSecondary, in: RoundedRectangle(cornerRadius: Theme.Radius.medium, style: .continuous))
-                        }
-                        .buttonStyle(CardButtonStyle())
-                    }
-                }
             }
         }
         .card()
