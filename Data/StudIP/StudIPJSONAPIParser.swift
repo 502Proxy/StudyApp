@@ -105,6 +105,25 @@ enum StudIPJSONAPIParser {
         return paths
     }
 
+    /// A course date (`course-events` resource). Older Stud.IP versions call the times `begin`/`end`
+    /// or deliver them as Unix timestamps; the location may be `location` or `room`.
+    static func courseDate(_ resource: Resource) -> StudIPCourseDate? {
+        guard let id = identifier(resource) else { return nil }
+        let attributes = resource["attributes"] as? [String: Any] ?? [:]
+        guard let start = date(attributes["start"]) ?? date(attributes["begin"]) else { return nil }
+        let end = date(attributes["end"]) ?? start
+        let categories = string(attributes["categories"]) ?? ""
+        return StudIPCourseDate(
+            id: id,
+            title: string(attributes["title"]) ?? categories,
+            details: StudIPHTML.plainText(string(attributes["description"]) ?? ""),
+            location: string(attributes["location"]) ?? string(attributes["room"]) ?? "",
+            start: start,
+            end: end,
+            isCancelled: (attributes["is-cancelled"] as? Bool) ?? false
+        )
+    }
+
     // MARK: Hilfen
 
     private static func object(_ data: Data) throws -> [String: Any] {

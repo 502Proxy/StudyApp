@@ -112,9 +112,17 @@ struct CalendarSourcesSheet: View {
         }
     }
 
+    private static func symbol(for kind: CalendarSourceKind) -> String {
+        switch kind {
+        case .file: "doc.text"
+        case .subscription: "link"
+        case .studIP: "building.columns"
+        }
+    }
+
     private func sourceRow(_ source: CalendarSource) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: source.kind == .subscription ? "link" : "doc.text")
+            Image(systemName: Self.symbol(for: source.kind))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {

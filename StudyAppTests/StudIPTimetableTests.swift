@@ -102,3 +102,35 @@ struct SyncStudIPTimetableTests {
         }
     }
 }
+
+struct StudIPCourseDateParsingTests {
+    private func resource(_ attributes: [String: Any]) -> StudIPJSONAPIParser.Resource {
+        ["type": "course-events", "id": "e1", "attributes": attributes]
+    }
+
+    @Test func readsTimesLocationAndCancellation() throws {
+        let date = try #require(StudIPJSONAPIParser.courseDate(resource([
+            "title": "Vorlesung",
+            "description": "<p>Kapitel 3</p>",
+            "start": "2026-10-28T10:15:00+01:00",
+            "end": "2026-10-28T11:45:00+01:00",
+            "location": "HS 1",
+            "is-cancelled": true,
+        ])))
+
+        #expect(date.id == "e1")
+        #expect(date.title == "Vorlesung")
+        #expect(date.details == "Kapitel 3")
+        #expect(date.location == "HS 1")
+        #expect(date.isCancelled)
+        #expect(date.end.timeIntervalSince(date.start) == 5_400)
+    }
+
+    @Test func acceptsOlderAttributeNamesAndSkipsDatesWithoutStart() {
+        let date = StudIPJSONAPIParser.courseDate(resource(["categories": "Übung", "begin": 1_760_000_000, "room": "SR 3"]))
+        #expect(date?.title == "Übung")
+        #expect(date?.location == "SR 3")
+        #expect(date?.end == date?.start)
+        #expect(StudIPJSONAPIParser.courseDate(resource(["title": "ohne Zeit"])) == nil)
+    }
+}
