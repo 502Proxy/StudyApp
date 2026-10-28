@@ -134,6 +134,10 @@ final class AppContainer {
         )
     }
 
+    func makeAnnouncementsViewModel() -> AnnouncementsViewModel {
+        AnnouncementsViewModel(repository: announcementRepository, modules: moduleRepository)
+    }
+
     func makeAssignmentsViewModel() -> AssignmentsViewModel {
         AssignmentsViewModel(repository: assignmentRepository)
     }
