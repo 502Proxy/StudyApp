@@ -1,4 +1,5 @@
 import AppKit
+import AppIntents
 import SwiftUI
 
 @main
@@ -17,6 +18,7 @@ struct StudyAppApp: App {
     @State private var notificationsViewModel: NotificationsViewModel
     @State private var examsViewModel: ExamsViewModel
     @State private var announcementsViewModel: AnnouncementsViewModel
+    @State private var studyTimerViewModel: StudyTimerViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
     @AppStorage(ViewPreferences.showsMenuBarItemKey) private var showsMenuBarItem = true
@@ -33,6 +35,7 @@ struct StudyAppApp: App {
             let studIP = container.makeStudIPViewModel()
             let announcements = container.makeAnnouncementsViewModel()
             studIP.onAnnouncementsSynced = { announcements.load() }
+            studIP.onTimetableSynced = { calendar.load() }
             // Neu verknüpfte Veranstaltungen und geladene Folien sofort in Seitenleiste und Startseite zeigen.
             studIP.onSlidesChanged = {
                 modules.load()
@@ -54,6 +57,8 @@ struct StudyAppApp: App {
             _todayViewModel = State(initialValue: today)
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
+            let intentServices = StudyAppIntentServices(container: container, navigation: navigation)
+            AppDependencyManager.shared.add(dependency: intentServices)
             _studIPViewModel = State(initialValue: studIP)
             let notifications = container.makeNotificationsViewModel()
             studIP.onBackgroundSyncChanges = { summary in
@@ -66,6 +71,7 @@ struct StudyAppApp: App {
             }
             responder.install()
             notificationResponder = responder
+            let studyTimer = container.makeStudyTimerViewModel()
             let backup = container.makeBackupViewModel()
             // After a restore every screen shows the restored data.
             backup.onRestored = {
@@ -75,11 +81,13 @@ struct StudyAppApp: App {
                 assignments.load()
                 exams.load()
                 announcements.load()
+                studyTimer.load()
                 Task { await notifications.refresh() }
             }
             _backupViewModel = State(initialValue: backup)
             _examsViewModel = State(initialValue: exams)
             _announcementsViewModel = State(initialValue: announcements)
+            _studyTimerViewModel = State(initialValue: studyTimer)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -97,6 +105,7 @@ struct StudyAppApp: App {
                 backupViewModel: backupViewModel,
                 examsViewModel: examsViewModel,
                 announcementsViewModel: announcementsViewModel,
+                studyTimerViewModel: studyTimerViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -138,26 +147,30 @@ struct StudyAppApp: App {
             BackupCommands(viewModel: backupViewModel)
         }
 
-        MenuBarExtra(isInserted: menuBarItemInserted) {
-            MenuBarContent(
-                summary: menuBarSummary,
-                onOpenLecture: { moduleID in
-                    Self.bringToFront()
-                    navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
-                },
-                onReviewCards: {
-                    Self.bringToFront()
-                    // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
-                    if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
-                        navigation.show(module: moduleID, section: .flashcards)
-                    }
-                },
-                onOpenApp: { Self.bringToFront() }
-            )
-            .tint(Theme.accent)
-            .preferredColorScheme(appearance.colorScheme)
+        MenuBarExtra(isInserted: $showsMenuBarItem) {
+            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
+                MenuBarContent(
+                    summary: summary,
+                    onOpenLecture: { moduleID in
+                        Self.bringToFront()
+                        navigation.show(module: moduleID, section: .slides, intent: .resumeSlides)
+                    },
+                    onReviewCards: {
+                        Self.bringToFront()
+                        // Starts with the module that has the most due cards, like „Lernen starten“ on Today.
+                        if let moduleID = todayViewModel.dueCounts.max(by: { $0.value < $1.value })?.key {
+                            navigation.show(module: moduleID, section: .flashcards)
+                        }
+                    },
+                    onOpenApp: { Self.bringToFront() }
+                )
+                .tint(Theme.accent)
+                .preferredColorScheme(appearance.colorScheme)
+            }
         } label: {
-            MenuBarLabel(summary: menuBarSummary)
+            MenuBarSummaryReader(calendar: calendarViewModel, today: todayViewModel) { summary in
+                MenuBarLabel(summary: summary)
+            }
         }
         .menuBarExtraStyle(.window)
 
@@ -183,6 +196,8 @@ struct StudyAppApp: App {
         todayViewModel.load()
         examsViewModel.load()
         announcementsViewModel.load()
+        // Lets Siri offer the current modules in „Starte Karteikarten …“.
+        StudyAppShortcuts.updateAppShortcutParameters()
         if navigation.destination == nil {
             navigation.showToday()
         }
@@ -196,23 +211,6 @@ struct StudyAppApp: App {
         publishWidgetSnapshot()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
-    }
-
-    /// Keeps the menu bar item out of the unit test host: on CI runners its status item
-    /// blocks the launch, so the test runner never connects.
-    private var menuBarItemInserted: Binding<Bool> {
-        Binding(
-            get: { showsMenuBarItem && !Self.isRunningAsTestHost },
-            set: { showsMenuBarItem = $0 }
-        )
-    }
-
-    private static var isRunningAsTestHost: Bool {
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-    }
-
-    private var menuBarSummary: MenuBarSummary {
-        MenuBarSummary(calendar: calendarViewModel, dueCards: todayViewModel.totalDue)
     }
 
     /// Shows the main window, e.g. after a click in the menu bar.

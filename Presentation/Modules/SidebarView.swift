@@ -59,6 +59,8 @@ struct SidebarView: View {
                     .tag(AppDestination.exams)
                 Label("Noten & ECTS", systemImage: "graduationcap")
                     .tag(AppDestination.grades)
+                Label("Statistik", systemImage: "chart.bar")
+                    .tag(AppDestination.statistics)
             }
 
             Section {

@@ -17,6 +17,8 @@ struct BackupSnapshot: Codable, Equatable, Sendable {
     var courseFiles: [CourseFile] = []
     /// Manual exams plus the stored state (hidden, study plan progress) of detected ones.
     var exams: [Exam] = []
+    /// Completed focus phases of the study timer.
+    var studySessions: [StudySession] = []
 
     /// Names of the stored files (`FileStorage`) the snapshot refers to: slide PDFs and downloaded course files.
     var referencedFiles: [String] {

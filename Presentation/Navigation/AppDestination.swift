@@ -9,6 +9,8 @@ enum AppDestination: Hashable {
     /// Upcoming exams of all modules.
     case exams
     case grades
+    /// Study time and study plan progress.
+    case statistics
     case module(UUID)
 
     /// Stable string for `UserDefaults`; modules are stored by their ID.
@@ -19,6 +21,7 @@ enum AppDestination: Hashable {
         case .assignments: "assignments"
         case .exams: "exams"
         case .grades: "grades"
+        case .statistics: "statistics"
         case .module(let id): id.uuidString
         }
     }
@@ -30,6 +33,7 @@ enum AppDestination: Hashable {
         case "assignments": self = .assignments
         case "exams": self = .exams
         case "grades": self = .grades
+        case "statistics": self = .statistics
         default:
             guard let id = UUID(uuidString: storageKey) else { return nil }
             self = .module(id)
@@ -153,6 +157,7 @@ struct NavigationLocation: Hashable {
     static let grades = NavigationLocation(destination: .grades, section: nil)
     static let assignments = NavigationLocation(destination: .assignments, section: nil)
     static let exams = NavigationLocation(destination: .exams, section: nil)
+    static let statistics = NavigationLocation(destination: .statistics, section: nil)
 
     static func module(_ id: UUID, section: ModuleSection = .overview) -> NavigationLocation {
         NavigationLocation(destination: .module(id), section: section)

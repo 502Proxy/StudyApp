@@ -1,6 +1,18 @@
 import AppKit
 import SwiftUI
 
+/// Builds the summary inside a view, so only the menu bar item observes the calendar and the due cards.
+/// Reading them in the App body would rebuild every scene on each change, already while the app launches.
+struct MenuBarSummaryReader<Content: View>: View {
+    let calendar: StudyCalendarViewModel
+    let today: TodayViewModel
+    @ViewBuilder let content: (MenuBarSummary) -> Content
+
+    var body: some View {
+        content(MenuBarSummary(calendar: calendar, dueCards: today.totalDue))
+    }
+}
+
 /// The menu bar item's label: an icon, plus the remaining minutes while a lecture runs.
 struct MenuBarLabel: View {
     let summary: MenuBarSummary
