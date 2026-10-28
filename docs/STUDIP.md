@@ -23,6 +23,7 @@ StudyApp talks to the JSON:API of a Stud.IP installation (`<server>/jsonapi.php/
 | Files of a course (flat) | `GET courses/{id}/file-refs` |
 | Folder tree | `GET courses/{id}/folders` (relationship `parent`) |
 | Download | `GET file-refs/{id}/content` |
+| Course dates | `GET courses/{id}/events` (`title`, `start`/`end` or `begin`, `location`/`room`, `is-cancelled`) |
 
 Lists are paged with `page[limit]=100` and followed through `links.next` (absolute or relative). Parsing is deliberately lenient (`StudIPJSONAPIParser`): missing attributes never fail a sync.
 
@@ -36,6 +37,10 @@ Lists are paged with `page[limit]=100` and followed through `links.next` (absolu
 3. Archived modules are skipped.
 
 Downloaded files are stored under `Slides/StudIP/<module id>/<file id>/<original name>` in the app container.
+
+## Timetable
+
+With Settings → Stundenplan → „Termine verknüpfter Stud.IP-Veranstaltungen übernehmen“ every full Stud.IP sync imports the dates of linked, active modules (30 days back, 240 days ahead) into the calendar source „Stud.IP“ (`SyncStudIPTimetableUseCase`, port `StudIPScheduleService`). Events are linked to their module, cancelled dates are titled „Entfällt: …“, and IDs are derived from the Stud.IP date ID, so a refresh updates moved dates and removes deleted ones. A module that fails to load keeps its stored dates. The option is off by default because many users already subscribe to the Stud.IP calendar link; with both, dates would appear twice. The source can be removed under Kalender → Quellen.
 
 ## Errors
 
