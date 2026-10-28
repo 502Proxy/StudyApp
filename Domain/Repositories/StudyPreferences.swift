@@ -20,7 +20,7 @@ protocol StudySettingsStore: AnyObject {
     var automaticBackups: Bool { get set }
     /// Import the dates of linked Stud.IP courses into the calendar during a Stud.IP sync.
     var importsStudIPTimetable: Bool { get set }
-    /// OpenMensa canteen shown on „Heute“; `nil` hides the menu.
+    /// Canteen shown on „Heute“; `nil` hides the menu.
     var canteenID: Int? { get set }
     var notificationSettings: NotificationSettings { get set }
     var studyTimerSettings: StudyTimerSettings { get set }
