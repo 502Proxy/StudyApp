@@ -44,8 +44,11 @@ Code: `Presentation/Notes/`, `Presentation/Learning/NotesOverviewView.swift`, `D
 
 - Question/answer cards, optionally created from a note. Review due cards and rate them „Nochmal“, „Schwer“, „Gut“ or „Leicht“ (keyboard: ↩ reveals, 1–4 rates). Scheduling is SM-2 inspired.
 - Study sheets combine selected notes under a topic outline with generic self-check questions. They are assembled deterministically; nothing is AI-generated.
+- Anki exchange (Karteikarten → „Anki“):
+  - **Import** of `.apkg` packages and Anki text exports (`.txt`, `.tsv`, `.csv`) into the module. Imported cards are new and due now; cards whose front already exists in the module are skipped. Packages exported by Anki 2.1.50+ without „Unterstützung älterer Anki-Versionen“ only contain a compressed collection StudyApp cannot read; the message explains how to export them.
+  - **Export** writes Anki's „Notizen als Klartext“ format (tab-separated, plain text, tags column with the module name), which Anki imports via „Datei → Importieren“.
 
-Code: `Presentation/Learning/`, `Domain/UseCases/FlashcardUseCases.swift`, `Domain/UseCases/StudySheetUseCases.swift`
+Code: `Presentation/Learning/`, `Domain/UseCases/FlashcardUseCases.swift`, `Domain/UseCases/FlashcardExchangeUseCases.swift`, `Domain/UseCases/StudySheetUseCases.swift`, `Data/Anki/`
 
 ## Assignments
 
