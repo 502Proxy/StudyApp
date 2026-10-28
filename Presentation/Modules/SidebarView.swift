@@ -229,6 +229,7 @@ struct SidebarView: View {
     }
 }
 
+/// One module in the sidebar: colour dot, name and the running or due-cards indicator.
 private struct ModuleRow: View {
     let module: StudyModule
     let isLive: Bool
@@ -236,17 +237,13 @@ private struct ModuleRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ModuleBadge(name: module.name, color: module.color, size: 24)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(module.name)
-                    .lineLimit(1)
-                if !module.code.isEmpty {
-                    Text(module.code)
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
+            Circle()
+                .fill(module.color.color)
+                .frame(width: 10, height: 10)
+                .frame(width: 18)
+            Text(module.name)
+                .lineLimit(1)
+                .help(module.code.isEmpty ? module.name : "\(module.name) · \(module.code)")
             Spacer(minLength: 4)
             if isLive {
                 Circle()
