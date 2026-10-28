@@ -2,31 +2,21 @@ import Foundation
 import Testing
 @testable import StudyApp
 
-struct OpenMensaParserTests {
-    @Test func readsCanteens() throws {
-        let json = #"[{"id":1084,"name":"Oldenburg, Mensa Uhlhornsweg","city":"Oldenburg","address":"Uhlhornsweg 49-55, 26129 Oldenburg","coordinates":[53.14,8.18]}]"#
-        let canteens = try OpenMensaParser.canteens(Data(json.utf8))
-        #expect(canteens == [Canteen(id: 1084, name: "Oldenburg, Mensa Uhlhornsweg", city: "Oldenburg", address: "Uhlhornsweg 49-55, 26129 Oldenburg")])
+@MainActor
+struct StudierendenwerkOldenburgClientTests {
+    @Test func offersTheUniversityCanteensWithUhlhornswegFirst() {
+        #expect(StudierendenwerkOldenburgClient.universityCanteens.map(\.name) == ["Mensa Uhlhornsweg", "Mensa Wechloy"])
+        #expect(StudierendenwerkOldenburgClient.universityCanteens.map(\.id) == [2, 3])
     }
 
-    @Test func readsMealsWithStudentPriceAndNotes() throws {
-        let json = #"""
-        [{"id":1,"name":"Spaghetti Bolognese","category":"Pasta","prices":{"students":2.5,"employees":4.1,"pupils":null,"others":5.0},"notes":["Rind"]},
-         {"id":2,"name":"Gemüsecurry","category":"Vegan","prices":{"students":null},"notes":[]},
-         {"id":3,"name":"Salatbar","prices":null}]
-        """#
-        let meals = try OpenMensaParser.meals(Data(json.utf8))
-        #expect(meals.map(\.studentPrice) == [2.5, nil, nil])
-        #expect(meals.map(\.category) == ["Pasta", "Vegan", "Essen"])
-        #expect(meals.first?.notes == ["Rind"])
-    }
-
-    @Test func readsClosedDaysAndFormatsDates() throws {
-        #expect(try OpenMensaParser.isClosed(Data(#"{"date":"2026-10-28","closed":true}"#.utf8)))
+    @Test func asksForTheDayWithTheMondaysOfItsWeekAndTheNext() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try #require(TimeZone(identifier: "Europe/Berlin"))
-        let date = try #require(calendar.date(from: DateComponents(year: 2026, month: 3, day: 9, hour: 23, minute: 30)))
-        #expect(OpenMensaParser.dayString(date, calendar: calendar) == "2026-03-09")
+        let sunday = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 23, minute: 30)))
+
+        let body = StudierendenwerkOldenburgClient.formBody(locationID: 3, date: sunday, calendar: calendar)
+
+        #expect(body == "func=make_spl&locId=3&date=2026-11-01&lang=de&startThisWeek=2026-10-26&startNextWeek=2026-11-02")
     }
 }
 
@@ -36,7 +26,9 @@ final class FakeCanteenService: CanteenService {
     var error: MensaError?
     private(set) var requests = 0
 
-    func canteens(nearLatitude latitude: Double, longitude: Double, radius: Double) async throws -> [Canteen] { [] }
+    var canteenList: [Canteen] = []
+
+    func canteens() async throws -> [Canteen] { canteenList }
 
     func menu(canteenID: Int, on date: Date) async throws -> CanteenMenu {
         requests += 1
@@ -116,6 +108,22 @@ struct MensaViewModelTests {
         service.error = .offline
         await viewModel.selectCanteen(9)
         #expect(viewModel.state == .unavailable(MensaError.offline.localizedDescription))
+    }
+
+    @Test func replacesACanteenThatIsNoLongerOffered() async throws {
+        service.canteenList = [
+            Canteen(id: 2, name: "Mensa Uhlhornsweg", city: "Oldenburg", address: ""),
+            Canteen(id: 3, name: "Mensa Wechloy", city: "Oldenburg", address: ""),
+        ]
+        settings.canteenID = 1084 // chosen from OpenMensa before
+        let viewModel = try makeViewModel()
+
+        await viewModel.refresh()
+        #expect(settings.canteenID == 2)
+
+        settings.canteenID = 3
+        await viewModel.refresh()
+        #expect(settings.canteenID == 3)
     }
 
     @Test func formatsStudentPrices() {
