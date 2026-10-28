@@ -69,6 +69,12 @@ Code: `Presentation/Grades/`, `Domain/UseCases/GradeUseCases.swift`, `Domain/Ent
 
 Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/StudIP/` · Details: [STUDIP.md](STUDIP.md)
 
+## Menu bar
+
+The menu bar item shows the remaining minutes while a lecture runs. Its window lists the running or next lecture (with „Folien öffnen“) and the due flashcards, and opens the main window. It can be hidden in Settings → Allgemein.
+
+Code: `Presentation/MenuBar/`
+
 ## Updates and settings
 
 - Automatic updates through Sparkle („Nach Updates suchen …“ in the app menu). See [RELEASING.md](RELEASING.md).
