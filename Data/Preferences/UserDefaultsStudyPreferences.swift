@@ -12,6 +12,7 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         static let ignoredCourseKeys = "moduleDetection.ignoredKeys"
         static let lastAutoOpenedLecture = "autopilot.lastHandledLecture"
         static let automaticBackups = "backup.automatic"
+        static let importsStudIPTimetable = "studip.importsTimetable"
         static let canteenID = "mensa.canteenID"
         static let notificationSettings = "notifications.settings"
         static func lastPage(_ documentID: UUID) -> String { "reading.page.\(documentID.uuidString)" }
@@ -59,6 +60,11 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
     var automaticBackups: Bool {
         get { bool(Key.automaticBackups, default: true) }
         set { defaults.set(newValue, forKey: Key.automaticBackups) }
+    }
+
+    var importsStudIPTimetable: Bool {
+        get { bool(Key.importsStudIPTimetable, default: false) }
+        set { defaults.set(newValue, forKey: Key.importsStudIPTimetable) }
     }
 
     var canteenID: Int? {

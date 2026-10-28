@@ -19,6 +19,7 @@ final class AppContainer {
     let studIPService: any StudIPService
     let studIPAnnouncementService: any StudIPAnnouncementService
     let announcementRepository: any AnnouncementRepository
+    let studIPScheduleService: any StudIPScheduleService
     let canteenService: any CanteenService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
@@ -52,6 +53,7 @@ final class AppContainer {
         let studIPClient = StudIPJSONAPIClient()
         studIPService = studIPClient
         studIPAnnouncementService = studIPClient
+        studIPScheduleService = studIPClient
         canteenService = OpenMensaClient()
         if inMemory {
             preferences = InMemoryStudyPreferences()
@@ -167,7 +169,9 @@ final class AppContainer {
             importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
             fileRepository: courseFileRepository,
             storage: fileStorage,
-            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository)
+            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository),
+            timetableSync: SyncStudIPTimetableUseCase(service: studIPScheduleService, repository: studyCalendarRepository),
+            settings: preferences
         )
     }
 

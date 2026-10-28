@@ -39,6 +39,8 @@ final class StudIPViewModel {
     @ObservationIgnored var onBackgroundSyncChanges: ((StudIPSyncSummary) -> Void)?
     /// Called after announcements were synced, so lists showing them can reload.
     @ObservationIgnored var onAnnouncementsSynced: (() -> Void)?
+    /// Called after the Stud.IP timetable was imported, so the calendar can reload.
+    @ObservationIgnored var onTimetableSynced: (() -> Void)?
 
     private let store: any StudIPAccountStore
     private let moduleRepository: any ModuleRepository
@@ -47,6 +49,8 @@ final class StudIPViewModel {
     private let linkCourse: LinkStudIPCourseUseCase
     private let syncCourses: SyncStudIPCoursesUseCase
     private let syncAnnouncements: SyncAnnouncementsUseCase?
+    private let syncTimetable: SyncStudIPTimetableUseCase?
+    private let settings: (any StudySettingsStore)?
     private let service: any StudIPService
     private let now: () -> Date
     @ObservationIgnored private var statusTask: Task<Void, Never>?
@@ -63,6 +67,8 @@ final class StudIPViewModel {
         fileRepository: (any CourseFileRepository)? = nil,
         storage: (any FileStorage)? = nil,
         announcementSync: SyncAnnouncementsUseCase? = nil,
+        timetableSync: SyncStudIPTimetableUseCase? = nil,
+        settings: (any StudySettingsStore)? = nil,
         now: @escaping () -> Date = { .now }
     ) {
         self.service = service
@@ -81,6 +87,8 @@ final class StudIPViewModel {
             fileRepository: fileRepository, storage: storage
         )
         syncAnnouncements = announcementSync
+        syncTimetable = timetableSync
+        self.settings = settings
         account = store.load()?.account
         lastSync = store.lastSlideSync
         autoSyncSlides = store.autoSyncSlides
@@ -204,6 +212,7 @@ final class StudIPViewModel {
             var summary = try await syncCourses(modules: modules, credentials: credentials)
             try await addAnnouncements(to: &summary, modules: modules, credentials: credentials)
             if onlyModules == nil {
+                try await importTimetable(into: &summary, modules: modules, credentials: credentials)
                 lastSync = now()
                 store.lastSlideSync = lastSync
             }
@@ -234,6 +243,7 @@ final class StudIPViewModel {
         do {
             summary = try await syncCourses(modules: modules, credentials: credentials)
             try await addAnnouncements(to: &summary, modules: modules, credentials: credentials)
+            try await importTimetable(into: &summary, modules: modules, credentials: credentials)
         } catch {
             // Im Hintergrund still bleiben; die Einstellungen zeigen „Sitzung abgelaufen“.
             noteSessionExpiry(error)
@@ -259,6 +269,17 @@ final class StudIPViewModel {
         summary.newAnnouncements = result.new
         summary.failures += result.failures
         onAnnouncementsSynced?()
+    }
+
+    /// Imports the dates of linked courses when the setting is on; failing modules only add to the failures.
+    private func importTimetable(
+        into summary: inout StudIPSyncSummary,
+        modules: [StudyModule],
+        credentials: StudIPCredentials
+    ) async throws {
+        guard let syncTimetable, settings?.importsStudIPTimetable == true else { return }
+        summary.failures += try await syncTimetable(modules: modules, credentials: credentials)
+        onTimetableSynced?()
     }
 
     private func noteSessionExpiry(_ error: any Error) {
