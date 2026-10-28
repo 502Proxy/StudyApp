@@ -104,6 +104,12 @@ Settings → Allgemein → Mensa picks a canteen near the University of Oldenbur
 
 Code: `Domain/UseCases/MensaUseCases.swift`, `Data/Mensa/` (OpenMensa API v2), `Presentation/Mensa/`
 
+## Spotlight
+
+Active modules, notes with content and study sheets appear in the macOS search (Spotlight). The index is rebuilt on launch and every five minutes; deleted notes disappear with the next rebuild. Choosing a result opens StudyApp at the module, note or study sheet. Spotlight can be limited in System Settings → Spotlight.
+
+Code: `Domain/UseCases/SearchIndexUseCases.swift`, `Data/Spotlight/`
+
 ## Widgets
 
 Three widgets for the desktop and Notification Center (add them via right-click on the desktop → „Widgets bearbeiten …“):
