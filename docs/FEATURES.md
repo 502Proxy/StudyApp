@@ -84,7 +84,9 @@ Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/Stud
 
 The menu bar item shows the remaining minutes while a lecture runs. Its window lists the running or next lecture (with „Folien öffnen“) and the due flashcards, and opens the main window. It can be hidden in Settings → Allgemein.
 
-Code: `Presentation/MenuBar/`
+The item is an AppKit `NSStatusItem` with a popover (`App/MenuBarController.swift`), not a SwiftUI `MenuBarExtra` scene: that scene kept the scene graph changing at launch and the app hung.
+
+Code: `App/MenuBarController.swift`, `Presentation/MenuBar/`
 
 ## Shortcuts and Siri
 
