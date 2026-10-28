@@ -59,6 +59,9 @@ struct FlashcardsView: View {
                 }
             }
             Spacer()
+            if let exchange = viewModel.flashcardExchange {
+                exchangeMenu(exchange)
+            }
             Button {
                 editingCard = nil
                 editorDraft = nil
@@ -76,6 +79,31 @@ struct FlashcardsView: View {
         }
         .padding(.horizontal, Theme.Spacing.page)
         .padding(.vertical, 14)
+    }
+
+    private func exchangeMenu(_ exchange: FlashcardExchangeViewModel) -> some View {
+        Menu {
+            Button("Aus Anki importieren …", systemImage: "square.and.arrow.down") {
+                FlashcardExchangePanels.chooseImport { url in exchange.importCards(from: url) }
+            }
+            Button("Für Anki exportieren …", systemImage: "square.and.arrow.up") {
+                FlashcardExchangePanels.chooseExport(suggestedName: exchange.suggestedExportName) { url in
+                    exchange.exportCards(to: url)
+                }
+            }
+            .disabled(viewModel.flashcards.isEmpty)
+        } label: {
+            Label("Anki", systemImage: "arrow.up.arrow.down")
+        }
+        .fixedSize()
+        .help("Karteikarten mit Anki austauschen")
+        .alert(
+            exchange.statusMessage ?? "",
+            isPresented: Binding(get: { exchange.statusMessage != nil }, set: { if !$0 { exchange.clearStatus() } })
+        ) {
+            Button("OK", role: .cancel) {}
+        }
+        .errorAlert(message: exchange.errorMessage) { exchange.errorMessage = nil }
     }
 
     @ViewBuilder
