@@ -17,6 +17,7 @@ struct ModuleDetailView: View {
     let slidesRevision: Int
     let studIP: StudIPViewModel
     let exams: ExamsViewModel
+    let announcements: AnnouncementsViewModel
     let onLinkStudIP: () -> Void
     let assignments: AssignmentsViewModel
     let onShowEvent: (StudyCalendarEvent) -> Void
@@ -40,6 +41,7 @@ struct ModuleDetailView: View {
         assignments: AssignmentsViewModel,
         studIP: StudIPViewModel,
         exams: ExamsViewModel,
+        announcements: AnnouncementsViewModel,
         makeSlidesViewModel: SlidesViewModelFactory,
         makeLearningViewModel: LearningViewModelFactory,
         makeCourseFilesViewModel: CourseFilesViewModelFactory,
@@ -57,6 +59,7 @@ struct ModuleDetailView: View {
         self.slidesRevision = slidesRevision
         self.studIP = studIP
         self.exams = exams
+        self.announcements = announcements
         self.onLinkStudIP = onLinkStudIP
         self.assignments = assignments
         self.onShowEvent = onShowEvent
@@ -227,6 +230,16 @@ struct ModuleDetailView: View {
 
                 if !moduleExams.isEmpty {
                     UpcomingExamsCard(exams: moduleExams) { _ in section = .exam }
+                }
+
+                let moduleAnnouncements = announcements.items(forModule: module.id)
+                if !moduleAnnouncements.isEmpty {
+                    AnnouncementsCard(
+                        items: Array(moduleAnnouncements.prefix(3)),
+                        showsModule: false,
+                        onOpen: announcements.open,
+                        onMarkAllRead: { announcements.markRead(moduleAnnouncements) }
+                    )
                 }
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 14)], spacing: 14) {

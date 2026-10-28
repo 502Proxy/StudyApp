@@ -160,6 +160,8 @@ struct StudIPSyncSummary: Equatable, Sendable {
     /// Fehler einzelner Module oder Dateien; der Abgleich der übrigen läuft weiter.
     var failures: [String] = []
     var checkedModules = 0
+    /// Announcements that are new since the previous sync.
+    var newAnnouncements: [CourseAnnouncement] = []
 
     var newDocumentCount: Int { imported.count + updated.count }
     var hasChanges: Bool { newDocumentCount > 0 || !downloadedFiles.isEmpty }

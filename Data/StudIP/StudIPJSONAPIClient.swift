@@ -39,7 +39,8 @@ struct StudIPJSONAPIClient: StudIPService {
 
     // MARK: HTTP
 
-    private func allResources(_ path: String, _ credentials: StudIPCredentials) async throws -> [StudIPJSONAPIParser.Resource] {
+    /// Follows `links.next` through all pages of a collection.
+    func allResources(_ path: String, _ credentials: StudIPCredentials) async throws -> [StudIPJSONAPIParser.Resource] {
         var url: URL? = try endpoint(path, credentials, query: [URLQueryItem(name: "page[limit]", value: "100")])
         var resources: [StudIPJSONAPIParser.Resource] = []
         var pages = 0

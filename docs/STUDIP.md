@@ -24,6 +24,7 @@ StudyApp talks to the JSON:API of a Stud.IP installation (`<server>/jsonapi.php/
 | Files of a course (flat) | `GET courses/{id}/file-refs` |
 | Folder tree | `GET courses/{id}/folders` (relationship `parent`) |
 | Download | `GET file-refs/{id}/content` |
+| Announcements | `GET courses/{id}/news` (`title`, HTML `content`, `publication-start`) |
 
 Lists are paged with `page[limit]=100` and followed through `links.next` (absolute or relative). Parsing is deliberately lenient (`StudIPJSONAPIParser`): missing attributes never fail a sync.
 
@@ -37,6 +38,14 @@ Lists are paged with `page[limit]=100` and followed through `links.next` (absolu
 3. Archived modules are skipped.
 
 Downloaded files are stored under `Slides/StudIP/<module id>/<file id>/<original name>` in the app container.
+
+## Announcements
+
+Every sync also loads the announcements („Ankündigungen“) of linked, active modules (`SyncAnnouncementsUseCase`) through the separate port `StudIPAnnouncementService`. Only the last 60 days are kept; HTML is reduced to plain text. Announcements keep their read state across syncs; those of unlinked or deleted modules are removed. The first sync of a module stores its announcements without reporting them as new, so linking a course does not cause a burst of notifications.
+
+Unread announcements appear on „Heute“, the latest three in the module overview; opening one shows the full text and marks it read. Settings → Mitteilungen can announce new ones after a background sync.
+
+Code: `Domain/UseCases/AnnouncementUseCases.swift`, `Data/StudIP/StudIPJSONAPIClient+Announcements.swift`, `Presentation/Announcements/`
 
 ## Errors
 
