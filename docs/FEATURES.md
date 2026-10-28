@@ -86,6 +86,18 @@ The menu bar item shows the remaining minutes while a lecture runs. Its window l
 
 Code: `Presentation/MenuBar/`
 
+## Shortcuts and Siri
+
+StudyApp offers actions in the Shortcuts app and to Siri without any setup:
+
+| Action | Example phrase | Result |
+| --- | --- | --- |
+| Nächste Vorlesung | „Was habe ich als Nächstes in StudyApp?“ | Spoken/returned text, e.g. „Als Nächstes: Analysis I, heute um 10:15 in HS 1.“ |
+| Fällige Karteikarten | „Fällige Karten in StudyApp“ | „24 Karten fällig: Analysis I 12, …“ |
+| Karteikarten lernen | „Starte Karteikarten Analysis I in StudyApp“ | Opens the module's flashcards |
+
+Code: `App/Intents/`, `Domain/UseCases/QuickInfoUseCases.swift`
+
 ## Updates and settings
 
 - Automatic updates through Sparkle („Nach Updates suchen …“ in the app menu). See [RELEASING.md](RELEASING.md).
