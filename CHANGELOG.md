@@ -2,9 +2,14 @@
 
 User-facing changes per version. The release notes shown in the update dialog live in `docs/release-notes/<version>.md` (German).
 
-## Unreleased
+## 1.11 – 2026-10-28
 
+- Exam phase: upcoming exams with countdown on Today, in the module (⌘8) and in the module overview (#16)
+- Exams are detected from the calendar and can be entered by hand; a study plan spreads the slides over the days until the exam (#16)
+- Notifications for lectures, assignment deadlines and new Stud.IP files; a click opens the matching place (#15)
+- Backup and restore of all data including PDFs, plus weekly automatic backups (#17)
 - App icon is shown again: the asset catalog is compiled into the bundle (#18)
+- Repository documentation rewritten and moved to `docs/` (#19)
 
 ## 1.10 – 2026-10-22
 
