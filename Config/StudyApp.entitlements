@@ -8,6 +8,11 @@
 	<true/>
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
+	<!-- Shared with the widget extension for the widget snapshot (WidgetSnapshotStore.appGroup). -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>VF66Y42L4U.germany.oldenburg.mueller.tristan.StudyApp</string>
+	</array>
 	<!-- Sparkle startet den Installer außerhalb der Sandbox über diese beiden Dienste. -->
 	<!-- Die App ist ad hoc signiert (ohne Team-ID), Sparkle.framework dagegen mit der Team-ID der
 	     Sparkle-Entwickler. Ohne diese Ausnahme verweigert die Hardened Runtime das Laden beim Start. -->

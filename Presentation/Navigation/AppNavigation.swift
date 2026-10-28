@@ -109,6 +109,17 @@ final class AppNavigation {
         }
     }
 
+    /// Opens what a widget link points to; unknown sections fall back to the module overview.
+    func open(_ link: StudyAppLink) {
+        switch link {
+        case .today:
+            showToday()
+        case .module(let id, let rawSection):
+            let section = ModuleSection(rawValue: rawSection) ?? .overview
+            show(module: id, section: section, intent: section == .slides ? .resumeSlides : nil)
+        }
+    }
+
     func go(to location: NavigationLocation) {
         navigate(to: location)
     }
