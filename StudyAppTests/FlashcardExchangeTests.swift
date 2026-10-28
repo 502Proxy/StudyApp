@@ -35,6 +35,7 @@ struct FlashcardExchangeUseCaseTests {
     }
 }
 
+@MainActor
 struct AnkiTextFormatTests {
     @Test func roundTripKeepsTabsLineBreaksAndQuotes() {
         let cards = [

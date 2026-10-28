@@ -47,6 +47,7 @@ private enum AnkiFixture {
     private static func le32(_ value: UInt32) -> Data { Data((0..<4).map { UInt8((value >> (8 * $0)) & 0xFF) }) }
 }
 
+@MainActor
 struct AnkiPackageReaderTests {
     private func write(_ data: Data) throws -> URL {
         let url = FileManager.default.temporaryDirectory.appending(path: "deck-\(UUID().uuidString).apkg")
