@@ -25,6 +25,8 @@ struct CalendarSource: Identifiable, Hashable, Codable, Sendable {
 enum CalendarSourceKind: String, Codable, Sendable {
     case file
     case subscription
+    /// Dates of linked courses, loaded from the Stud.IP JSON:API during a Stud.IP sync.
+    case studIP
 }
 
 // MARK: - Zeitlogik
