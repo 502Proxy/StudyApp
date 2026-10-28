@@ -10,6 +10,17 @@ User-facing changes per version. The release notes shown in the update dialog li
 - Sidebar: compact row for the running lecture, new overviews „Aufgaben“ and „Klausuren“, Stud.IP status, single-line modules (#32)
 - Today in two columns with a one-line summary; the module grid is gone (#33)
 - Modules have four tabs – Übersicht, Material, Lernen, Aufgaben – with ⌘1–⌘4; the next exam shows in the header (#34)
+- Expired Stud.IP sessions are checked on launch; a banner offers to sign in again (#40)
+- Stud.IP announcements on Today and in the module, with optional notifications (#41)
+- Timetable from Stud.IP: dates of linked courses in the calendar, cancelled dates marked (#42)
+- Canteen menu of Mensa Uhlhornsweg and Mensa Wechloy on Today, loaded from the Studierendenwerk Oldenburg (#43, #67)
+- Anki import (.apkg and text) and text export for flashcards (#44)
+- Study timer (Pomodoro) in the toolbar with statistics per day, week and module (#45)
+- Menu bar item with the running lecture, due cards and the study timer; built with AppKit after the SwiftUI scene hung the app at launch (#46, #64, #69)
+- Shortcuts and Siri: next lecture, due cards, open a module's flashcards, start the study timer (#47, #70)
+- Modules, notes and study sheets in Spotlight (#48)
+- Widgets: next lecture, due cards and exam countdown (#49)
+- Unit tests start an empty host app, so launch work never runs under XCTest (#62)
 
 ## 1.11 – 2026-10-28
 
