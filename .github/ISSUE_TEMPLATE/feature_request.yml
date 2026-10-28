@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest a new feature or an improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Which situation in your studies does this help with? What is tedious today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should StudyApp do? Sketches and examples are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: When is this done?
+      placeholder: |
+        - [ ] …
+        - [ ] …
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other solutions or workarounds you considered.

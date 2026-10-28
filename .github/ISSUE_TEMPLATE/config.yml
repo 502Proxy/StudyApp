@@ -1,0 +1,6 @@
+# Every issue goes through a form so it gets a type label and the information needed to act on it.
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/502Proxy/StudyApp/security/advisories/new
+    about: Please report security problems privately, not as a public issue.

@@ -24,6 +24,8 @@ git commit -m "chore(release): 1.11"
 git push
 ```
 
+Afterwards close the milestone `1.11` on GitHub and move its open issues to the next milestone.
+
 `release.sh <version>`:
 
 1. archives the Release build with the given version and a timestamp build number,
