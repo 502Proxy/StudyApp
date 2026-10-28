@@ -123,7 +123,7 @@ struct TodayView: View {
         HStack(alignment: .center, spacing: 20) {
             Image(systemName: "calendar.badge.plus")
                 .font(.system(size: 30, weight: .medium))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.accentText)
                 .frame(width: 64, height: 64)
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             VStack(alignment: .leading, spacing: 6) {

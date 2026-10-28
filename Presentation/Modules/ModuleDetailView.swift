@@ -464,7 +464,7 @@ private struct QuickActionRow: View {
             HStack(spacing: 10) {
                 Image(systemName: systemImage)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.accentText)
                     .frame(width: 28, height: 28)
                     .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 Text(title)

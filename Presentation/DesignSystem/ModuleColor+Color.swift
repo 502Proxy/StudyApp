@@ -1,22 +1,23 @@
 import SwiftUI
 
 extension ModuleColor {
+    /// Apple's system colours, so modules look at home next to the system UI in both appearances.
     var color: Color {
         switch self {
-        case .violet: Color(light: 0x8B5CF6, dark: 0xA78BFA)
-        case .blue: Color(light: 0x3B82F6, dark: 0x60A5FA)
-        case .teal: Color(light: 0x0D9488, dark: 0x2DD4BF)
-        case .green: Color(light: 0x16A34A, dark: 0x4ADE80)
-        case .orange: Color(light: 0xEA580C, dark: 0xFB923C)
-        case .pink: Color(light: 0xDB2777, dark: 0xF472B6)
-        case .red: Color(light: 0xDC2626, dark: 0xF87171)
-        case .indigo: Color(light: 0x4F46E5, dark: 0x818CF8)
-        case .amber: Color(light: 0xD97706, dark: 0xFBBF24)
-        case .cyan: Color(light: 0x0891B2, dark: 0x22D3EE)
+        case .violet: Color(light: 0xAF52DE, dark: 0xBF5AF2)
+        case .blue: Color(light: 0x007AFF, dark: 0x0A84FF)
+        case .teal: Color(light: 0x30B0C7, dark: 0x40C8E0)
+        case .green: Color(light: 0x34C759, dark: 0x30D158)
+        case .orange: Color(light: 0xFF9500, dark: 0xFF9F0A)
+        case .pink: Color(light: 0xFF2D55, dark: 0xFF375F)
+        case .red: Color(light: 0xFF3B30, dark: 0xFF453A)
+        case .indigo: Color(light: 0x5856D6, dark: 0x5E5CE6)
+        case .amber: Color(light: 0xFFCC00, dark: 0xFFD60A)
+        case .cyan: Color(light: 0x32ADE6, dark: 0x64D2FF)
         }
     }
 
-    /// Sehr helle Tönung für Flächen (Chips, Kachelhintergründe).
+    /// Light tint for areas such as chips and tile backgrounds.
     var softColor: Color {
         color.opacity(0.13)
     }

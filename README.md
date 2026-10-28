@@ -38,6 +38,7 @@ scripts/qa.sh                  # SwiftLint (strict) + unit tests
 | [Stud.IP](docs/STUDIP.md) | Sign-in (password or browser with 2FA), JSON:API endpoints, sync rules |
 | [Quality assurance](docs/QUALITY.md) | `scripts/qa.sh`, Git hooks, CI, SwiftLint configuration |
 | [Releasing](docs/RELEASING.md) | Building a DMG, signing updates, publishing the appcast |
+| [Design](docs/DESIGN.md) | Colour tokens, dark mode rules and mockups |
 | [Contributing](CONTRIBUTING.md) | Issue workflow, labels, milestones, commit messages, code and test conventions |
 | [Security](SECURITY.md) | Reporting vulnerabilities |
 | [Changelog](CHANGELOG.md) | User-facing changes per version |

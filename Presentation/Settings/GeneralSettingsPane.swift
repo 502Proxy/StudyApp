@@ -4,7 +4,7 @@ import SwiftUI
 struct GeneralSettingsPane: View {
     let settings: any StudySettingsStore
 
-    @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
+    @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
     @State private var autoOpenLecture = true
     @State private var leadMinutes = 10

@@ -1,10 +1,13 @@
 import SwiftUI
 
-/// Erscheinungsbild der App. Hell ist Standard; „System“ folgt den macOS-Einstellungen.
+/// Appearance of the app; `system` follows the macOS setting.
 enum AppAppearance: String, CaseIterable, Identifiable {
     case light
     case dark
     case system
+
+    /// Used until the user picks an appearance; an explicit choice is kept.
+    static let standard = AppAppearance.system
 
     var id: Self { self }
 
