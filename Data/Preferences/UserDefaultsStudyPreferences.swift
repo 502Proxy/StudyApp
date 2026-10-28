@@ -12,7 +12,9 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         static let ignoredCourseKeys = "moduleDetection.ignoredKeys"
         static let lastAutoOpenedLecture = "autopilot.lastHandledLecture"
         static let automaticBackups = "backup.automatic"
+        static let importsStudIPTimetable = "studip.importsTimetable"
         static let notificationSettings = "notifications.settings"
+        static let studyTimerSettings = "studyTimer.settings"
         static func lastPage(_ documentID: UUID) -> String { "reading.page.\(documentID.uuidString)" }
         static func lastDocument(_ moduleID: UUID) -> String { "reading.document.\(moduleID.uuidString)" }
     }
@@ -60,6 +62,11 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         set { defaults.set(newValue, forKey: Key.automaticBackups) }
     }
 
+    var importsStudIPTimetable: Bool {
+        get { bool(Key.importsStudIPTimetable, default: false) }
+        set { defaults.set(newValue, forKey: Key.importsStudIPTimetable) }
+    }
+
     /// Stored as JSON; unreadable or missing data falls back to the defaults.
     var notificationSettings: NotificationSettings {
         get {
@@ -67,6 +74,15 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
                 .flatMap { try? JSONDecoder().decode(NotificationSettings.self, from: $0) } ?? NotificationSettings()
         }
         set { defaults.set(try? JSONEncoder().encode(newValue), forKey: Key.notificationSettings) }
+    }
+
+    /// Stored as JSON; unreadable or missing data falls back to the defaults.
+    var studyTimerSettings: StudyTimerSettings {
+        get {
+            defaults.data(forKey: Key.studyTimerSettings)
+                .flatMap { try? JSONDecoder().decode(StudyTimerSettings.self, from: $0) } ?? StudyTimerSettings()
+        }
+        set { defaults.set(try? JSONEncoder().encode(newValue), forKey: Key.studyTimerSettings) }
     }
 
     func lastPage(for documentID: UUID) -> Int? {

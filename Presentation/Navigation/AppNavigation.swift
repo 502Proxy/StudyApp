@@ -80,6 +80,10 @@ final class AppNavigation {
         navigate(to: .exams)
     }
 
+    func showStatistics() {
+        navigate(to: .statistics)
+    }
+
     /// Öffnet ein Modul und gibt der Modulansicht einen Auftrag mit.
     func show(module id: UUID, section: ModuleSection, intent: ModuleIntent?) {
         pendingIntent = intent

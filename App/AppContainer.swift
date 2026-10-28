@@ -19,12 +19,14 @@ final class AppContainer {
     let studIPService: any StudIPService
     let studIPAnnouncementService: any StudIPAnnouncementService
     let announcementRepository: any AnnouncementRepository
+    let studIPScheduleService: any StudIPScheduleService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
     let backupArchiver: any BackupArchiving
     let backupFolder: any BackupFolder
     let notificationScheduler: any NotificationScheduling
     let examRepository: any ExamRepository
+    let studySessionRepository: any StudySessionRepository
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
 
@@ -44,6 +46,7 @@ final class AppContainer {
         notificationScheduler = UserNotificationScheduler()
         examRepository = SwiftDataExamRepository(context: context)
         announcementRepository = SwiftDataAnnouncementRepository(context: context)
+        studySessionRepository = SwiftDataStudySessionRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
@@ -51,6 +54,7 @@ final class AppContainer {
         let studIPClient = StudIPJSONAPIClient()
         studIPService = studIPClient
         studIPAnnouncementService = studIPClient
+        studIPScheduleService = studIPClient
         if inMemory {
             preferences = InMemoryStudyPreferences()
             studIPAccountStore = InMemoryStudIPAccountStore()
@@ -100,6 +104,7 @@ final class AppContainer {
             calendar: studyCalendarRepository,
             courseFiles: courseFileRepository,
             exams: examRepository,
+            studySessions: studySessionRepository,
             files: fileStorage
         )
     }
@@ -138,6 +143,10 @@ final class AppContainer {
         AnnouncementsViewModel(repository: announcementRepository, modules: moduleRepository)
     }
 
+    func makeStudyTimerViewModel() -> StudyTimerViewModel {
+        StudyTimerViewModel(repository: studySessionRepository, settings: preferences, scheduler: notificationScheduler)
+    }
+
     /// Rebuilds the Spotlight index from the current data.
     func makeReindexSearch() -> ReindexSearchUseCase {
         ReindexSearchUseCase(
@@ -171,7 +180,9 @@ final class AppContainer {
             importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
             fileRepository: courseFileRepository,
             storage: fileStorage,
-            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository)
+            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository),
+            timetableSync: SyncStudIPTimetableUseCase(service: studIPScheduleService, repository: studyCalendarRepository),
+            settings: preferences
         )
     }
 

@@ -29,6 +29,8 @@ struct StudyNotification: Equatable, Sendable {
 
     /// Every identifier StudyApp schedules starts with this prefix, so foreign requests are never touched.
     static let identifierPrefix = "studyapp."
+    /// The study timer's „phase is over“ notification. Not part of the plan, so the plan sync keeps it.
+    static let studyTimerIdentifier = "studyapp.timer"
 }
 
 /// Which notifications the user wants. Stored as one value so new options do not need new storage keys.

@@ -282,10 +282,10 @@
 				};
 			};
 			buildConfigurationList = 40F4A65E307EDDEA009E2F4B /* Build configuration list for PBXProject "StudyApp" */;
-			developmentRegion = en;
+			developmentRegion = de;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
+				de,
 				Base,
 			);
 			mainGroup = 40F4A65A307EDDEA009E2F4B;
