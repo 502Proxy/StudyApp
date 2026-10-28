@@ -13,17 +13,14 @@ extension Color {
         )
     }
 
-    /// Farbe mit eigener Variante für hellen und dunklen Modus.
+    /// Colour with its own variant for light and dark mode.
     init(light: UInt32, dark: UInt32) {
-        self.init(nsColor: NSColor(name: nil) { appearance in
-            let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            return NSColor(hex: isDark ? dark : light)
-        })
+        self.init(nsColor: NSColor(light: light, dark: dark))
     }
 }
 
 extension NSColor {
-    /// `nonisolated`, weil dynamische Farben ihren Provider außerhalb des Main Actors aufrufen können.
+    /// `nonisolated` because dynamic colours may call their provider off the main actor.
     nonisolated convenience init(hex: UInt32, alpha: CGFloat = 1) {
         self.init(
             srgbRed: CGFloat((hex >> 16) & 0xFF) / 255,
@@ -31,6 +28,14 @@ extension NSColor {
             blue: CGFloat(hex & 0xFF) / 255,
             alpha: alpha
         )
+    }
+
+    /// Dynamic colour that resolves to `light` or `dark` depending on the appearance.
+    nonisolated convenience init(light: UInt32, dark: UInt32) {
+        self.init(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            return NSColor(hex: isDark ? dark : light)
+        }
     }
 }
 
@@ -45,7 +50,7 @@ enum Theme {
     static let accentText = Color(light: 0x0062CC, dark: 0x4DA3FF)
     static let accentSoft = Color(light: 0xE5F0FF, dark: 0x243F5C)
     /// Window background behind cards and lists.
-    static let background = Color(light: 0xF5F5F7, dark: 0x1C1C1E)
+    static let background = Color(nsColor: AppKitColors.background)
     /// Cards, tiles and grouped content.
     static let surface = Color(light: 0xFFFFFF, dark: 0x2C2C2E)
     /// Recessed areas inside cards (chips, input fields, code blocks).
@@ -62,6 +67,13 @@ enum Theme {
     /// Marks running lectures.
     static let live = Color(light: 0xD70015, dark: 0xFF6961)
     static let shadow = Color(light: 0x1B1F3B, dark: 0x000000)
+
+    /// Tokens for AppKit views (PDFKit) that cannot use SwiftUI colours.
+    enum AppKitColors {
+        static let background = NSColor(light: 0xF5F5F7, dark: 0x1C1C1E)
+        /// Behind PDF pages; darker than `background` so white pages stand out.
+        static let readerBackground = NSColor(light: 0xE8E8ED, dark: 0x161618)
+    }
 
     enum Radius {
         static let small: CGFloat = 8

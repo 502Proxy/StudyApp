@@ -102,9 +102,7 @@ final class PDFReaderController {
         pdfView.displayMode = .singlePageContinuous
         pdfView.displayDirection = .vertical
         pdfView.displaysPageBreaks = true
-        pdfView.backgroundColor = NSColor(name: nil) { appearance in
-            appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? NSColor(hex: 0x141519) : NSColor(hex: 0xECEEF4)
-        }
+        pdfView.backgroundColor = Theme.AppKitColors.readerBackground
         pdfView.document = document
 
         pageCount = document?.pageCount ?? 0
