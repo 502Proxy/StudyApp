@@ -143,3 +143,50 @@ struct StudyTimerNotificationTests {
         #expect(Array(scheduler.scheduled.keys) == [StudyNotification.studyTimerIdentifier])
     }
 }
+
+@MainActor
+struct StudyTimerViewModelTests {
+    private final class Clock {
+        var now = Date(timeIntervalSince1970: 1_760_000_000)
+    }
+
+    let repository = InMemoryStudySessionRepository()
+    let settings = InMemoryStudyPreferences()
+    let scheduler = FakeNotificationScheduler()
+    private let clock = Clock()
+
+    private func makeViewModel() -> StudyTimerViewModel {
+        StudyTimerViewModel(repository: repository, settings: settings, scheduler: scheduler, clock: { [clock] in clock.now })
+    }
+
+    @Test func recordsAFinishedFocusPhaseForTheChosenModule() async {
+        let viewModel = makeViewModel()
+        let module = UUID()
+        viewModel.moduleID = module
+        await viewModel.start()
+        #expect(viewModel.remainingText == "25:00")
+
+        clock.now += 25 * 60
+        viewModel.tick()
+
+        #expect(repository.sessions.map(\.moduleID) == [module])
+        #expect(viewModel.timer.phase == .shortBreak)
+        #expect(viewModel.statistics.minutesThisWeek == 25)
+    }
+
+    @Test func pauseCancelsTheEndNotification() async {
+        let viewModel = makeViewModel()
+        await viewModel.start()
+        #expect(scheduler.scheduled[StudyNotification.studyTimerIdentifier] != nil)
+
+        viewModel.pause()
+        #expect(scheduler.scheduled[StudyNotification.studyTimerIdentifier] == nil)
+    }
+
+    @Test func settingsChangesArePersisted() {
+        let viewModel = makeViewModel()
+        viewModel.settings.focusMinutes = 50
+        #expect(settings.studyTimerSettings.focusMinutes == 50)
+        #expect(viewModel.remainingText == "50:00")
+    }
+}
