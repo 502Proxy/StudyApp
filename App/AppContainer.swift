@@ -180,7 +180,13 @@ final class AppContainer {
             slideRepository: slideRepository,
             noteRepository: noteRepository,
             flashcardRepository: flashcardRepository,
-            studySheetRepository: studySheetRepository
+            studySheetRepository: studySheetRepository,
+            flashcardExchange: FlashcardExchangeViewModel(
+                module: module,
+                repository: flashcardRepository,
+                reader: AnkiFileReader(),
+                writer: AnkiTextFileWriter()
+            )
         )
     }
 

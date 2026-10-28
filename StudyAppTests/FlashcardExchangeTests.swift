@@ -61,3 +61,57 @@ struct AnkiTextFormatTests {
         #expect(AnkiFieldText.plainText("Die {{c1::Ableitung::Begriff}} von x² ist 2x[sound:a.mp3]") == "Die Ableitung von x² ist 2x")
     }
 }
+
+@MainActor
+final class FakeFlashcardFiles: FlashcardFileReading, FlashcardFileWriting {
+    var cardsToRead: [ExchangedFlashcard] = []
+    var readError: FlashcardExchangeError?
+    private(set) var written: [ExchangedFlashcard] = []
+
+    func cards(from url: URL) throws -> [ExchangedFlashcard] {
+        if let readError { throw readError }
+        return cardsToRead
+    }
+
+    func write(_ cards: [ExchangedFlashcard], to url: URL) throws { written = cards }
+}
+
+@MainActor
+struct FlashcardExchangeViewModelTests {
+    let repository = FakeFlashcardRepository()
+    let files = FakeFlashcardFiles()
+    let module = StudyModule(id: UUID(), name: "Analysis I", code: "", color: .blue, createdAt: .now)
+    let url = URL(filePath: "/tmp/deck.txt")
+
+    private func makeViewModel() -> FlashcardExchangeViewModel {
+        FlashcardExchangeViewModel(module: module, repository: repository, reader: files, writer: files)
+    }
+
+    @Test func importReportsTheResultAndReloads() {
+        let viewModel = makeViewModel()
+        var reloads = 0
+        viewModel.onImported = { reloads += 1 }
+        files.cardsToRead = [ExchangedFlashcard(front: "A", back: "1"), ExchangedFlashcard(front: "a", back: "2")]
+
+        viewModel.importCards(from: url)
+
+        #expect(viewModel.statusMessage == "1 Karte importiert · 1 schon vorhanden.")
+        #expect(reloads == 1)
+    }
+
+    @Test func importErrorsAreShown() {
+        let viewModel = makeViewModel()
+        files.readError = .newPackageFormat
+        viewModel.importCards(from: url)
+        #expect(viewModel.errorMessage == FlashcardExchangeError.newPackageFormat.localizedDescription)
+    }
+
+    @Test func exportWritesTheModuleCards() throws {
+        try repository.add(Flashcard(moduleID: module.id, front: "F", back: "B"))
+        let viewModel = makeViewModel()
+        viewModel.exportCards(to: url)
+        #expect(files.written.map(\.front) == ["F"])
+        #expect(viewModel.statusMessage == "1 Karte exportiert.")
+        #expect(viewModel.suggestedExportName == "Analysis I – Karteikarten.txt")
+    }
+}
