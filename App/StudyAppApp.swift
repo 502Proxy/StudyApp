@@ -2,7 +2,6 @@ import AppKit
 import AppIntents
 import SwiftUI
 
-@main
 struct StudyAppApp: App {
     private let container: AppContainer
     private let autopilot: LectureAutopilot
