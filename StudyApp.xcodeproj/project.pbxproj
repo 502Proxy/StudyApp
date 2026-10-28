@@ -131,6 +131,11 @@
 			path = StudyAppTests;
 			sourceTree = "<group>";
 		};
+		98FF6A2F130A10CD02192AAC /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +171,7 @@
 				40BE87F03087BD9B00C94AF8 /* Data */,
 				40BE88133087BD9B00C94AF8 /* Domain */,
 				40BE88793087BD9B00C94AF8 /* Presentation */,
+				98FF6A2F130A10CD02192AAC /* Shared */,
 				40BE88903087BD9B00C94AF8 /* StudyAppTests */,
 				40E753193087592100CA2C5A /* LICENSE 2 */,
 				40E7531A3087592100CA2C5A /* MILESTONE2.md */,
@@ -206,6 +212,7 @@
 				40BE87F03087BD9B00C94AF8 /* Data */,
 				40BE88133087BD9B00C94AF8 /* Domain */,
 				40BE88793087BD9B00C94AF8 /* Presentation */,
+				98FF6A2F130A10CD02192AAC /* Shared */,
 			);
 			name = StudyApp;
 			packageProductDependencies = (

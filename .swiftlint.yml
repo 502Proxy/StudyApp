@@ -4,6 +4,8 @@ included:
   - Data
   - Domain
   - Presentation
+  - Shared
+  - Widgets
   - StudyAppTests
 excluded:
   - Presentation/Resources
