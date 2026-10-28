@@ -8,13 +8,20 @@ final class StudyAppIntentServices {
     private let modules: any ModuleRepository
     private let calendar: any StudyCalendarRepository
     private let flashcards: any FlashcardRepository
+    private let studyTimer: StudyTimerViewModel
     private let navigation: AppNavigation
     private let now: () -> Date
 
-    init(container: AppContainer, navigation: AppNavigation, now: @escaping () -> Date = { .now }) {
+    init(
+        container: AppContainer,
+        studyTimer: StudyTimerViewModel,
+        navigation: AppNavigation,
+        now: @escaping () -> Date = { .now }
+    ) {
         modules = container.moduleRepository
         calendar = container.studyCalendarRepository
         flashcards = container.flashcardRepository
+        self.studyTimer = studyTimer
         self.navigation = navigation
         self.now = now
     }
@@ -30,6 +37,11 @@ final class StudyAppIntentServices {
 
     func dueCardsText() throws -> String {
         DueCardsUseCase.text(try DueCardsUseCase(modules: modules, flashcards: flashcards)(now: now()))
+    }
+
+    /// Uses the app's one timer, so the toolbar and the menu bar show it running.
+    func startStudyTimer(moduleID: UUID?) async -> String {
+        await studyTimer.startFromShortcut(moduleID: moduleID)
     }
 
     func openFlashcards(moduleID: UUID) {

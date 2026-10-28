@@ -59,7 +59,8 @@ struct StudyAppApp: App {
             _todayViewModel = State(initialValue: today)
             _assignmentsViewModel = State(initialValue: assignments)
             _navigation = State(initialValue: navigation)
-            let intentServices = StudyAppIntentServices(container: container, navigation: navigation)
+            let studyTimer = container.makeStudyTimerViewModel()
+            let intentServices = StudyAppIntentServices(container: container, studyTimer: studyTimer, navigation: navigation)
             AppDependencyManager.shared.add(dependency: intentServices)
             _studIPViewModel = State(initialValue: studIP)
             let notifications = container.makeNotificationsViewModel()
@@ -73,7 +74,6 @@ struct StudyAppApp: App {
             }
             responder.install()
             notificationResponder = responder
-            let studyTimer = container.makeStudyTimerViewModel()
             let backup = container.makeBackupViewModel()
             // After a restore every screen shows the restored data.
             backup.onRestored = {
