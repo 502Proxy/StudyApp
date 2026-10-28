@@ -69,6 +69,18 @@ Code: `Presentation/Grades/`, `Domain/UseCases/GradeUseCases.swift`, `Domain/Ent
 
 Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/StudIP/` · Details: [STUDIP.md](STUDIP.md)
 
+## Widgets
+
+Three widgets for the desktop and Notification Center (add them via right-click on the desktop → „Widgets bearbeiten …“):
+
+- **Nächste Vorlesung** (small, medium): the running or next lecture with room and progress; medium also shows the due cards. Switches from „Als Nächstes“ to „Läuft“ on its own.
+- **Fällige Karteikarten** (small): total and the modules with the most due cards.
+- **Klausur-Countdown** (small): days until the next exam and study plan progress.
+
+The app writes a small snapshot (`WidgetSnapshot`) into the App Group container shared with the widget extension on launch and every five minutes; widgets never open the database. Clicking a widget opens the slides, flashcards or exam plan through `studyapp://` links.
+
+Code: `Shared/`, `Widgets/` (extension target `StudyAppWidgets`), `App/WidgetSnapshotPublisher.swift`
+
 ## Updates and settings
 
 - Automatic updates through Sparkle („Nach Updates suchen …“ in the app menu). See [RELEASING.md](RELEASING.md).
