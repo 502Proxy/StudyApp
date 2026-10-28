@@ -11,6 +11,7 @@ struct RootView: View {
     @Bindable var examsViewModel: ExamsViewModel
     @Bindable var announcementsViewModel: AnnouncementsViewModel
     let studyTimerViewModel: StudyTimerViewModel
+    let mensaViewModel: MensaViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
     let makeCourseFilesViewModel: CourseFilesViewModelFactory
@@ -141,6 +142,7 @@ struct RootView: View {
                 assignments: assignmentsViewModel,
                 exams: examsViewModel,
                 announcements: announcementsViewModel,
+                mensa: mensaViewModel,
                 onOpenModule: { moduleID, section, intent in
                     navigation.show(module: moduleID, section: section, intent: intent)
                 },

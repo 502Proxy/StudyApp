@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// Appearance, note font size and what happens when the app opens during a lecture.
+/// Appearance, note font size, what happens when the app opens during a lecture, and the canteen.
 struct GeneralSettingsPane: View {
     let settings: any StudySettingsStore
+    let mensa: MensaViewModel
 
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
     @AppStorage(ViewPreferences.noteFontSizeKey) private var noteFontSize = NoteFontSize.standard
@@ -42,6 +43,8 @@ struct GeneralSettingsPane: View {
             } footer: {
                 Text("Öffnest du StudyApp während einer Vorlesung, landest du direkt in den Folien des Moduls – an der Stelle, an der du zuletzt warst.")
             }
+
+            MensaSettingsSection(viewModel: mensa)
         }
         .onAppear {
             autoOpenLecture = settings.autoOpenLecture

@@ -13,6 +13,7 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         static let lastAutoOpenedLecture = "autopilot.lastHandledLecture"
         static let automaticBackups = "backup.automatic"
         static let importsStudIPTimetable = "studip.importsTimetable"
+        static let canteenID = "mensa.canteenID"
         static let notificationSettings = "notifications.settings"
         static let studyTimerSettings = "studyTimer.settings"
         static func lastPage(_ documentID: UUID) -> String { "reading.page.\(documentID.uuidString)" }
@@ -65,6 +66,11 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
     var importsStudIPTimetable: Bool {
         get { bool(Key.importsStudIPTimetable, default: false) }
         set { defaults.set(newValue, forKey: Key.importsStudIPTimetable) }
+    }
+
+    var canteenID: Int? {
+        get { defaults.object(forKey: Key.canteenID) as? Int }
+        set { defaults.set(newValue, forKey: Key.canteenID) }
     }
 
     /// Stored as JSON; unreadable or missing data falls back to the defaults.
