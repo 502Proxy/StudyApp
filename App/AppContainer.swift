@@ -19,6 +19,7 @@ final class AppContainer {
     let studIPService: any StudIPService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
+    let notificationScheduler: any NotificationScheduling
     let examRepository: any ExamRepository
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
@@ -36,6 +37,7 @@ final class AppContainer {
         studyCalendarRepository = SwiftDataStudyCalendarRepository(context: context)
         assignmentRepository = SwiftDataAssignmentRepository(context: context)
         courseFileRepository = SwiftDataCourseFileRepository(context: context)
+        notificationScheduler = UserNotificationScheduler()
         examRepository = SwiftDataExamRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
@@ -72,6 +74,16 @@ final class AppContainer {
             courseFileRepository: courseFileRepository,
             examRepository: examRepository,
             settings: preferences
+        )
+    }
+
+    func makeNotificationsViewModel() -> NotificationsViewModel {
+        NotificationsViewModel(
+            scheduler: notificationScheduler,
+            modules: moduleRepository,
+            calendar: studyCalendarRepository,
+            assignments: assignmentRepository,
+            store: preferences
         )
     }
 

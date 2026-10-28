@@ -35,6 +35,8 @@ final class StudIPViewModel {
 
     /// Wird nach geladenen Folien aufgerufen, z. B. um Zähler auf der Startseite zu aktualisieren.
     @ObservationIgnored var onSlidesChanged: (() -> Void)?
+    /// Called when an automatic sync brought new material, e.g. to post a notification.
+    @ObservationIgnored var onBackgroundSyncChanges: ((StudIPSyncSummary) -> Void)?
 
     private let store: any StudIPAccountStore
     private let moduleRepository: any ModuleRepository
@@ -210,6 +212,7 @@ final class StudIPViewModel {
         guard summary.hasChanges else { return }
         slidesRevision += 1
         onSlidesChanged?()
+        onBackgroundSyncChanges?(summary)
         report(summary)
     }
 
