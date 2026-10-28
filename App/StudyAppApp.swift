@@ -53,7 +53,7 @@ struct StudyAppApp: App {
             _studIPViewModel = State(initialValue: studIP)
             let notifications = container.makeNotificationsViewModel()
             studIP.onBackgroundSyncChanges = { summary in
-                Task { await notifications.notifyNewFiles(summary) }
+                Task { await notifications.notifyAfterSync(summary) }
             }
             _notificationsViewModel = State(initialValue: notifications)
             let responder = NotificationResponder()

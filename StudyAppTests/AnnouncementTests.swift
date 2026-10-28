@@ -163,3 +163,38 @@ struct StudIPAnnouncementParsingTests {
         #expect(text == "Bitte mitbringen:\n• Taschenrechner\n• Ausweis\nZeile\nzwei Ende")
     }
 }
+
+@MainActor
+struct AnnouncementNotificationTests {
+    private func announcement(_ id: String, title: String) -> CourseAnnouncement {
+        CourseAnnouncement(id: id, moduleID: UUID(), title: title, body: "Die Übung entfällt.", publishedAt: .now, isRead: false)
+    }
+
+    @Test func notifiesOnlyWhenTurnedOn() {
+        let summary = StudIPSyncSummary(newAnnouncements: [announcement("n1", title: "Übung entfällt")])
+        #expect(NotificationPlanner.newAnnouncements(summary, settings: NotificationSettings()) == nil)
+
+        var settings = NotificationSettings()
+        settings.announcements = true
+        let single = NotificationPlanner.newAnnouncements(summary, settings: settings)
+        #expect(single?.title == "Übung entfällt")
+        #expect(single?.body == "Die Übung entfällt.")
+
+        let several = StudIPSyncSummary(newAnnouncements: [announcement("n1", title: "A"), announcement("n2", title: "B")])
+        #expect(NotificationPlanner.newAnnouncements(several, settings: settings)?.title == "2 neue Ankündigungen in Stud.IP")
+    }
+
+    @Test func settingsStoredBeforeAnnouncementsExistedStayReadable() throws {
+        let old = Data(#"{"lectures":true,"lectureLeadMinutes":15,"assignments":false,"newFiles":true}"#.utf8)
+        let settings = try JSONDecoder().decode(NotificationSettings.self, from: old)
+        #expect(settings.lectures)
+        #expect(settings.lectureLeadMinutes == 15)
+        #expect(settings.newFiles)
+        #expect(!settings.announcements)
+    }
+
+    @Test func syncSummaryMentionsNewAnnouncements() {
+        let summary = StudIPSyncSummary(checkedModules: 1, newAnnouncements: [announcement("n1", title: "A")])
+        #expect(StudIPViewModel.summaryText(summary) == "Stud.IP: 1 neue Ankündigung")
+    }
+}
