@@ -40,7 +40,7 @@ enum SettingsPane: String, CaseIterable, Identifiable {
         case .general: 460
         case .schedule: 260
         case .studIP: 400
-        case .notifications: 290
+        case .notifications: 320
         case .backup: 270
         case .updates: 240
         }

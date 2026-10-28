@@ -17,6 +17,8 @@ final class AppContainer {
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
     let studIPService: any StudIPService
+    let studIPAnnouncementService: any StudIPAnnouncementService
+    let announcementRepository: any AnnouncementRepository
     let canteenService: any CanteenService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
@@ -42,10 +44,14 @@ final class AppContainer {
         courseFileRepository = SwiftDataCourseFileRepository(context: context)
         notificationScheduler = UserNotificationScheduler()
         examRepository = SwiftDataExamRepository(context: context)
+        announcementRepository = SwiftDataAnnouncementRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
-        studIPService = StudIPJSONAPIClient()
+        // One client serves every Stud.IP port; features depend only on the port they use.
+        let studIPClient = StudIPJSONAPIClient()
+        studIPService = studIPClient
+        studIPAnnouncementService = studIPClient
         canteenService = OpenMensaClient()
         if inMemory {
             preferences = InMemoryStudyPreferences()
@@ -130,6 +136,10 @@ final class AppContainer {
         )
     }
 
+    func makeAnnouncementsViewModel() -> AnnouncementsViewModel {
+        AnnouncementsViewModel(repository: announcementRepository, modules: moduleRepository)
+    }
+
     func makeMensaViewModel() -> MensaViewModel {
         MensaViewModel(service: canteenService, settings: preferences)
     }
@@ -156,7 +166,8 @@ final class AppContainer {
             slideRepository: slideRepository,
             importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
             fileRepository: courseFileRepository,
-            storage: fileStorage
+            storage: fileStorage,
+            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository)
         )
     }
 

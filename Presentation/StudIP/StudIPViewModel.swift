@@ -37,15 +37,22 @@ final class StudIPViewModel {
     @ObservationIgnored var onSlidesChanged: (() -> Void)?
     /// Called when an automatic sync brought new material, e.g. to post a notification.
     @ObservationIgnored var onBackgroundSyncChanges: ((StudIPSyncSummary) -> Void)?
+    /// Called after announcements were synced, so lists showing them can reload.
+    @ObservationIgnored var onAnnouncementsSynced: (() -> Void)?
 
     private let store: any StudIPAccountStore
     private let moduleRepository: any ModuleRepository
     private let connectUseCase: ConnectStudIPUseCase
+    private let checkSession: CheckStudIPSessionUseCase
     private let linkCourse: LinkStudIPCourseUseCase
     private let syncCourses: SyncStudIPCoursesUseCase
+    private let syncAnnouncements: SyncAnnouncementsUseCase?
     private let service: any StudIPService
     private let now: () -> Date
     @ObservationIgnored private var statusTask: Task<Void, Never>?
+    @ObservationIgnored private var lastSessionCheck: Date?
+    /// Checking on every app activation would mean a request per app switch.
+    static let sessionCheckInterval: TimeInterval = 15 * 60
 
     init(
         service: any StudIPService,
@@ -55,6 +62,7 @@ final class StudIPViewModel {
         importer: ImportSlideDocumentUseCase,
         fileRepository: (any CourseFileRepository)? = nil,
         storage: (any FileStorage)? = nil,
+        announcementSync: SyncAnnouncementsUseCase? = nil,
         now: @escaping () -> Date = { .now }
     ) {
         self.service = service
@@ -62,6 +70,7 @@ final class StudIPViewModel {
         self.moduleRepository = moduleRepository
         self.now = now
         connectUseCase = ConnectStudIPUseCase(service: service, store: store)
+        checkSession = CheckStudIPSessionUseCase(service: service, store: store)
         var removeFiles: RemoveCourseFilesUseCase?
         if let fileRepository, let storage {
             removeFiles = RemoveCourseFilesUseCase(repository: fileRepository, storage: storage)
@@ -71,6 +80,7 @@ final class StudIPViewModel {
             slideRepository: slideRepository, service: service, importer: importer,
             fileRepository: fileRepository, storage: storage
         )
+        syncAnnouncements = announcementSync
         account = store.load()?.account
         lastSync = store.lastSlideSync
         autoSyncSlides = store.autoSyncSlides
@@ -88,8 +98,26 @@ final class StudIPViewModel {
     /// - Returns: `true`, sobald die Anmeldung übernommen wurde.
     func connect(server: URL, cookieHeader: String) async -> Bool {
         guard let name = try? await connectUseCase(server: server, cookieHeader: cookieHeader) else { return false }
+        let wasExpired = sessionExpired
         didConnect(name)
+        if wasExpired {
+            // Catch up on what the paused background sync missed.
+            Task { await syncNow() }
+        }
         return true
+    }
+
+    /// Checks the stored sign-in on launch and when the app becomes active. Offline results leave the
+    /// state unchanged, so a missing network does not ask for a new sign-in.
+    func refreshSessionState(force: Bool = true) async {
+        let reference = now()
+        if !force, let lastSessionCheck, reference.timeIntervalSince(lastSessionCheck) < Self.sessionCheckInterval { return }
+        lastSessionCheck = reference
+        switch await checkSession() {
+        case .valid: sessionExpired = false
+        case .expired: sessionExpired = true
+        case .unknown, .notConnected: break
+        }
     }
 
     private func didConnect(_ name: String) {
@@ -173,7 +201,8 @@ final class StudIPViewModel {
         defer { isSyncing = false }
         do {
             let modules = try onlyModules ?? moduleRepository.all()
-            let summary = try await syncCourses(modules: modules, credentials: credentials)
+            var summary = try await syncCourses(modules: modules, credentials: credentials)
+            try await addAnnouncements(to: &summary, modules: modules, credentials: credentials)
             if onlyModules == nil {
                 lastSync = now()
                 store.lastSlideSync = lastSync
@@ -201,19 +230,35 @@ final class StudIPViewModel {
         // Auch ein fehlgeschlagener Versuch zählt, sonst würde ohne Netz ständig neu versucht.
         lastSync = now()
         store.lastSlideSync = lastSync
-        let summary: StudIPSyncSummary
+        var summary: StudIPSyncSummary
         do {
             summary = try await syncCourses(modules: modules, credentials: credentials)
+            try await addAnnouncements(to: &summary, modules: modules, credentials: credentials)
         } catch {
             // Im Hintergrund still bleiben; die Einstellungen zeigen „Sitzung abgelaufen“.
             noteSessionExpiry(error)
             return
         }
-        guard summary.hasChanges else { return }
-        slidesRevision += 1
-        onSlidesChanged?()
+        guard summary.hasChanges || !summary.newAnnouncements.isEmpty else { return }
+        if summary.hasChanges {
+            slidesRevision += 1
+            onSlidesChanged?()
+        }
         onBackgroundSyncChanges?(summary)
         report(summary)
+    }
+
+    /// Announcements are synced after the files; a module that fails only adds to the failures.
+    private func addAnnouncements(
+        to summary: inout StudIPSyncSummary,
+        modules: [StudyModule],
+        credentials: StudIPCredentials
+    ) async throws {
+        guard let syncAnnouncements else { return }
+        let result = try await syncAnnouncements(modules: modules, credentials: credentials)
+        summary.newAnnouncements = result.new
+        summary.failures += result.failures
+        onAnnouncementsSynced?()
     }
 
     private func noteSessionExpiry(_ error: any Error) {
@@ -232,7 +277,7 @@ final class StudIPViewModel {
         if summary.checkedModules == 0 {
             return "Noch kein Modul ist mit einer Stud.IP-Veranstaltung verknüpft."
         }
-        guard summary.hasChanges else { return "Stud.IP: keine neuen Dateien." }
+        guard summary.hasChanges || !summary.newAnnouncements.isEmpty else { return "Stud.IP: keine neuen Dateien." }
         var parts: [String] = []
         if !summary.imported.isEmpty {
             parts.append(summary.imported.count == 1 ? "1 neuer Foliensatz" : "\(summary.imported.count) neue Foliensätze")
@@ -242,6 +287,9 @@ final class StudIPViewModel {
         }
         if !summary.downloadedFiles.isEmpty {
             parts.append(summary.downloadedFiles.count == 1 ? "1 Datei geladen" : "\(summary.downloadedFiles.count) Dateien geladen")
+        }
+        if !summary.newAnnouncements.isEmpty {
+            parts.append(summary.newAnnouncements.count == 1 ? "1 neue Ankündigung" : "\(summary.newAnnouncements.count) neue Ankündigungen")
         }
         var text = "Stud.IP: " + parts.joined(separator: ", ")
         if !summary.failures.isEmpty { text += " · \(summary.failures.count) Fehler" }

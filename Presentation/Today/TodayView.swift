@@ -6,6 +6,7 @@ struct TodayView: View {
     @Bindable var today: TodayViewModel
     @Bindable var assignments: AssignmentsViewModel
     @Bindable var exams: ExamsViewModel
+    @Bindable var announcements: AnnouncementsViewModel
     let mensa: MensaViewModel
     let onOpenModule: (UUID, ModuleSection, ModuleIntent?) -> Void
     let onShowCalendar: () -> Void
@@ -59,6 +60,13 @@ struct TodayView: View {
     /// What needs attention: assignments, flashcards and exams.
     private var secondaryColumn: some View {
         VStack(alignment: .leading, spacing: Self.columnSpacing) {
+            if !announcements.unread.isEmpty {
+                AnnouncementsCard(
+                    items: Array(announcements.unread.prefix(4)),
+                    onOpen: announcements.open,
+                    onMarkAllRead: { announcements.markRead(announcements.unread) }
+                )
+            }
             assignmentsCard
             reviewCard
             if !exams.upcoming.isEmpty {
