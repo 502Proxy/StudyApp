@@ -1,7 +1,7 @@
 import Foundation
 
 /// Eine Aufgabe oder Abgabe eines Moduls, z. B. „Übungsblatt 3“ mit Abgabe am Freitag, 12:00 Uhr.
-struct Assignment: Identifiable, Hashable, Sendable {
+struct Assignment: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     let moduleID: UUID
     var title: String

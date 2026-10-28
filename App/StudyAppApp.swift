@@ -13,6 +13,7 @@ struct StudyAppApp: App {
     @State private var assignmentsViewModel: AssignmentsViewModel
     @State private var navigation: AppNavigation
     @State private var studIPViewModel: StudIPViewModel
+    @State private var backupViewModel: BackupViewModel
     @State private var notificationsViewModel: NotificationsViewModel
     @State private var examsViewModel: ExamsViewModel
     @State private var updater = AppUpdater()
@@ -61,6 +62,17 @@ struct StudyAppApp: App {
             }
             responder.install()
             notificationResponder = responder
+            let backup = container.makeBackupViewModel()
+            // After a restore every screen shows the restored data.
+            backup.onRestored = {
+                modules.load()
+                calendar.load()
+                today.load()
+                assignments.load()
+                exams.load()
+                Task { await notifications.refresh() }
+            }
+            _backupViewModel = State(initialValue: backup)
             _examsViewModel = State(initialValue: exams)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
@@ -76,6 +88,7 @@ struct StudyAppApp: App {
                 todayViewModel: todayViewModel,
                 assignmentsViewModel: assignmentsViewModel,
                 studIPViewModel: studIPViewModel,
+                backupViewModel: backupViewModel,
                 examsViewModel: examsViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
@@ -110,6 +123,7 @@ struct StudyAppApp: App {
                     .disabled(!updater.canCheckForUpdates)
             }
             AppCommands(navigation: navigation, calendar: calendarViewModel, assignments: assignmentsViewModel)
+            BackupCommands(viewModel: backupViewModel)
         }
 
         Settings {
@@ -117,6 +131,7 @@ struct StudyAppApp: App {
                 settings: container.preferences,
                 updater: updater,
                 studIP: studIPViewModel,
+                backup: backupViewModel,
                 notifications: notificationsViewModel
             )
             .tint(Theme.accent)
@@ -141,6 +156,7 @@ struct StudyAppApp: App {
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
         await studIPViewModel.syncIfDue()
+        await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
     }
 

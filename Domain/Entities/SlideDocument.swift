@@ -2,7 +2,7 @@ import Foundation
 
 /// Ein importiertes Foliensatz-PDF, das zu genau einem Modul gehört.
 /// `fileName` ist der interne Dateiname im App-Speicher, nicht der Originalname.
-struct SlideDocument: Identifiable, Hashable, Sendable {
+struct SlideDocument: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     let moduleID: UUID
     var title: String

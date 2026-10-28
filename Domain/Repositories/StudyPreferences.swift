@@ -16,6 +16,8 @@ protocol StudySettingsStore: AnyObject {
     var ignoredCourseKeys: Set<String> { get set }
     /// Zuletzt automatisch geöffnete Vorlesung, damit das nur einmal pro Termin passiert.
     var lastAutoOpenedLecture: String? { get set }
+    /// Create a weekly backup in the app's backup folder.
+    var automaticBackups: Bool { get set }
     var notificationSettings: NotificationSettings { get set }
 }
 
@@ -41,6 +43,7 @@ final class InMemoryStudyPreferences: StudySettingsStore, ReadingProgressStore {
     var lectureLeadMinutes = 10
     var ignoredCourseKeys: Set<String> = []
     var lastAutoOpenedLecture: String?
+    var automaticBackups = true
     var notificationSettings = NotificationSettings()
     private var pages: [UUID: Int] = [:]
     private var documents: [UUID: UUID] = [:]

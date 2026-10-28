@@ -5,6 +5,7 @@ struct SettingsView: View {
     let settings: any StudySettingsStore
     let updater: AppUpdater
     let studIP: StudIPViewModel
+    let backup: BackupViewModel
     let notifications: NotificationsViewModel
 
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.light
@@ -53,6 +54,7 @@ struct SettingsView: View {
 
             StudIPSettingsSection(viewModel: studIP)
 
+            BackupSettingsSection(viewModel: backup)
             NotificationSettingsSection(viewModel: notifications)
 
             Section {
