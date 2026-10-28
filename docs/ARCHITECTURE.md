@@ -24,6 +24,8 @@ Dependencies point **inward**: Presentation and Data both depend on Domain, Doma
 | Domain | `Domain/` | Foundation | `Entities/` (value types such as `StudyModule`, `Semester`, `CourseFile`), `Repositories/` (protocols = ports), `UseCases/` (one application action each), `Support/` |
 | Data | `Data/` | Domain, SwiftData, PDFKit, Security, URLSession | `SwiftData/` (`@Model` records + mapping), `Repositories/` (SwiftData implementations), `Calendar/`, `StudIP/`, `Files/`, `PDF/`, `Preferences/` |
 | Presentation | `Presentation/` | Domain, SwiftUI, AppKit, WebKit | One folder per feature with views and view models; `DesignSystem/` for shared components and `Theme` |
+| Shared | `Shared/` | Foundation | Data contract between app and widget extension (`WidgetSnapshot`, `StudyAppLink`) |
+| Widgets | `Widgets/` | Shared, WidgetKit, SwiftUI | Widget extension; reads the snapshot only |
 | App | `App/` | everything | `AppContainer` (composition root), `AppLauncher`, `StudyAppApp`, `AppUpdater` |
 
 ## Composition root

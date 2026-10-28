@@ -70,7 +70,8 @@ check_bundle() {
     local resources="$1/Contents/Resources"
     [[ -f "$resources/AppIcon.icns" ]] || fail "App-Icon fehlt im Bundle – liegt Assets.xcassets in „Copy Bundle Resources“?"
     [[ -f "$resources/Assets.car" ]] || fail "Kompilierter Asset-Katalog (Assets.car) fehlt im Bundle."
-    ok "App-Icon und Asset-Katalog im Bundle"
+    [[ -d "$1/Contents/PlugIns/StudyAppWidgets.appex" ]] || fail "Widget-Extension fehlt im Bundle – ist sie unter „Embed Foundation Extensions“ eingetragen?"
+    ok "App-Icon, Asset-Katalog und Widgets im Bundle"
 }
 
 run_tests() {

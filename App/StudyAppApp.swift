@@ -128,6 +128,10 @@ struct StudyAppApp: App {
                       let target = SearchTarget(identifier: identifier) else { return }
                 navigation.open(target)
             }
+            .onOpenURL { url in
+                guard let link = StudyAppLink(url: url) else { return }
+                navigation.open(link)
+            }
             .task { await keepClockRunning() }
             .task { await keepSourcesFresh() }
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
@@ -214,6 +218,7 @@ struct StudyAppApp: App {
         await studIPViewModel.refreshSessionState()
         await studIPViewModel.syncIfDue()
         await reindexSearch()
+        publishWidgetSnapshot()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
     }
@@ -227,6 +232,11 @@ struct StudyAppApp: App {
     /// Keeps Spotlight in line with notes and study sheets; failures only cost search results.
     private func reindexSearch() async {
         try? await container.makeReindexSearch()()
+    }
+
+    /// Hands the current lectures, due cards and exams to the widgets.
+    private func publishWidgetSnapshot() {
+        WidgetSnapshotPublisher().publish(calendar: calendarViewModel, today: todayViewModel, exams: examsViewModel)
     }
 
     /// Opens what a clicked notification refers to.
@@ -258,6 +268,8 @@ struct StudyAppApp: App {
             // Switches to tomorrow's menu after lunch; cached, so usually no request.
             await mensaViewModel.refresh()
             await reindexSearch()
+            todayViewModel.load()
+            publishWidgetSnapshot()
             // Picks up new or moved lectures and assignments.
             await notificationsViewModel.refresh()
         }
