@@ -6,8 +6,10 @@ struct SidebarView: View {
     let calendar: StudyCalendarViewModel
     /// Fällige Karteikarten je Modul, als Zähler neben dem Modulnamen.
     let dueCounts: [UUID: Int]
-    /// Überfällige Aufgaben, als Zähler bei „Heute“.
-    var overdueAssignments = 0
+    /// Open assignments due within a week (or overdue), shown next to „Aufgaben“.
+    var dueAssignments = 0
+    /// Countdown of the next exam, shown next to „Klausuren“.
+    var nextExamCountdown: String?
     let studIP: StudIPViewModel
     let onDetectModules: () -> Void
     let onLinkStudIP: () -> Void
@@ -31,25 +33,30 @@ struct SidebarView: View {
     var body: some View {
         List(selection: selection) {
             if let lecture = calendar.currentLecture, let module = calendar.module(for: lecture) {
-                LiveLectureCard(
+                LiveLectureRow(
                     module: module,
                     event: lecture,
-                    isLive: lecture.startDate <= calendar.referenceDate,
+                    referenceDate: calendar.referenceDate,
                     progress: calendar.progress(of: lecture)
                 ) {
                     navigation.show(module: module.id, section: .slides, intent: .resumeSlides)
                 }
-                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 10, trailing: 0))
+                .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
                 .selectionDisabled()
             }
 
             Section {
                 Label("Heute", systemImage: "sun.max")
-                    .badge(overdueAssignments)
                     .tag(AppDestination.today)
                 Label("Kalender", systemImage: "calendar")
                     .badge(calendar.todayEventCount)
                     .tag(AppDestination.calendar)
+                Label("Aufgaben", systemImage: "checklist")
+                    .badge(dueAssignments)
+                    .tag(AppDestination.assignments)
+                Label("Klausuren", systemImage: "flag.checkered")
+                    .badge(nextExamCountdown.map { Text($0) })
+                    .tag(AppDestination.exams)
                 Label("Noten & ECTS", systemImage: "graduationcap")
                     .tag(AppDestination.grades)
             }
@@ -113,6 +120,11 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .safeAreaInset(edge: .bottom) {
+            if studIP.isConnected {
+                StudIPStatusRow(viewModel: studIP)
+            }
+        }
         .toolbar {
             ToolbarItem {
                 Button {
@@ -217,6 +229,7 @@ struct SidebarView: View {
     }
 }
 
+/// One module in the sidebar: colour dot, name and the running or due-cards indicator.
 private struct ModuleRow: View {
     let module: StudyModule
     let isLive: Bool
@@ -224,17 +237,13 @@ private struct ModuleRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            ModuleBadge(name: module.name, color: module.color, size: 24)
-            VStack(alignment: .leading, spacing: 0) {
-                Text(module.name)
-                    .lineLimit(1)
-                if !module.code.isEmpty {
-                    Text(module.code)
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
+            Circle()
+                .fill(module.color.color)
+                .frame(width: 10, height: 10)
+                .frame(width: 18)
+            Text(module.name)
+                .lineLimit(1)
+                .help(module.code.isEmpty ? module.name : "\(module.name) · \(module.code)")
             Spacer(minLength: 4)
             if isLive {
                 Circle()
@@ -255,60 +264,98 @@ private struct ModuleRow: View {
     }
 }
 
-/// Hervorgehobene Karte oben in der Seitenleiste, solange eine Vorlesung läuft.
-private struct LiveLectureCard: View {
+/// Compact row at the top of the sidebar while a lecture is running or about to start.
+private struct LiveLectureRow: View {
     let module: StudyModule
     let event: StudyCalendarEvent
-    let isLive: Bool
+    let referenceDate: Date
     let progress: Double
     let action: () -> Void
 
+    private var isLive: Bool { event.startDate <= referenceDate }
+    private var tint: Color { isLive ? Theme.live : module.color.color }
+
+    private var status: String {
+        if isLive {
+            let minutes = max(Int(event.endDate.timeIntervalSince(referenceDate) / 60), 0)
+            return "Läuft · noch \(minutes) Min."
+        }
+        return "Gleich · \(event.startDate.formatted(date: .omitted, time: .shortened))"
+    }
+
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    if isLive {
-                        LiveBadge()
-                    } else {
-                        Pill(text: "Gleich", systemImage: "clock", tint: module.color.color)
-                    }
-                    Spacer()
-                    Text(event.timeDescription())
-                        .font(.system(size: 10.5).monospacedDigit())
-                        .foregroundStyle(Theme.textSecondary)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(tint)
+                        .frame(width: 7, height: 7)
+                    Text(status)
+                        .font(.system(size: 10.5, weight: .semibold).monospacedDigit())
+                        .textCase(.uppercase)
+                        .foregroundStyle(isLive ? Theme.live : Theme.textSecondary)
                 }
-                HStack(spacing: 8) {
-                    ModuleBadge(name: module.name, color: module.color, size: 26)
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(module.name)
-                            .font(Theme.Typography.headline)
-                            .foregroundStyle(Theme.textPrimary)
-                            .lineLimit(1)
-                        if !event.location.isEmpty {
-                            Text(event.location)
-                                .font(.system(size: 10.5))
-                                .foregroundStyle(Theme.textSecondary)
-                                .lineLimit(1)
-                        }
-                    }
-                }
+                Text(module.name)
+                    .font(Theme.Typography.headline)
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
                 if isLive {
-                    SlimProgressBar(progress: progress, tint: module.color.color)
+                    SlimProgressBar(progress: progress, tint: Theme.live)
                 }
-                Label("Folien öffnen", systemImage: "doc.richtext")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(module.color.color)
             }
-            .padding(10)
-            .background(Theme.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(module.color.color.opacity(0.35))
-            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(tint.opacity(0.12), in: RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Folien der laufenden Vorlesung öffnen")
+        .help("Folien der Vorlesung öffnen\(event.location.isEmpty ? "" : " · \(event.location)")")
+        .accessibilityLabel("\(status), \(module.name). Folien öffnen")
+    }
+}
+
+/// Stud.IP connection and last sync at the bottom of the sidebar; a click syncs now.
+private struct StudIPStatusRow: View {
+    let viewModel: StudIPViewModel
+
+    private var status: String {
+        if viewModel.sessionExpired { return "Stud.IP · Anmeldung abgelaufen" }
+        if viewModel.isSyncing { return "Stud.IP · wird abgeglichen …" }
+        guard let lastSync = viewModel.lastSync else { return "Stud.IP verbunden" }
+        return "Stud.IP · \(lastSync.formatted(.relative(presentation: .named)))"
+    }
+
+    private var tint: Color {
+        viewModel.sessionExpired ? Theme.warning : Theme.success
+    }
+
+    var body: some View {
+        Button {
+            Task { await viewModel.syncNow() }
+        } label: {
+            HStack(spacing: 8) {
+                if viewModel.isSyncing {
+                    ProgressView().controlSize(.mini)
+                } else {
+                    Circle()
+                        .fill(tint)
+                        .frame(width: 7, height: 7)
+                }
+                Text(status)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .font(Theme.Typography.small)
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isSyncing || viewModel.sessionExpired)
+        .help(viewModel.sessionExpired ? "In den Einstellungen erneut anmelden" : "Jetzt mit Stud.IP abgleichen")
+        .overlay(alignment: .top) { Divider() }
     }
 }
 

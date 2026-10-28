@@ -10,6 +10,7 @@ struct ExamOverview: Identifiable, Equatable {
 
     var id: UUID { exam.id }
     var countdown: String { ExamCountdown.text(days: daysLeft) }
+    var shortCountdown: String { ExamCountdown.shortText(days: daysLeft) }
 }
 
 /// Input of the exam editor. Only manual exams are edited; detected ones follow the calendar.

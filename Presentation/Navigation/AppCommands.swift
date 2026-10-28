@@ -19,6 +19,10 @@ struct AppCommands: Commands {
             Button("Kalender") { navigation.showCalendar() }
                 .keyboardShortcut("c", modifiers: [.command, .shift])
 
+            Button("Aufgaben") { navigation.showAssignments() }
+
+            Button("Klausuren") { navigation.showExams() }
+
             Button("Noten & ECTS") { navigation.showGrades() }
 
             Button("Neue Aufgabe …") { assignments.startNewAssignment(moduleID: navigation.selectedModuleID) }

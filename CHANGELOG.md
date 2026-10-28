@@ -7,6 +7,7 @@ User-facing changes per version. The release notes shown in the update dialog li
 - Settings in toolbar tabs; the window fits on a laptop display (#26)
 - Neutral grey dark mode, blue accent and system colours for modules (#31)
 - The app follows the system appearance by default (#31)
+- Sidebar: compact row for the running lecture, new overviews „Aufgaben“ and „Klausuren“, Stud.IP status, single-line modules (#32)
 
 ## 1.11 – 2026-10-28
 

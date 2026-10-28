@@ -49,7 +49,7 @@ Code: `Presentation/Learning/`, `Domain/UseCases/FlashcardUseCases.swift`, `Doma
 
 ## Assignments
 
-Assignments and submissions per module with due dates, shown on „Heute“, in the calendar and in the module. Overdue items are counted in the sidebar.
+Assignments and submissions per module with due dates, shown on „Heute“, in the calendar, in the module and in „Aufgaben“ in the sidebar, which lists the assignments of all modules. The sidebar badge counts open assignments due within a week.
 
 Code: `Presentation/Assignments/`, `Domain/UseCases/AssignmentUseCases.swift`
 
@@ -77,6 +77,8 @@ Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/Stud
 Code: `App/AppUpdater.swift`, `Presentation/Settings/`
 
 ## Navigation
+
+The sidebar shows the running lecture as a compact row, then Heute, Kalender, Aufgaben, Klausuren (all upcoming exams with their study plans, badge with the next countdown) and Noten & ECTS, the active modules and the archive. The Stud.IP status sits at the bottom; a click syncs.
 
 ⌘K opens the quick navigator, ⌘[ / ⌘] walk back and forward through history, ⌘1–⌘7 switch between the sections of a module.
 

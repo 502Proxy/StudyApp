@@ -144,6 +144,23 @@ struct AppNavigationTodayTests {
         #expect(AppNavigation(defaults: defaults).destination == .grades)
     }
 
+    @Test func overviewsArePersistedAndRestored() throws {
+        let defaults = try makeDefaults()
+        let navigation = AppNavigation(defaults: defaults)
+        navigation.showAssignments()
+        #expect(AppNavigation(defaults: defaults).destination == .assignments)
+        navigation.showExams()
+        #expect(AppNavigation(defaults: defaults).destination == .exams)
+    }
+
+    @Test func storageKeyRoundTripsEveryDestination() {
+        let destinations: [AppDestination] = [.today, .calendar, .assignments, .exams, .grades, .module(UUID())]
+        for destination in destinations {
+            #expect(AppDestination(storageKey: destination.storageKey) == destination)
+        }
+        #expect(AppDestination(storageKey: "unknown") == nil)
+    }
+
     @Test func showingAModuleWithIntentKeepsTheIntentForTheModuleView() throws {
         let navigation = AppNavigation(defaults: try makeDefaults())
         let module = UUID()
@@ -169,10 +186,10 @@ struct QuickNavigatorIndexTests {
     private let analysis = StudyModule(id: UUID(), name: "Analysis I", code: "MAT101", color: .blue, createdAt: Date())
     private let algebra = StudyModule(id: UUID(), name: "Lineare Algebra", code: "MAT102", color: .teal, createdAt: Date())
 
-    @Test func indexContainsTodayCalendarAndEverySectionOfEveryModule() {
+    @Test func indexContainsTheOverviewsAndEverySectionOfEveryModule() {
         let items = QuickNavigatorIndex.items(modules: [analysis, algebra])
-        #expect(items.count == 3 + 2 * ModuleSection.allCases.count)
-        #expect(items.map(\.location).prefix(3) == [.today, .calendar, .grades])
+        #expect(items.count == 5 + 2 * ModuleSection.allCases.count)
+        #expect(items.map(\.location).prefix(5) == [.today, .calendar, .assignments, .exams, .grades])
         #expect(Set(items.map(\.id)).count == items.count)
     }
 

@@ -1,11 +1,40 @@
 import Foundation
 
-/// Ein Ziel der Seitenleiste.
+/// A destination in the sidebar.
 enum AppDestination: Hashable {
     case today
     case calendar
+    /// Assignments of all modules.
+    case assignments
+    /// Upcoming exams of all modules.
+    case exams
     case grades
     case module(UUID)
+
+    /// Stable string for `UserDefaults`; modules are stored by their ID.
+    var storageKey: String {
+        switch self {
+        case .today: "today"
+        case .calendar: "calendar"
+        case .assignments: "assignments"
+        case .exams: "exams"
+        case .grades: "grades"
+        case .module(let id): id.uuidString
+        }
+    }
+
+    init?(storageKey: String) {
+        switch storageKey {
+        case "today": self = .today
+        case "calendar": self = .calendar
+        case "assignments": self = .assignments
+        case "exams": self = .exams
+        case "grades": self = .grades
+        default:
+            guard let id = UUID(uuidString: storageKey) else { return nil }
+            self = .module(id)
+        }
+    }
 }
 
 /// Einmalige Anweisung an die Modulansicht, z. B. eine Notiz auszuwählen oder Folien zu öffnen.
@@ -71,6 +100,8 @@ struct NavigationLocation: Hashable {
     static let calendar = NavigationLocation(destination: .calendar, section: nil)
     static let today = NavigationLocation(destination: .today, section: nil)
     static let grades = NavigationLocation(destination: .grades, section: nil)
+    static let assignments = NavigationLocation(destination: .assignments, section: nil)
+    static let exams = NavigationLocation(destination: .exams, section: nil)
 
     static func module(_ id: UUID, section: ModuleSection = .overview) -> NavigationLocation {
         NavigationLocation(destination: .module(id), section: section)
