@@ -23,7 +23,8 @@ struct RootView: View {
                 navigation: navigation,
                 calendar: calendarViewModel,
                 dueCounts: todayViewModel.dueCounts,
-                overdueAssignments: assignmentsViewModel.overdueCount,
+                dueAssignments: assignmentsViewModel.upcoming().count,
+                nextExamCountdown: examsViewModel.upcoming.first?.shortCountdown,
                 studIP: studIPViewModel,
                 onDetectModules: { isDetectingModules = true },
                 onLinkStudIP: { isLinkingStudIP = true }

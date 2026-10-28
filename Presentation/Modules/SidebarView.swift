@@ -6,8 +6,10 @@ struct SidebarView: View {
     let calendar: StudyCalendarViewModel
     /// Fällige Karteikarten je Modul, als Zähler neben dem Modulnamen.
     let dueCounts: [UUID: Int]
-    /// Überfällige Aufgaben, als Zähler bei „Heute“.
-    var overdueAssignments = 0
+    /// Open assignments due within a week (or overdue), shown next to „Aufgaben“.
+    var dueAssignments = 0
+    /// Countdown of the next exam, shown next to „Klausuren“.
+    var nextExamCountdown: String?
     let studIP: StudIPViewModel
     let onDetectModules: () -> Void
     let onLinkStudIP: () -> Void
@@ -45,11 +47,16 @@ struct SidebarView: View {
 
             Section {
                 Label("Heute", systemImage: "sun.max")
-                    .badge(overdueAssignments)
                     .tag(AppDestination.today)
                 Label("Kalender", systemImage: "calendar")
                     .badge(calendar.todayEventCount)
                     .tag(AppDestination.calendar)
+                Label("Aufgaben", systemImage: "checklist")
+                    .badge(dueAssignments)
+                    .tag(AppDestination.assignments)
+                Label("Klausuren", systemImage: "flag.checkered")
+                    .badge(nextExamCountdown.map { Text($0) })
+                    .tag(AppDestination.exams)
                 Label("Noten & ECTS", systemImage: "graduationcap")
                     .tag(AppDestination.grades)
             }

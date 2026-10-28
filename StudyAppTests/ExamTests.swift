@@ -76,6 +76,8 @@ struct ExamDetectionTests {
         #expect(ExamCountdown.days(until: day(10, 8), from: day(9, 23), calendar: berlin) == 1)
         #expect(ExamCountdown.text(days: 0) == "heute")
         #expect(ExamCountdown.text(days: 1) == "morgen")
+        #expect(ExamCountdown.shortText(days: 1) == "morgen")
+        #expect(ExamCountdown.shortText(days: 12) == "12 T.")
         #expect(ExamCountdown.text(days: 12) == "in 12 Tagen")
     }
 }
