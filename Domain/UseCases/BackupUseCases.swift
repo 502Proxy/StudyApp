@@ -23,6 +23,7 @@ struct MakeBackupSnapshotUseCase {
         snapshot.calendarSources = try repositories.calendar.sources()
         snapshot.calendarEvents = try repositories.calendar.events()
         snapshot.exams = try repositories.exams.all()
+        snapshot.studySessions = try repositories.studySessions.all()
         return snapshot
     }
 }
@@ -138,6 +139,7 @@ struct RestoreBackupUseCase {
         for exam in try repositories.exams.all() {
             try repositories.exams.delete(id: exam.id)
         }
+        try repositories.studySessions.deleteAll()
     }
 
     private func insert(_ snapshot: BackupSnapshot) throws {
@@ -155,6 +157,7 @@ struct RestoreBackupUseCase {
             )
         }
         for exam in snapshot.exams { try repositories.exams.save(exam) }
+        for session in snapshot.studySessions { try repositories.studySessions.add(session) }
         for (moduleID, files) in Dictionary(grouping: snapshot.courseFiles, by: \.moduleID) {
             try repositories.courseFiles.replaceCatalog(forModule: moduleID, with: files)
         }

@@ -19,6 +19,7 @@ protocol StudySettingsStore: AnyObject {
     /// Create a weekly backup in the app's backup folder.
     var automaticBackups: Bool { get set }
     var notificationSettings: NotificationSettings { get set }
+    var studyTimerSettings: StudyTimerSettings { get set }
 }
 
 extension StudySettingsStore {
@@ -45,6 +46,7 @@ final class InMemoryStudyPreferences: StudySettingsStore, ReadingProgressStore {
     var lastAutoOpenedLecture: String?
     var automaticBackups = true
     var notificationSettings = NotificationSettings()
+    var studyTimerSettings = StudyTimerSettings()
     private var pages: [UUID: Int] = [:]
     private var documents: [UUID: UUID] = [:]
 

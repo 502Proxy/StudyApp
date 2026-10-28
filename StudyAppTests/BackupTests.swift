@@ -59,12 +59,14 @@ private struct DataStore {
     let calendar = InMemoryCalendarRepository()
     let courseFiles = FakeCourseFileRepository()
     let exams = InMemoryExamRepository()
+    let studySessions = InMemoryStudySessionRepository()
     let files = FakeFileStorage()
 
     var repositories: StudyDataRepositories {
         StudyDataRepositories(
             modules: modules, slides: slides, notes: notes, flashcards: flashcards, studySheets: studySheets,
-            assignments: assignments, calendar: calendar, courseFiles: courseFiles, exams: exams, files: files
+            assignments: assignments, calendar: calendar, courseFiles: courseFiles, exams: exams,
+            studySessions: studySessions, files: files
         )
     }
 
@@ -112,6 +114,7 @@ private struct DataStore {
             id: UUID(), moduleID: module.id, title: "Klausur Analysis I", startDate: now.addingTimeInterval(14 * 86_400),
             location: "Audimax", calendarEventKey: nil, completedPlanItems: ["review.final"]
         ))
+        try studySessions.add(StudySession(id: UUID(), moduleID: module.id, startedAt: now, duration: 25 * 60))
         return module
     }
 }
@@ -139,6 +142,7 @@ struct BackupTests {
         #expect(snapshot.calendarEvents.count == 1)
         #expect(snapshot.courseFiles.count == 1)
         #expect(snapshot.exams.map(\.title) == ["Klausur Analysis I"])
+        #expect(snapshot.studySessions.map(\.duration) == [TimeInterval(25 * 60)])
         #expect(snapshot.referencedFiles == ["StudIP/\(module.id.uuidString)/z1/Blatt1.zip", "doc.pdf"])
     }
 

@@ -111,6 +111,7 @@ final class InMemoryStudySessionRepository: StudySessionRepository {
     func all() throws -> [StudySession] { sessions }
     func add(_ session: StudySession) throws { sessions.append(session) }
     func deleteSessions(forModule moduleID: UUID) throws { sessions.removeAll { $0.moduleID == moduleID } }
+    func deleteAll() throws { sessions.removeAll() }
 }
 
 @MainActor

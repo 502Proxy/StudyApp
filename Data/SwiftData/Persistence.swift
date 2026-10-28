@@ -15,6 +15,7 @@ enum Persistence {
         AssignmentRecord.self,
         CourseFileRecord.self,
         ExamRecord.self,
+        StudySessionRecord.self,
     ])
 
     static func makeContainer(inMemory: Bool = false) throws -> ModelContainer {

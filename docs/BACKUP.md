@@ -4,7 +4,7 @@
 
 ## What is included
 
-Modules (with semester, grade, ECTS and Stud.IP link), slide documents and their PDFs including annotations, notes, flashcards with their review schedule, study sheets, assignments, exams (manual ones and the study plan progress of detected ones), calendar sources and events, the Stud.IP file catalog and downloaded course files.
+Modules (with semester, grade, ECTS and Stud.IP link), slide documents and their PDFs including annotations, notes, flashcards with their review schedule, study sheets, assignments, exams (manual ones and the study plan progress of detected ones), study timer sessions, calendar sources and events, the Stud.IP file catalog and downloaded course files.
 
 Not included: the Stud.IP password or session (keychain), app settings (`UserDefaults`) and reading positions. After restoring, sign in to Stud.IP again.
 
@@ -15,7 +15,7 @@ A `.studyappbackup` file is an [Apple Archive](https://developer.apple.com/docum
 ```text
 manifest.json   formatVersion, appVersion, createdAt, moduleCount, fileCount
 data.json       BackupSnapshot: modules, slideDocuments, notes, flashcards, studySheets,
-                assignments, calendarSources, calendarEvents, courseFiles, exams
+                assignments, calendarSources, calendarEvents, courseFiles, exams, studySessions
 files/…         stored files with the same relative paths as in the app's storage
 ```
 
