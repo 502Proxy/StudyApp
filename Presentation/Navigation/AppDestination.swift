@@ -1,11 +1,40 @@
 import Foundation
 
-/// Ein Ziel der Seitenleiste.
+/// A destination in the sidebar.
 enum AppDestination: Hashable {
     case today
     case calendar
+    /// Assignments of all modules.
+    case assignments
+    /// Upcoming exams of all modules.
+    case exams
     case grades
     case module(UUID)
+
+    /// Stable string for `UserDefaults`; modules are stored by their ID.
+    var storageKey: String {
+        switch self {
+        case .today: "today"
+        case .calendar: "calendar"
+        case .assignments: "assignments"
+        case .exams: "exams"
+        case .grades: "grades"
+        case .module(let id): id.uuidString
+        }
+    }
+
+    init?(storageKey: String) {
+        switch storageKey {
+        case "today": self = .today
+        case "calendar": self = .calendar
+        case "assignments": self = .assignments
+        case "exams": self = .exams
+        case "grades": self = .grades
+        default:
+            guard let id = UUID(uuidString: storageKey) else { return nil }
+            self = .module(id)
+        }
+    }
 }
 
 /// Einmalige Anweisung an die Modulansicht, z. B. eine Notiz auszuwählen oder Folien zu öffnen.
@@ -29,7 +58,7 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
     case assignments
     case flashcards
     case studySheets
-    /// Dateibereich der verknüpften Stud.IP-Veranstaltung. Bewusst zuletzt, damit ⌘1–⌘6 gleich bleiben.
+    /// Files of the linked Stud.IP course.
     case files
     /// Exam countdown and study plan.
     case exam
@@ -63,6 +92,57 @@ enum ModuleSection: String, CaseIterable, Identifiable, Hashable {
     }
 }
 
+/// The four tabs of a module. Each tab groups one or more `ModuleSection`s; the sections stay the
+/// targets of navigation and deep links (resume slides, select a note …), the tabs only group them.
+enum ModuleTab: String, CaseIterable, Identifiable {
+    case overview
+    case material
+    case learning
+    case assignments
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .overview: "Übersicht"
+        case .material: "Material"
+        case .learning: "Lernen"
+        case .assignments: "Aufgaben"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .overview: "square.grid.2x2"
+        case .material: "doc.richtext"
+        case .learning: "brain.head.profile"
+        case .assignments: "checklist"
+        }
+    }
+
+    /// Sections in this tab, in the order of its segmented control; the first one opens by default.
+    var sections: [ModuleSection] {
+        switch self {
+        case .overview: [.overview, .exam]
+        case .material: [.slides, .files]
+        case .learning: [.notes, .flashcards, .studySheets]
+        case .assignments: [.assignments]
+        }
+    }
+}
+
+extension ModuleSection {
+    /// The tab that shows this section.
+    var tab: ModuleTab {
+        switch self {
+        case .overview, .exam: .overview
+        case .slides, .files: .material
+        case .notes, .flashcards, .studySheets: .learning
+        case .assignments: .assignments
+        }
+    }
+}
+
 /// Ein Ort in der App: Ziel plus (bei Modulen) der geöffnete Bereich. Grundlage der Verlaufsliste.
 struct NavigationLocation: Hashable {
     var destination: AppDestination
@@ -71,6 +151,8 @@ struct NavigationLocation: Hashable {
     static let calendar = NavigationLocation(destination: .calendar, section: nil)
     static let today = NavigationLocation(destination: .today, section: nil)
     static let grades = NavigationLocation(destination: .grades, section: nil)
+    static let assignments = NavigationLocation(destination: .assignments, section: nil)
+    static let exams = NavigationLocation(destination: .exams, section: nil)
 
     static func module(_ id: UUID, section: ModuleSection = .overview) -> NavigationLocation {
         NavigationLocation(destination: .module(id), section: section)

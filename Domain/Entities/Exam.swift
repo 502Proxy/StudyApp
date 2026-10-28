@@ -43,6 +43,11 @@ enum ExamCountdown {
         default: "in \(days) Tagen"
         }
     }
+
+    /// Compact form for badges: „heute“, „morgen“, „12 T.“.
+    static func shortText(days: Int) -> String {
+        days > 1 ? "\(days) T." : text(days: days)
+    }
 }
 
 extension UUID {

@@ -23,7 +23,8 @@ struct RootView: View {
                 navigation: navigation,
                 calendar: calendarViewModel,
                 dueCounts: todayViewModel.dueCounts,
-                overdueAssignments: assignmentsViewModel.overdueCount,
+                dueAssignments: assignmentsViewModel.upcoming().count,
+                nextExamCountdown: examsViewModel.upcoming.first?.shortCountdown,
                 studIP: studIPViewModel,
                 onDetectModules: { isDetectingModules = true },
                 onLinkStudIP: { isLinkingStudIP = true }
@@ -135,6 +136,10 @@ struct RootView: View {
             StudyCalendarView(viewModel: calendarViewModel, assignments: assignmentsViewModel) { moduleID, section in
                 navigation.show(module: moduleID, section: section)
             }
+        case .assignments:
+            AssignmentsView(viewModel: assignmentsViewModel, module: nil, modules: viewModel.modules)
+        case .exams:
+            ExamSectionView(viewModel: examsViewModel, module: nil)
         case .grades:
             GradesView(viewModel: viewModel) { moduleID in
                 navigation.show(module: moduleID, section: .overview)

@@ -4,9 +4,10 @@ StudyApp shows upcoming exams with a countdown and a study plan that spreads the
 
 ## Where
 
-- **Heute → Klausuren:** every upcoming exam with countdown and progress; a click opens the module's exam section.
-- **Module → Klausur** (⌘8): countdown, room, study plan with check boxes, „Termin eintragen …“ for exams that are not in the calendar.
-- **Module overview:** a „Klausur“ tile with the countdown.
+- **Sidebar → Klausuren:** every upcoming exam of all modules with its study plan; the badge shows the next countdown.
+- **Heute → Klausuren:** every upcoming exam with countdown and progress; a click opens the module's exam plan.
+- **Module → Übersicht → Klausur:** countdown, room, study plan with check boxes, „Termin eintragen …“ for exams that are not in the calendar. The chip „Klausur in … Tagen“ in the module header opens it.
+- **Module overview:** a „Klausuren“ card with the countdown and progress.
 
 ## Detection
 

@@ -15,28 +15,22 @@ struct TodayView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.section) {
                 header
-                hero
-                HStack(alignment: .top, spacing: 18) {
-                    scheduleCard
-                        .frame(maxWidth: .infinity)
-                    VStack(spacing: 18) {
-                        if !exams.upcoming.isEmpty {
-                            UpcomingExamsCard(exams: exams.upcoming) { overview in
-                                onOpenModule(overview.module.id, .exam, nil)
-                            }
-                        }
-                        assignmentsCard
-                        reviewCard
+                // Two columns on wide windows, one column when the window is narrow.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: Self.columnSpacing) {
+                        primaryColumn
+                            .frame(minWidth: 460, maxWidth: .infinity)
+                        secondaryColumn
+                            .frame(minWidth: 320, maxWidth: 440)
                     }
-                    .frame(maxWidth: .infinity)
+                    VStack(spacing: Self.columnSpacing) {
+                        primaryColumn
+                        secondaryColumn
+                    }
                 }
-                if !today.recentNotes.isEmpty {
-                    recentNotes
-                }
-                modulesGrid
             }
             .padding(Theme.Spacing.page)
-            .frame(maxWidth: 1120)
+            .frame(maxWidth: 1200)
             .frame(maxWidth: .infinity)
         }
         .background(Theme.background)
@@ -47,45 +41,61 @@ struct TodayView: View {
         }
     }
 
-    // MARK: Kopf
+    private static let columnSpacing: CGFloat = 20
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(calendar.referenceDate, format: .dateTime.weekday(.wide).day().month(.wide))
-                .font(Theme.Typography.overline)
-                .textCase(.uppercase)
-                .foregroundStyle(Theme.textSecondary)
-            Text(greeting)
-                .font(Theme.Typography.largeTitle)
-                .foregroundStyle(Theme.textPrimary)
-            HStack(spacing: 8) {
-                Pill(text: StudyCalendarViewModel.eventCountText(calendar.todayEvents.count) + " heute", systemImage: "calendar", tint: Theme.accent)
-                if assignments.overdueCount > 0 {
-                    Pill(text: "\(assignments.overdueCount) überfällig", systemImage: "exclamationmark.circle", tint: Theme.danger)
-                }
-                if today.totalDue > 0 {
-                    Pill(text: "\(today.totalDue) Karten fällig", systemImage: "rectangle.stack", tint: Theme.warning)
-                }
-                if let average = GradeSummary(modules: today.modules).weightedAverage {
-                    Pill(text: "Ø \(GradeScale.format(average))", systemImage: "graduationcap", tint: Theme.accent)
-                }
-                let activeCount = today.modules.filter { !$0.isArchived }.count
-                if activeCount > 0 {
-                    Pill(text: activeCount == 1 ? "1 Modul" : "\(activeCount) Module", systemImage: "books.vertical")
-                }
+    /// What is happening now: the running or next lecture, today's timeline and recent notes.
+    private var primaryColumn: some View {
+        VStack(alignment: .leading, spacing: Self.columnSpacing) {
+            hero
+            scheduleCard
+            if !today.recentNotes.isEmpty {
+                recentNotes
             }
-            .padding(.top, 4)
         }
     }
 
-    private var greeting: String {
-        let hour = calendar.calendar.component(.hour, from: calendar.referenceDate)
-        switch hour {
-        case 5..<11: return "Guten Morgen"
-        case 11..<17: return "Guten Tag"
-        case 17..<23: return "Guten Abend"
-        default: return "Gute Nacht"
+    /// What needs attention: assignments, flashcards and exams.
+    private var secondaryColumn: some View {
+        VStack(alignment: .leading, spacing: Self.columnSpacing) {
+            assignmentsCard
+            reviewCard
+            if !exams.upcoming.isEmpty {
+                UpcomingExamsCard(exams: exams.upcoming) { overview in
+                    onOpenModule(overview.module.id, .exam, nil)
+                }
+            }
         }
+    }
+
+    // MARK: Header
+
+    /// Date as the title and one line with what is due, instead of a greeting and a row of pills.
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(calendar.referenceDate, format: .dateTime.weekday(.wide).day().month(.wide))
+                .font(Theme.Typography.largeTitle)
+                .foregroundStyle(Theme.textPrimary)
+            if !summary.isEmpty {
+                Text(summary)
+                    .font(Theme.Typography.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+        }
+    }
+
+    private var summary: String {
+        var parts = [StudyCalendarViewModel.eventCountText(calendar.todayEvents.count) + " heute"]
+        let dueThisWeek = assignments.upcoming(days: 7).count
+        if dueThisWeek > 0 {
+            parts.append(dueThisWeek == 1 ? "1 Abgabe diese Woche" : "\(dueThisWeek) Abgaben diese Woche")
+        }
+        if assignments.overdueCount > 0 {
+            parts.append("\(assignments.overdueCount) überfällig")
+        }
+        if today.totalDue > 0 {
+            parts.append("\(today.totalDue) Karten fällig")
+        }
+        return parts.joined(separator: " · ")
     }
 
     // MARK: Jetzt / Als Nächstes
@@ -182,7 +192,6 @@ struct TodayView: View {
                 }
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
         .card()
     }
 
@@ -236,8 +245,32 @@ struct TodayView: View {
     private var reviewCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader("Wiederholen", systemImage: "brain.head.profile")
-            let modules = today.modules.filter { (today.dueCounts[$0.id] ?? 0) > 0 }
-            if modules.isEmpty {
+            let modules = today.modules
+                .filter { (today.dueCounts[$0.id] ?? 0) > 0 }
+                .sorted { (today.dueCounts[$0.id] ?? 0) > (today.dueCounts[$1.id] ?? 0) }
+            if let first = modules.first {
+                HStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
+                            Text("\(today.totalDue)")
+                                .font(Theme.Typography.metric)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(today.totalDue == 1 ? "Karte fällig" : "Karten fällig")
+                                .font(Theme.Typography.caption)
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        Text(modules.map { "\($0.name) \(today.dueCounts[$0.id] ?? 0)" }.joined(separator: " · "))
+                            .font(Theme.Typography.small)
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(2)
+                    }
+                    Spacer(minLength: 8)
+                    // Starts with the module that has the most due cards.
+                    Button("Lernen starten") { onOpenModule(first.id, .flashcards, nil) }
+                        .buttonStyle(.borderedProminent)
+                        .help("Karteikarten von „\(first.name)“ wiederholen")
+                }
+            } else {
                 VStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
                         .font(.system(size: 26))
@@ -247,33 +280,8 @@ struct TodayView: View {
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .frame(maxWidth: .infinity, minHeight: 80)
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(modules) { module in
-                        Button {
-                            onOpenModule(module.id, .flashcards, nil)
-                        } label: {
-                            HStack(spacing: 12) {
-                                ModuleBadge(name: module.name, color: module.color, size: 30)
-                                Text(module.name)
-                                    .font(Theme.Typography.headline)
-                                    .foregroundStyle(Theme.textPrimary)
-                                    .lineLimit(1)
-                                Spacer()
-                                Pill(text: "\(today.dueCounts[module.id] ?? 0) fällig", tint: Theme.warning)
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            .padding(10)
-                            .background(Theme.surfaceSecondary, in: RoundedRectangle(cornerRadius: Theme.Radius.medium, style: .continuous))
-                        }
-                        .buttonStyle(CardButtonStyle())
-                    }
-                }
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
         .card()
     }
 
@@ -290,46 +298,6 @@ struct TodayView: View {
                         NoteReferenceCard(reference: reference)
                     }
                     .buttonStyle(CardButtonStyle())
-                }
-            }
-        }
-    }
-
-    // MARK: Module
-
-    private var modulesGrid: some View {
-        // Archivierte Semester gehören nicht mehr auf die Startseite.
-        let modules = today.modules.filter { !$0.isArchived }
-        return VStack(alignment: .leading, spacing: 14) {
-            SectionHeader("Deine Module", systemImage: "books.vertical") {
-                Button(action: onCreateModule) {
-                    Label("Neues Modul", systemImage: "plus")
-                }
-                .buttonStyle(.link)
-                .font(Theme.Typography.small)
-            }
-            if modules.isEmpty {
-                Text("Noch keine Module. Sie entstehen automatisch, sobald du deinen Stundenplan importierst.")
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(Theme.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .card()
-            } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 14)], spacing: 14) {
-                    ForEach(modules) { module in
-                        Button {
-                            onOpenModule(module.id, .overview, nil)
-                        } label: {
-                            ModuleTile(
-                                module: module,
-                                isLive: calendar.liveModuleID == module.id,
-                                documents: today.documentCounts[module.id] ?? 0,
-                                due: today.dueCounts[module.id] ?? 0,
-                                nextEvent: calendar.upcomingEvents(forModule: module.id, limit: 1).first
-                            )
-                        }
-                        .buttonStyle(CardButtonStyle())
-                    }
                 }
             }
         }
@@ -548,44 +516,5 @@ struct NoteReferenceCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card(padding: 14)
-    }
-}
-
-/// Kachel eines Moduls auf der Startseite.
-private struct ModuleTile: View {
-    let module: StudyModule
-    let isLive: Bool
-    let documents: Int
-    let due: Int
-    let nextEvent: StudyCalendarEvent?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                ModuleBadge(name: module.name, color: module.color, size: 36)
-                Spacer()
-                if isLive { LiveBadge() }
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(module.name)
-                    .font(Theme.Typography.headline)
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1)
-                Text(module.code.isEmpty ? " " : module.code)
-                    .font(Theme.Typography.small)
-                    .foregroundStyle(Theme.textSecondary)
-            }
-            HStack(spacing: 6) {
-                Pill(text: documents == 1 ? "1 Foliensatz" : "\(documents) Foliensätze", tint: module.color.color)
-                if due > 0 { Pill(text: "\(due) fällig", tint: Theme.warning) }
-            }
-            if let nextEvent {
-                Label(nextEvent.startDate.formatted(.dateTime.weekday(.abbreviated).hour().minute()), systemImage: "calendar")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card(padding: 16)
     }
 }

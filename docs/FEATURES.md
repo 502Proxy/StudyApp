@@ -4,7 +4,7 @@ The interface is in German; this document uses the German labels in quotes where
 
 ## Today
 
-A start page with the lecture running right now (progress and room) or the next one, today's timeline, due flashcards, open assignments, recently edited notes and all active modules. One click opens the slides of the current lecture or creates a lecture note for it.
+A start page in two columns, titled with the date and a one-line summary. Left: the lecture running right now (progress and room) or the next one, today's timeline and recently edited notes. Right: assignments due within a week, due flashcards with „Lernen starten“ and upcoming exams. Narrow windows show one column. One click opens the slides of the current lecture or creates a lecture note for it.
 
 Code: `Presentation/Today/`
 
@@ -49,7 +49,7 @@ Code: `Presentation/Learning/`, `Domain/UseCases/FlashcardUseCases.swift`, `Doma
 
 ## Assignments
 
-Assignments and submissions per module with due dates, shown on „Heute“, in the calendar and in the module. Overdue items are counted in the sidebar.
+Assignments and submissions per module with due dates, shown on „Heute“, in the calendar, in the module and in „Aufgaben“ in the sidebar, which lists the assignments of all modules. The sidebar badge counts open assignments due within a week.
 
 Code: `Presentation/Assignments/`, `Domain/UseCases/AssignmentUseCases.swift`
 
@@ -65,7 +65,7 @@ Code: `Presentation/Grades/`, `Domain/UseCases/GradeUseCases.swift`, `Domain/Ent
 
 - Sign in with the university account in an embedded browser (two-factor authentication supported) or with a password.
 - Link modules to Stud.IP courses; StudyApp suggests matches by title, course number and semester.
-- New PDFs arrive in the module's slides; all other files appear in the „Dateien“ section with their folder structure and are downloaded automatically up to 50 MB.
+- New PDFs arrive in the module's slides; all other files appear under „Material → Dateien“ with their folder structure and are downloaded automatically up to 50 MB.
 
 Code: `Presentation/StudIP/`, `Domain/UseCases/StudIPUseCases.swift`, `Data/StudIP/` · Details: [STUDIP.md](STUDIP.md)
 
@@ -78,6 +78,10 @@ Code: `App/AppUpdater.swift`, `Presentation/Settings/`
 
 ## Navigation
 
-⌘K opens the quick navigator, ⌘[ / ⌘] walk back and forward through history, ⌘1–⌘7 switch between the sections of a module.
+The sidebar shows the running lecture as a compact row, then Heute, Kalender, Aufgaben, Klausuren (all upcoming exams with their study plans, badge with the next countdown) and Noten & ECTS, the active modules and the archive. The Stud.IP status sits at the bottom; a click syncs.
+
+⌘K opens the quick navigator, ⌘[ / ⌘] walk back and forward through history, ⌘1–⌘4 switch between the tabs of a module.
+
+A module has four tabs: **Übersicht** (overview and exam plan), **Material** (slides and Stud.IP files), **Lernen** (notes, flashcards and study sheets) and **Aufgaben**. Tabs with several sections show a segmented control and remember the last section.
 
 Code: `Presentation/Navigation/`

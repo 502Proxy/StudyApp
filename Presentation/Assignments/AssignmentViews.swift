@@ -74,21 +74,25 @@ struct AssignmentRow: View {
     }
 }
 
-/// Bereich „Aufgaben“ eines Moduls.
+/// Assignments of one module (`module` set) or of all modules, the sidebar overview „Aufgaben“.
 struct AssignmentsView: View {
     @Bindable var viewModel: AssignmentsViewModel
-    let module: StudyModule
+    let module: StudyModule?
+    /// Looks up the module shown next to each assignment in the overview across all modules.
+    var modules: [StudyModule] = []
     @State private var showsCompleted = false
 
-    private var all: [Assignment] { viewModel.assignments(forModule: module.id) }
+    private var all: [Assignment] {
+        module.map { viewModel.assignments(forModule: $0.id) } ?? viewModel.assignments
+    }
     private var open: [Assignment] { all.filter { !$0.isCompleted } }
     private var completed: [Assignment] { all.filter(\.isCompleted) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            PageHeader("Aufgaben & Abgaben", subtitle: subtitle) {
+            PageHeader(module == nil ? "Aufgaben" : "Aufgaben & Abgaben", subtitle: subtitle) {
                 Button {
-                    viewModel.startNewAssignment(moduleID: module.id)
+                    viewModel.startNewAssignment(moduleID: module?.id)
                 } label: {
                     Label("Neue Aufgabe", systemImage: "plus")
                 }
@@ -105,7 +109,7 @@ struct AssignmentsView: View {
                     systemImage: "checklist",
                     message: "Trage Übungsblätter, Hausarbeiten oder Referate mit Abgabedatum ein. Sie erscheinen auf „Heute“ und im Kalender.",
                     actionTitle: "Erste Aufgabe anlegen",
-                    action: { viewModel.startNewAssignment(moduleID: module.id) }
+                    action: { viewModel.startNewAssignment(moduleID: module?.id) }
                 )
             } else {
                 List {
@@ -152,6 +156,7 @@ struct AssignmentsView: View {
             assignment: assignment,
             urgency: viewModel.urgency(of: assignment),
             dueText: viewModel.dueText(for: assignment),
+            module: module == nil ? modules.first { $0.id == assignment.moduleID } : nil,
             onToggle: { viewModel.setCompleted(assignment, !assignment.isCompleted) },
             onEdit: { viewModel.edit(assignment) },
             onDelete: { viewModel.delete(assignment) }

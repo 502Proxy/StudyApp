@@ -7,6 +7,9 @@ User-facing changes per version. The release notes shown in the update dialog li
 - Settings in toolbar tabs; the window fits on a laptop display (#26)
 - Neutral grey dark mode, blue accent and system colours for modules (#31)
 - The app follows the system appearance by default (#31)
+- Sidebar: compact row for the running lecture, new overviews „Aufgaben“ and „Klausuren“, Stud.IP status, single-line modules (#32)
+- Today in two columns with a one-line summary; the module grid is gone (#33)
+- Modules have four tabs – Übersicht, Material, Lernen, Aufgaben – with ⌘1–⌘4; the next exam shows in the header (#34)
 
 ## 1.11 – 2026-10-28
 

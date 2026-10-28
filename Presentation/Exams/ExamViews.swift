@@ -1,46 +1,69 @@
 import SwiftUI
 
-/// The module section „Klausur“: countdown, study plan with check boxes and manual exams.
+/// Exam countdowns with study plans: the module section „Klausur“ (`module` set) or the
+/// sidebar overview „Klausuren“ across all modules (`module` nil).
 struct ExamSectionView: View {
     @Bindable var viewModel: ExamsViewModel
-    let module: StudyModule
+    let module: StudyModule?
 
     var body: some View {
-        let exams = viewModel.exams(forModule: module.id)
+        let exams = module.map { viewModel.exams(forModule: $0.id) } ?? viewModel.upcoming
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.section) {
+                if module == nil {
+                    PageHeader("Klausuren", subtitle: exams.isEmpty ? nil : "\(exams.count) anstehend")
+                }
                 if exams.isEmpty {
-                    EmptyStateView(
-                        title: "Kein Prüfungstermin",
-                        systemImage: "flag.checkered",
-                        message: "Klausurtermine aus deinem Stundenplan erscheinen hier automatisch. Du kannst einen Termin auch selbst eintragen.",
-                        actionTitle: "Termin eintragen …",
-                        action: { viewModel.startNewExam(for: module) }
-                    )
-                    .frame(minHeight: 320)
+                    emptyState
                 } else {
                     ForEach(exams) { overview in
-                        ExamPlanCard(overview: overview, viewModel: viewModel)
+                        ExamPlanCard(overview: overview, viewModel: viewModel, showsModule: module == nil)
                     }
-                    Button {
-                        viewModel.startNewExam(for: module)
-                    } label: {
-                        Label("Weiteren Termin eintragen …", systemImage: "plus")
+                    if let module {
+                        Button {
+                            viewModel.startNewExam(for: module)
+                        } label: {
+                            Label("Weiteren Termin eintragen …", systemImage: "plus")
+                        }
+                        .buttonStyle(.link)
                     }
-                    .buttonStyle(.link)
                 }
             }
             .padding(Theme.Spacing.page)
             .frame(maxWidth: 900, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
+        .background(Theme.background)
         .task { viewModel.load() }
+    }
+
+    @ViewBuilder
+    private var emptyState: some View {
+        if let module {
+            EmptyStateView(
+                title: "Kein Prüfungstermin",
+                systemImage: "flag.checkered",
+                message: "Klausurtermine aus deinem Stundenplan erscheinen hier automatisch. Du kannst einen Termin auch selbst eintragen.",
+                actionTitle: "Termin eintragen …",
+                action: { viewModel.startNewExam(for: module) }
+            )
+            .frame(minHeight: 320)
+        } else {
+            EmptyStateView(
+                title: "Keine anstehenden Klausuren",
+                systemImage: "flag.checkered",
+                message: "Klausurtermine aus deinem Stundenplan erscheinen hier automatisch. Eigene Termine trägst du im Modul unter „Klausur“ ein."
+            )
+            .frame(minHeight: 320)
+        }
     }
 }
 
 private struct ExamPlanCard: View {
     let overview: ExamOverview
     let viewModel: ExamsViewModel
+    /// Shows the module above the title, for the overview across all modules.
+    var showsModule = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -75,6 +98,14 @@ private struct ExamPlanCard: View {
     private var header: some View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
+                if showsModule {
+                    HStack(spacing: 6) {
+                        ModuleBadge(name: overview.module.name, color: overview.module.color, size: 16)
+                        Text(overview.module.name)
+                            .font(Theme.Typography.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
                 Text(overview.exam.title)
                     .font(Theme.Typography.title)
                     .foregroundStyle(Theme.textPrimary)
