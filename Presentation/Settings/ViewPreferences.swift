@@ -36,6 +36,8 @@ enum ViewPreferences {
     static let slideReaderShowsNotesKey = "slideReader.showsNotes"
     /// Last opened pane of the settings window.
     static let settingsPaneKey = "settings.selectedPane"
+    /// Show the StudyApp item in the menu bar.
+    static let showsMenuBarItemKey = "menuBar.isShown"
 }
 
 /// Schriftgröße für Notizen (Editor und Vorschau), einstellbar über ⌘+ / ⌘−.
