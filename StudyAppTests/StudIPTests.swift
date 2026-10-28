@@ -281,6 +281,23 @@ struct StudIPViewModelTests {
         )
     }
 
+    @Test func refreshMarksAnExpiredSessionAndAReconnectClearsIt() async throws {
+        let viewModel = makeViewModel(now: clock)
+        let server = URL(string: "https://elearning.uni-oldenburg.de")!
+        try store.save(StudIPCredentials(
+            account: StudIPAccount(serverURL: server, username: "abcd1234"),
+            authorization: .session(cookieHeader: "Seminar_Session=abgelaufen")
+        ))
+
+        await viewModel.refreshSessionState()
+        #expect(viewModel.sessionExpired)
+
+        #expect(await viewModel.connect(server: server, cookieHeader: service.acceptedSession))
+        #expect(!viewModel.sessionExpired)
+        await viewModel.refreshSessionState()
+        #expect(!viewModel.sessionExpired)
+    }
+
     @Test func connectStoresCredentialsOnlyAfterSuccessfulLogin() async throws {
         let viewModel = makeViewModel(now: clock)
 

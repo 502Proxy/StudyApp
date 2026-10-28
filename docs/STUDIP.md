@@ -11,7 +11,8 @@ StudyApp talks to the JSON:API of a Stud.IP installation (`<server>/jsonapi.php/
 
 - Credentials live in the keychain (`KeychainStudIPAccountStore`); server and username in `UserDefaults`.
 - The web view uses the persistent website data store, so „trust this device“ survives and the next login usually needs no code.
-- A browser session eventually expires. The client reports `StudIPError.sessionExpired` (HTTP 401 or an HTML login page); background sync pauses silently and the settings show „Erneut anmelden …“.
+- A browser session eventually expires. The client reports `StudIPError.sessionExpired` (HTTP 401 or an HTML login page); background sync pauses.
+- `CheckStudIPSessionUseCase` checks the stored sign-in with `users/me` on launch and, at most every 15 minutes, when the app becomes active. An expired session shows `StudIPSessionBanner` at the top of the main window with „Jetzt anmelden …“ (browser sign-in); after signing in, the missed sync runs right away. Offline checks change nothing. The banner can be dismissed until the next launch; the settings and the sidebar status also show the expired state.
 
 ## Endpoints
 

@@ -41,11 +41,15 @@ final class StudIPViewModel {
     private let store: any StudIPAccountStore
     private let moduleRepository: any ModuleRepository
     private let connectUseCase: ConnectStudIPUseCase
+    private let checkSession: CheckStudIPSessionUseCase
     private let linkCourse: LinkStudIPCourseUseCase
     private let syncCourses: SyncStudIPCoursesUseCase
     private let service: any StudIPService
     private let now: () -> Date
     @ObservationIgnored private var statusTask: Task<Void, Never>?
+    @ObservationIgnored private var lastSessionCheck: Date?
+    /// Checking on every app activation would mean a request per app switch.
+    static let sessionCheckInterval: TimeInterval = 15 * 60
 
     init(
         service: any StudIPService,
@@ -62,6 +66,7 @@ final class StudIPViewModel {
         self.moduleRepository = moduleRepository
         self.now = now
         connectUseCase = ConnectStudIPUseCase(service: service, store: store)
+        checkSession = CheckStudIPSessionUseCase(service: service, store: store)
         var removeFiles: RemoveCourseFilesUseCase?
         if let fileRepository, let storage {
             removeFiles = RemoveCourseFilesUseCase(repository: fileRepository, storage: storage)
@@ -88,8 +93,26 @@ final class StudIPViewModel {
     /// - Returns: `true`, sobald die Anmeldung übernommen wurde.
     func connect(server: URL, cookieHeader: String) async -> Bool {
         guard let name = try? await connectUseCase(server: server, cookieHeader: cookieHeader) else { return false }
+        let wasExpired = sessionExpired
         didConnect(name)
+        if wasExpired {
+            // Catch up on what the paused background sync missed.
+            Task { await syncNow() }
+        }
         return true
+    }
+
+    /// Checks the stored sign-in on launch and when the app becomes active. Offline results leave the
+    /// state unchanged, so a missing network does not ask for a new sign-in.
+    func refreshSessionState(force: Bool = true) async {
+        let reference = now()
+        if !force, let lastSessionCheck, reference.timeIntervalSince(lastSessionCheck) < Self.sessionCheckInterval { return }
+        lastSessionCheck = reference
+        switch await checkSession() {
+        case .valid: sessionExpired = false
+        case .expired: sessionExpired = true
+        case .unknown, .notConnected: break
+        }
     }
 
     private func didConnect(_ name: String) {
