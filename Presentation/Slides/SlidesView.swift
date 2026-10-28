@@ -179,7 +179,7 @@ private struct SlideRow: View {
         HStack(spacing: 14) {
             Image(systemName: "doc.richtext.fill")
                 .font(.system(size: 18))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.accentText)
                 .frame(width: 42, height: 42)
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
 

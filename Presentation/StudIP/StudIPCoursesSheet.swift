@@ -85,7 +85,7 @@ struct StudIPCoursesSheet: View {
                 if let suggestion {
                     Text("Vorschlag: \(suggestion.title)")
                         .font(Theme.Typography.small)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(Theme.accentText)
                         .lineLimit(1)
                 } else {
                     Text(module.semester.title)

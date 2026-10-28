@@ -34,29 +34,33 @@ extension NSColor {
     }
 }
 
-/// Zentrale Farben, Abstände und Schriften. Hell und luftig als Standard, mit passender
-/// Dunkel-Variante. Alle Ansichten greifen ausschließlich hierauf zu.
+/// Central colours, spacing and fonts. All views use these tokens only.
+///
+/// The dark variants use the neutral greys of macOS so that content matches the system sidebar,
+/// toolbar and title bar. Every text colour keeps at least 4.5:1 contrast on its surface.
 enum Theme {
-    /// Indigo als Akzent; dieselbe Farbe liegt als `AccentColor` im Asset-Katalog.
-    static let accent = Color(light: 0x4F46E5, dark: 0x818CF8)
-    static let accentSoft = Color(light: 0xEEF0FF, dark: 0x262842)
-    /// Fensterhintergrund hinter Karten und Listen.
-    static let background = Color(light: 0xF6F7FB, dark: 0x141519)
-    /// Karten, Kacheln und gruppierte Inhalte.
-    static let surface = Color(light: 0xFFFFFF, dark: 0x1D1E24)
-    /// Zurückgenommene Flächen innerhalb von Karten (Chips, Eingabefelder, Codeblöcke).
-    static let surfaceSecondary = Color(light: 0xF1F3F8, dark: 0x25262D)
-    /// Hintergrund von Editor und Vorschau.
-    static let editorBackground = Color(light: 0xFFFFFF, dark: 0x1A1B20)
-    static let surfaceBorder = Color(light: 0xE6E8EF, dark: 0x2E3038)
-    static let textPrimary = Color(light: 0x14151A, dark: 0xF2F3F5)
-    static let textSecondary = Color(light: 0x6B7080, dark: 0x9A9EAD)
-    static let textTertiary = Color(light: 0x9CA1B0, dark: 0x6D7180)
-    static let success = Color(light: 0x16A34A, dark: 0x4ADE80)
-    static let warning = Color(light: 0xD97706, dark: 0xFBBF24)
-    static let danger = Color(light: 0xDC2626, dark: 0xF87171)
-    /// Kennzeichnet laufende Vorlesungen.
-    static let live = Color(light: 0xE11D48, dark: 0xFB7185)
+    /// Blue accent for fills, tints and selection; the same colour is the `AccentColor` asset.
+    static let accent = Color(light: 0x0062CC, dark: 0x0A6CD6)
+    /// Accent for text and small symbols; lighter in dark mode so it stays readable.
+    static let accentText = Color(light: 0x0062CC, dark: 0x4DA3FF)
+    static let accentSoft = Color(light: 0xE5F0FF, dark: 0x243F5C)
+    /// Window background behind cards and lists.
+    static let background = Color(light: 0xF5F5F7, dark: 0x1C1C1E)
+    /// Cards, tiles and grouped content.
+    static let surface = Color(light: 0xFFFFFF, dark: 0x2C2C2E)
+    /// Recessed areas inside cards (chips, input fields, code blocks).
+    static let surfaceSecondary = Color(light: 0xF2F2F7, dark: 0x3A3A3C)
+    /// Background of the note editor and preview.
+    static let editorBackground = Color(light: 0xFFFFFF, dark: 0x232325)
+    static let surfaceBorder = Color(light: 0xE5E5EA, dark: 0x38383A)
+    static let textPrimary = Color(light: 0x1D1D1F, dark: 0xF5F5F7)
+    static let textSecondary = Color(light: 0x6E6E73, dark: 0xAEAEB2)
+    static let textTertiary = Color(light: 0x8E8E93, dark: 0x98989D)
+    static let success = Color(light: 0x248A3D, dark: 0x30D158)
+    static let warning = Color(light: 0xB25000, dark: 0xFFD60A)
+    static let danger = Color(light: 0xD70015, dark: 0xFF6961)
+    /// Marks running lectures.
+    static let live = Color(light: 0xD70015, dark: 0xFF6961)
     static let shadow = Color(light: 0x1B1F3B, dark: 0x000000)
 
     enum Radius {

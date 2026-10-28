@@ -95,7 +95,7 @@ struct SectionHeader<Accessory: View>: View {
             if let systemImage {
                 Image(systemName: systemImage)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.accentText)
             }
             Text(title)
                 .font(Theme.Typography.sectionTitle)
@@ -315,7 +315,7 @@ struct EmptyStateView: View {
         VStack(spacing: 14) {
             Image(systemName: systemImage)
                 .font(.system(size: 28, weight: .medium))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.accentText)
                 .frame(width: 64, height: 64)
                 .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
             VStack(spacing: 6) {

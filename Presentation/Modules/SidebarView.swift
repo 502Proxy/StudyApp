@@ -321,7 +321,7 @@ private struct FinishSemesterRow: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: "archivebox")
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(Theme.accentText)
             Text("\(semester.title) ist vorbei")
                 .font(Theme.Typography.small)
                 .foregroundStyle(Theme.textSecondary)

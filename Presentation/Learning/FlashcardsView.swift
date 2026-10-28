@@ -137,7 +137,7 @@ struct FlashcardsView: View {
             VStack(spacing: 16) {
                 Image(systemName: "checkmark.seal")
                     .font(.system(size: 44))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.accentText)
                 Text("Wiederholung abgeschlossen")
                     .font(Theme.Typography.title)
                 Text("Du hast alle Karten dieser Sitzung bearbeitet. Karten, die du noch einmal üben möchtest, werden erneut fällig.")
