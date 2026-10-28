@@ -17,6 +17,8 @@ final class AppContainer {
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
     let studIPService: any StudIPService
+    let studIPAnnouncementService: any StudIPAnnouncementService
+    let announcementRepository: any AnnouncementRepository
     let studIPScheduleService: any StudIPScheduleService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
@@ -42,12 +44,14 @@ final class AppContainer {
         courseFileRepository = SwiftDataCourseFileRepository(context: context)
         notificationScheduler = UserNotificationScheduler()
         examRepository = SwiftDataExamRepository(context: context)
+        announcementRepository = SwiftDataAnnouncementRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
         // One client serves every Stud.IP port; features depend only on the port they use.
         let studIPClient = StudIPJSONAPIClient()
         studIPService = studIPClient
+        studIPAnnouncementService = studIPClient
         studIPScheduleService = studIPClient
         if inMemory {
             preferences = InMemoryStudyPreferences()
@@ -132,6 +136,10 @@ final class AppContainer {
         )
     }
 
+    func makeAnnouncementsViewModel() -> AnnouncementsViewModel {
+        AnnouncementsViewModel(repository: announcementRepository, modules: moduleRepository)
+    }
+
     func makeAssignmentsViewModel() -> AssignmentsViewModel {
         AssignmentsViewModel(repository: assignmentRepository)
     }
@@ -155,6 +163,7 @@ final class AppContainer {
             importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
             fileRepository: courseFileRepository,
             storage: fileStorage,
+            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository),
             timetableSync: SyncStudIPTimetableUseCase(service: studIPScheduleService, repository: studyCalendarRepository),
             settings: preferences
         )

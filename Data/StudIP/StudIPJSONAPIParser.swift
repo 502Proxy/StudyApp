@@ -105,6 +105,22 @@ enum StudIPJSONAPIParser {
         return paths
     }
 
+    /// An announcement (`news` resource). Stud.IP versions name the publication date differently;
+    /// `publication-start` wins, then the creation and change dates.
+    static func announcement(_ resource: Resource) -> StudIPAnnouncement? {
+        guard let id = identifier(resource) else { return nil }
+        let attributes = resource["attributes"] as? [String: Any] ?? [:]
+        guard let title = string(attributes["title"]),
+              let published = date(attributes["publication-start"]) ?? date(attributes["mkdate"]) ?? date(attributes["chdate"])
+        else { return nil }
+        return StudIPAnnouncement(
+            id: id,
+            title: title,
+            body: StudIPHTML.plainText(string(attributes["content"]) ?? ""),
+            publishedAt: published
+        )
+    }
+
     /// A course date (`course-events` resource). Older Stud.IP versions call the times `begin`/`end`
     /// or deliver them as Unix timestamps; the location may be `location` or `room`.
     static func courseDate(_ resource: Resource) -> StudIPCourseDate? {

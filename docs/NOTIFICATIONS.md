@@ -1,12 +1,13 @@
 # Notifications
 
-Settings → Mitteilungen turns on three kinds of local notifications. All are off by default; macOS asks for permission when the first one is turned on.
+Settings → Mitteilungen turns on four kinds of local notifications. All are off by default; macOS asks for permission when the first one is turned on.
 
 | Kind | When | Click opens |
 | --- | --- | --- |
 | Lecture | A configurable number of minutes (0–60, default 10) before a lecture linked to an active module | The module's slides, where you stopped reading |
 | Assignment | The day before and three hours before an open assignment is due | The module's assignments |
 | New Stud.IP files | After an automatic sync brought new slides or files | Today |
+| Stud.IP announcements | After an automatic sync brought new course announcements (one summary for several) | Today |
 
 ## How planning works
 

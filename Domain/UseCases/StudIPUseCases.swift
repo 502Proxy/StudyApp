@@ -28,7 +28,37 @@ enum StudIPServerURL {
     }
 }
 
-/// Prüft die Anmeldung und speichert sie erst danach.
+/// Whether the stored Stud.IP sign-in still works.
+enum StudIPSessionState: Equatable {
+    case valid
+    /// The session or password was rejected; the user has to sign in again.
+    case expired
+    /// The server could not be reached; nothing is known about the session.
+    case unknown
+    case notConnected
+}
+
+/// Checks the stored sign-in with one lightweight request, e.g. on launch, so an expired session is
+/// noticed before a sync silently pauses.
+@MainActor
+struct CheckStudIPSessionUseCase {
+    let service: any StudIPService
+    let store: any StudIPAccountStore
+
+    func callAsFunction() async -> StudIPSessionState {
+        guard let credentials = store.load() else { return .notConnected }
+        do {
+            _ = try await service.verify(credentials)
+            return .valid
+        } catch StudIPError.sessionExpired, StudIPError.unauthorized {
+            return .expired
+        } catch {
+            return .unknown
+        }
+    }
+}
+
+/// Verifies the sign-in and stores it only afterwards.
 @MainActor
 struct ConnectStudIPUseCase {
     let service: any StudIPService
@@ -130,6 +160,8 @@ struct StudIPSyncSummary: Equatable, Sendable {
     /// Fehler einzelner Module oder Dateien; der Abgleich der übrigen läuft weiter.
     var failures: [String] = []
     var checkedModules = 0
+    /// Announcements that are new since the previous sync.
+    var newAnnouncements: [CourseAnnouncement] = []
 
     var newDocumentCount: Int { imported.count + updated.count }
     var hasChanges: Bool { newDocumentCount > 0 || !downloadedFiles.isEmpty }

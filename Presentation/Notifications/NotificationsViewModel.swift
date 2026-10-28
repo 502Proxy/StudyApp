@@ -44,11 +44,15 @@ final class NotificationsViewModel {
         try? await syncNotifications(settings: settings, now: now())
     }
 
-    /// Delivers a notification about files a background Stud.IP sync brought in.
-    func notifyNewFiles(_ summary: StudIPSyncSummary) async {
-        guard authorization == .authorized,
-              let notification = NotificationPlanner.newFiles(summary, settings: settings) else { return }
-        await scheduler.schedule([notification])
+    /// Delivers notifications about files and announcements a background Stud.IP sync brought in.
+    func notifyAfterSync(_ summary: StudIPSyncSummary) async {
+        guard authorization == .authorized else { return }
+        let notifications = [
+            NotificationPlanner.newFiles(summary, settings: settings),
+            NotificationPlanner.newAnnouncements(summary, settings: settings),
+        ].compactMap { $0 }
+        guard !notifications.isEmpty else { return }
+        await scheduler.schedule(notifications)
     }
 
     /// Turning a kind on is the moment to ask for permission.
