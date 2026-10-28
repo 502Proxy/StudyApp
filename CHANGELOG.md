@@ -2,6 +2,12 @@
 
 User-facing changes per version. The release notes shown in the update dialog live in `docs/release-notes/<version>.md` (German).
 
+## Unreleased
+
+- Settings in toolbar tabs; the window fits on a laptop display (#26)
+- Neutral grey dark mode, blue accent and system colours for modules (#31)
+- The app follows the system appearance by default (#31)
+
 ## 1.11 – 2026-10-28
 
 - Exam phase: upcoming exams with countdown on Today, in the module (⌘8) and in the module overview (#16)
