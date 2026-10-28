@@ -59,3 +59,27 @@ struct BuildSearchIndexTests {
         #expect(index.items.first { $0.title == "Fragen" }?.subtitle == "Notiz · Analysis I")
     }
 }
+
+@MainActor
+struct SearchNavigationTests {
+    @Test func resultsOpenTheRightPlace() throws {
+        let name = "SearchNavigationTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let navigation = AppNavigation(defaults: defaults)
+        let module = UUID()
+        let note = UUID()
+        let sheet = UUID()
+
+        navigation.open(SearchTarget.note(moduleID: module, noteID: note))
+        #expect(navigation.currentLocation == .module(module, section: .notes))
+        #expect(navigation.pendingIntent == .selectNote(note))
+
+        navigation.open(SearchTarget.studySheet(moduleID: module, sheetID: sheet))
+        #expect(navigation.currentLocation == .module(module, section: .studySheets))
+        #expect(navigation.pendingIntent == .selectStudySheet(sheet))
+
+        navigation.open(SearchTarget.module(module))
+        #expect(navigation.currentLocation == .module(module, section: .overview))
+    }
+}

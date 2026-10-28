@@ -48,6 +48,8 @@ enum ModuleIntent: Equatable {
     case selectNote(UUID)
     /// Notiz zu einem Vorlesungstermin öffnen bzw. anlegen.
     case lectureNote(start: Date, title: String)
+    /// Select a study sheet, e.g. after a click on a Spotlight result.
+    case selectStudySheet(UUID)
 }
 
 /// Die Bereiche innerhalb eines Moduls.

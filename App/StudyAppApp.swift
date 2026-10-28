@@ -1,4 +1,5 @@
 import AppKit
+import CoreSpotlight
 import SwiftUI
 
 @main
@@ -104,6 +105,11 @@ struct StudyAppApp: App {
             .tint(Theme.accent)
             .preferredColorScheme(appearance.colorScheme)
             .task { await startUp() }
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
+                      let target = SearchTarget(identifier: identifier) else { return }
+                navigation.open(target)
+            }
             .task { await keepClockRunning() }
             .task { await keepSourcesFresh() }
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
@@ -156,8 +162,14 @@ struct StudyAppApp: App {
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
         await studIPViewModel.syncIfDue()
+        await reindexSearch()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
+    }
+
+    /// Keeps Spotlight in line with notes and study sheets; failures only cost search results.
+    private func reindexSearch() async {
+        try? await container.makeReindexSearch()()
     }
 
     /// Opens what a clicked notification refers to.
@@ -186,6 +198,7 @@ struct StudyAppApp: App {
             try? await Task.sleep(for: .seconds(300))
             await calendarViewModel.refreshStaleSubscriptions()
             await studIPViewModel.syncIfDue()
+            await reindexSearch()
             // Picks up new or moved lectures and assignments.
             await notificationsViewModel.refresh()
         }

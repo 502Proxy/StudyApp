@@ -128,6 +128,16 @@ final class AppContainer {
         )
     }
 
+    /// Rebuilds the Spotlight index from the current data.
+    func makeReindexSearch() -> ReindexSearchUseCase {
+        ReindexSearchUseCase(
+            build: BuildSearchIndexUseCase(
+                modules: moduleRepository, slides: slideRepository, notes: noteRepository, studySheets: studySheetRepository
+            ),
+            index: CoreSpotlightIndexer()
+        )
+    }
+
     func makeAssignmentsViewModel() -> AssignmentsViewModel {
         AssignmentsViewModel(repository: assignmentRepository)
     }

@@ -96,6 +96,15 @@ final class AppNavigation {
         navigate(to: .module(id, section: section))
     }
 
+    /// Opens what a Spotlight result points to.
+    func open(_ target: SearchTarget) {
+        switch target {
+        case .module(let id): show(module: id, section: .overview)
+        case .note(let moduleID, let noteID): show(module: moduleID, section: .notes, intent: .selectNote(noteID))
+        case .studySheet(let moduleID, let sheetID): show(module: moduleID, section: .studySheets, intent: .selectStudySheet(sheetID))
+        }
+    }
+
     func go(to location: NavigationLocation) {
         navigate(to: location)
     }
