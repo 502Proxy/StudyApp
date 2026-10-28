@@ -45,6 +45,10 @@ enum QuickNavigatorIndex {
                 id: "grades", title: "Noten & ECTS", subtitle: "Notenschnitt und Leistungspunkte",
                 systemImage: "graduationcap", moduleColor: nil, location: .grades
             ),
+            QuickNavigatorItem(
+                id: "statistics", title: "Statistik", subtitle: "Lernzeit und Lernpläne",
+                systemImage: "chart.bar", moduleColor: nil, location: .statistics
+            ),
         ]
         for module in modules {
             for section in ModuleSection.allCases {

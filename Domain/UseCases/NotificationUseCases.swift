@@ -157,6 +157,7 @@ struct SyncNotificationsUseCase {
         let wanted = Set(planned.map(\.id))
         let stale = await scheduler.pendingIdentifiers().filter {
             $0.hasPrefix(StudyNotification.identifierPrefix) && !wanted.contains($0)
+                && $0 != StudyNotification.studyTimerIdentifier
         }
         scheduler.cancel(identifiers: stale)
         await scheduler.schedule(planned)
