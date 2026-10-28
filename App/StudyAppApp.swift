@@ -33,6 +33,7 @@ struct StudyAppApp: App {
             let studIP = container.makeStudIPViewModel()
             let announcements = container.makeAnnouncementsViewModel()
             studIP.onAnnouncementsSynced = { announcements.load() }
+            studIP.onTimetableSynced = { calendar.load() }
             // Neu verknüpfte Veranstaltungen und geladene Folien sofort in Seitenleiste und Startseite zeigen.
             studIP.onSlidesChanged = {
                 modules.load()

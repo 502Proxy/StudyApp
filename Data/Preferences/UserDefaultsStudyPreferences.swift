@@ -12,6 +12,7 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
         static let ignoredCourseKeys = "moduleDetection.ignoredKeys"
         static let lastAutoOpenedLecture = "autopilot.lastHandledLecture"
         static let automaticBackups = "backup.automatic"
+        static let importsStudIPTimetable = "studip.importsTimetable"
         static let notificationSettings = "notifications.settings"
         static func lastPage(_ documentID: UUID) -> String { "reading.page.\(documentID.uuidString)" }
         static func lastDocument(_ moduleID: UUID) -> String { "reading.document.\(moduleID.uuidString)" }
@@ -58,6 +59,11 @@ final class UserDefaultsStudyPreferences: StudySettingsStore, ReadingProgressSto
     var automaticBackups: Bool {
         get { bool(Key.automaticBackups, default: true) }
         set { defaults.set(newValue, forKey: Key.automaticBackups) }
+    }
+
+    var importsStudIPTimetable: Bool {
+        get { bool(Key.importsStudIPTimetable, default: false) }
+        set { defaults.set(newValue, forKey: Key.importsStudIPTimetable) }
     }
 
     /// Stored as JSON; unreadable or missing data falls back to the defaults.

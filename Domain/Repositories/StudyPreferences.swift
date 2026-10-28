@@ -18,6 +18,8 @@ protocol StudySettingsStore: AnyObject {
     var lastAutoOpenedLecture: String? { get set }
     /// Create a weekly backup in the app's backup folder.
     var automaticBackups: Bool { get set }
+    /// Import the dates of linked Stud.IP courses into the calendar during a Stud.IP sync.
+    var importsStudIPTimetable: Bool { get set }
     var notificationSettings: NotificationSettings { get set }
 }
 
@@ -44,6 +46,7 @@ final class InMemoryStudyPreferences: StudySettingsStore, ReadingProgressStore {
     var ignoredCourseKeys: Set<String> = []
     var lastAutoOpenedLecture: String?
     var automaticBackups = true
+    var importsStudIPTimetable = false
     var notificationSettings = NotificationSettings()
     private var pages: [UUID: Int] = [:]
     private var documents: [UUID: UUID] = [:]

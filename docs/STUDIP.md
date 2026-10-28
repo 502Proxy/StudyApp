@@ -25,6 +25,7 @@ StudyApp talks to the JSON:API of a Stud.IP installation (`<server>/jsonapi.php/
 | Folder tree | `GET courses/{id}/folders` (relationship `parent`) |
 | Download | `GET file-refs/{id}/content` |
 | Announcements | `GET courses/{id}/news` (`title`, HTML `content`, `publication-start`) |
+| Course dates | `GET courses/{id}/events` (`title`, `start`/`end` or `begin`, `location`/`room`, `is-cancelled`) |
 
 Lists are paged with `page[limit]=100` and followed through `links.next` (absolute or relative). Parsing is deliberately lenient (`StudIPJSONAPIParser`): missing attributes never fail a sync.
 
@@ -46,6 +47,10 @@ Every sync also loads the announcements („Ankündigungen“) of linked, active
 Unread announcements appear on „Heute“, the latest three in the module overview; opening one shows the full text and marks it read. Settings → Mitteilungen can announce new ones after a background sync.
 
 Code: `Domain/UseCases/AnnouncementUseCases.swift`, `Data/StudIP/StudIPJSONAPIClient+Announcements.swift`, `Presentation/Announcements/`
+
+## Timetable
+
+With Settings → Stundenplan → „Termine verknüpfter Stud.IP-Veranstaltungen übernehmen“ every full Stud.IP sync imports the dates of linked, active modules (30 days back, 240 days ahead) into the calendar source „Stud.IP“ (`SyncStudIPTimetableUseCase`, port `StudIPScheduleService`). Events are linked to their module, cancelled dates are titled „Entfällt: …“, and IDs are derived from the Stud.IP date ID, so a refresh updates moved dates and removes deleted ones. A module that fails to load keeps its stored dates. The option is off by default because many users already subscribe to the Stud.IP calendar link; with both, dates would appear twice. The source can be removed under Kalender → Quellen.
 
 ## Errors
 
