@@ -25,6 +25,8 @@ struct ModuleDetailView: View {
     @State private var slidesViewModel: SlidesViewModel
     @State private var learningViewModel: LearningViewModel
     @State private var filesViewModel: CourseFilesViewModel
+    /// Last section per tab, so switching tabs returns to e.g. the flashcards instead of the notes.
+    @State private var lastSections: [ModuleTab: ModuleSection] = [:]
 
     init(
         module: StudyModule,
@@ -64,6 +66,11 @@ struct ModuleDetailView: View {
         _filesViewModel = State(initialValue: makeCourseFilesViewModel(module))
     }
 
+    /// Upcoming exams of this module, nearest first.
+    private var moduleExams: [ExamOverview] {
+        exams.exams(forModule: module.id)
+    }
+
     /// Während ein PDF geöffnet ist, bekommt der Viewer den ganzen Platz.
     private var isReading: Bool {
         section == .slides && slidesViewModel.openDocumentID != nil
@@ -72,7 +79,14 @@ struct ModuleDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             if !isReading {
-                header
+                ModuleHeaderView(
+                    module: module,
+                    isLive: liveEvent.map { $0.startDate <= referenceDate } ?? false,
+                    nextExam: moduleExams.first,
+                    tab: tabSelection,
+                    section: $section,
+                    onEdit: onEdit
+                )
                     .padding(.horizontal, Theme.Spacing.page)
                     .padding(.top, 22)
                     .padding(.bottom, 14)
@@ -133,6 +147,7 @@ struct ModuleDetailView: View {
             filesViewModel.load()
         }
         .onChange(of: section) { _, newSection in
+            lastSections[newSection.tab] = newSection
             // Zahlen der Übersicht aktuell halten, z. B. nach dem Schreiben von Notizen im Reader.
             if newSection == .overview { learningViewModel.load() }
         }
@@ -175,54 +190,17 @@ struct ModuleDetailView: View {
         section = .slides
     }
 
-    // MARK: Kopf
+    // MARK: Header
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .center, spacing: 14) {
-                ModuleBadge(name: module.name, color: module.color, size: 46)
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 10) {
-                        Text(module.name)
-                            .font(Theme.Typography.largeTitle)
-                            .foregroundStyle(Theme.textPrimary)
-                            .lineLimit(1)
-                        if let liveEvent, liveEvent.startDate <= referenceDate {
-                            LiveBadge()
-                        }
-                    }
-                    HStack(spacing: 6) {
-                        if !module.code.isEmpty {
-                            Text(module.code)
-                                .font(Theme.Typography.caption)
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                        if let credits = module.credits {
-                            Pill(text: "\(GradeScale.formatCredits(credits)) ECTS", tint: Theme.success)
-                        }
-                        if let grade = module.grade {
-                            Pill(
-                                text: "Note \(GradeScale.format(grade))",
-                                tint: GradeScale.isPassing(grade) ? Theme.accent : Theme.danger
-                            )
-                        }
-                    }
-                }
-                Spacer()
-                Button(action: onEdit) {
-                    Image(systemName: "pencil")
-                }
-                .buttonStyle(.borderless)
-                .help("Modul bearbeiten")
+    /// Selecting a tab opens the section last used in it, otherwise its first section.
+    private var tabSelection: Binding<ModuleTab> {
+        Binding(
+            get: { section.tab },
+            set: { tab in
+                guard tab != section.tab else { return }
+                section = lastSections[tab] ?? tab.sections[0]
             }
-
-            PillTabBar(
-                items: ModuleSection.allCases,
-                selection: $section,
-                title: \.title,
-                systemImage: \.systemImage
-            )
-        }
+        )
     }
 
     // MARK: Übersicht
@@ -245,6 +223,10 @@ struct ModuleDetailView: View {
 
                 if let resume = slidesViewModel.documentToResume {
                     resumeCard(resume)
+                }
+
+                if !moduleExams.isEmpty {
+                    UpcomingExamsCard(exams: moduleExams) { _ in section = .exam }
                 }
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 14)], spacing: 14) {

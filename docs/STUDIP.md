@@ -31,7 +31,7 @@ Lists are paged with `page[limit]=100` and followed through `links.next` (absolu
 1. „+ → Stud.IP-Veranstaltungen zuordnen …“ lists the active modules; `StudIPCourseMatcher` suggests a course by title, course number and semester.
 2. `SyncStudIPCoursesUseCase` runs on launch and every three hours (if enabled), or manually:
    - **PDFs** become slide sets. A changed PDF (new `chdate`) is imported as an additional set titled „… (aktualisiert)“, so annotations on the old one are kept.
-   - **All files** are stored in the module's file catalog („Dateien“ section) with their folder path. Files up to 50 MB (`defaultAutoDownloadLimit`) that are not PDFs are downloaded automatically; larger ones on demand.
+   - **All files** are stored in the module's file catalog („Material → Dateien“) with their folder path. Files up to 50 MB (`defaultAutoDownloadLimit`) that are not PDFs are downloaded automatically; larger ones on demand.
    - Files deleted in Stud.IP, a changed course link and a deleted module remove the local copies.
 3. Archived modules are skipped.
 
