@@ -183,6 +183,10 @@ struct ModuleDetailView: View {
             learningViewModel.load()
             learningViewModel.openLectureNote(start: start, eventTitle: title)
             section = .notes
+        case .selectStudySheet(let id):
+            learningViewModel.load()
+            learningViewModel.selectedStudySheetID = id
+            section = .studySheets
         }
     }
 

@@ -1,5 +1,6 @@
 import AppKit
 import AppIntents
+import CoreSpotlight
 import SwiftUI
 
 @main
@@ -123,6 +124,11 @@ struct StudyAppApp: App {
             .tint(Theme.accent)
             .preferredColorScheme(appearance.colorScheme)
             .task { await startUp() }
+            .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
+                      let target = SearchTarget(identifier: identifier) else { return }
+                navigation.open(target)
+            }
             .task { await keepClockRunning() }
             .task { await keepSourcesFresh() }
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
@@ -208,6 +214,7 @@ struct StudyAppApp: App {
         autopilot.run(isLaunch: false)
         await studIPViewModel.refreshSessionState()
         await studIPViewModel.syncIfDue()
+        await reindexSearch()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
     }
@@ -216,6 +223,11 @@ struct StudyAppApp: App {
     private static func bringToFront() {
         NSApplication.shared.activate()
         NSApplication.shared.windows.first { $0.canBecomeMain }?.makeKeyAndOrderFront(nil)
+    }
+
+    /// Keeps Spotlight in line with notes and study sheets; failures only cost search results.
+    private func reindexSearch() async {
+        try? await container.makeReindexSearch()()
     }
 
     /// Opens what a clicked notification refers to.
@@ -246,6 +258,7 @@ struct StudyAppApp: App {
             await studIPViewModel.syncIfDue()
             // Switches to tomorrow's menu after lunch; cached, so usually no request.
             await mensaViewModel.refresh()
+            await reindexSearch()
             // Picks up new or moved lectures and assignments.
             await notificationsViewModel.refresh()
         }
