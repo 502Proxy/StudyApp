@@ -131,3 +131,35 @@ struct SyncAnnouncementsTests {
         }
     }
 }
+
+struct StudIPAnnouncementParsingTests {
+    private func resource(_ attributes: [String: Any]) -> StudIPJSONAPIParser.Resource {
+        ["type": "news", "id": "n1", "attributes": attributes]
+    }
+
+    @Test func readsTitleTextAndPublicationDate() throws {
+        let announcement = try #require(StudIPJSONAPIParser.announcement(resource([
+            "title": "Raumänderung",
+            "content": "<p>Die Vorlesung findet in <strong>HS 2</strong> statt.</p><p>Bis dann &amp; viele Grüße</p>",
+            "publication-start": "2026-10-20T08:00:00+02:00",
+            "mkdate": "2026-10-19T12:00:00+02:00",
+        ])))
+
+        #expect(announcement.id == "n1")
+        #expect(announcement.title == "Raumänderung")
+        #expect(announcement.body == "Die Vorlesung findet in HS 2 statt.\nBis dann & viele Grüße")
+        #expect(announcement.publishedAt == ISO8601DateFormatter().date(from: "2026-10-20T06:00:00Z"))
+    }
+
+    @Test func fallsBackToCreationDateAndSkipsIncompleteResources() {
+        let fallback = StudIPJSONAPIParser.announcement(resource(["title": "Info", "mkdate": 1_760_000_000]))
+        #expect(fallback?.publishedAt == Date(timeIntervalSince1970: 1_760_000_000))
+        #expect(StudIPJSONAPIParser.announcement(resource(["content": "ohne Titel", "mkdate": 1]))?.id == nil)
+        #expect(StudIPJSONAPIParser.announcement(resource(["title": "ohne Datum"])) == nil)
+    }
+
+    @Test func plainTextKeepsListsAndLineBreaks() {
+        let text = StudIPJSONAPIParser.plainText(fromHTML: "Bitte mitbringen:<ul><li>Taschenrechner</li><li>Ausweis</li></ul>Zeile<br/>zwei&nbsp;Ende")
+        #expect(text == "Bitte mitbringen:\n• Taschenrechner\n• Ausweis\nZeile\nzwei Ende")
+    }
+}
