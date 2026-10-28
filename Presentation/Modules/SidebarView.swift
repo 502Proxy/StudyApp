@@ -120,6 +120,11 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
+        .safeAreaInset(edge: .bottom) {
+            if studIP.isConnected {
+                StudIPStatusRow(viewModel: studIP)
+            }
+        }
         .toolbar {
             ToolbarItem {
                 Button {
@@ -310,6 +315,50 @@ private struct LiveLectureRow: View {
         .buttonStyle(.plain)
         .help("Folien der Vorlesung öffnen\(event.location.isEmpty ? "" : " · \(event.location)")")
         .accessibilityLabel("\(status), \(module.name). Folien öffnen")
+    }
+}
+
+/// Stud.IP connection and last sync at the bottom of the sidebar; a click syncs now.
+private struct StudIPStatusRow: View {
+    let viewModel: StudIPViewModel
+
+    private var status: String {
+        if viewModel.sessionExpired { return "Stud.IP · Anmeldung abgelaufen" }
+        if viewModel.isSyncing { return "Stud.IP · wird abgeglichen …" }
+        guard let lastSync = viewModel.lastSync else { return "Stud.IP verbunden" }
+        return "Stud.IP · \(lastSync.formatted(.relative(presentation: .named)))"
+    }
+
+    private var tint: Color {
+        viewModel.sessionExpired ? Theme.warning : Theme.success
+    }
+
+    var body: some View {
+        Button {
+            Task { await viewModel.syncNow() }
+        } label: {
+            HStack(spacing: 8) {
+                if viewModel.isSyncing {
+                    ProgressView().controlSize(.mini)
+                } else {
+                    Circle()
+                        .fill(tint)
+                        .frame(width: 7, height: 7)
+                }
+                Text(status)
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+            }
+            .font(Theme.Typography.small)
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isSyncing || viewModel.sessionExpired)
+        .help(viewModel.sessionExpired ? "In den Einstellungen erneut anmelden" : "Jetzt mit Stud.IP abgleichen")
+        .overlay(alignment: .top) { Divider() }
     }
 }
 
