@@ -9,12 +9,15 @@ struct RootView: View {
     @Bindable var studIPViewModel: StudIPViewModel
     @Bindable var backupViewModel: BackupViewModel
     @Bindable var examsViewModel: ExamsViewModel
+    @Bindable var announcementsViewModel: AnnouncementsViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
     let makeCourseFilesViewModel: CourseFilesViewModelFactory
 
     @State private var isDetectingModules = false
     @State private var isLinkingStudIP = false
+    /// „Später“ on the expired-session banner hides it until the next launch.
+    @State private var isSessionBannerDismissed = false
 
     var body: some View {
         NavigationSplitView {
@@ -32,6 +35,11 @@ struct RootView: View {
             .navigationSplitViewColumnWidth(min: 220, ideal: 250, max: 340)
         } detail: {
             detail
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if studIPViewModel.sessionExpired, !isSessionBannerDismissed {
+                        StudIPSessionBanner(viewModel: studIPViewModel) { isSessionBannerDismissed = true }
+                    }
+                }
         }
         .toolbar { historyButtons }
         .sheet(item: $assignmentsViewModel.editor) { draft in
@@ -64,6 +72,9 @@ struct RootView: View {
         .sheet(isPresented: $isDetectingModules) {
             ModuleDetectionSheet(viewModel: calendarViewModel)
         }
+        .sheet(item: $announcementsViewModel.selected) { item in
+            AnnouncementDetailSheet(item: item)
+        }
         .sheet(item: $examsViewModel.editor) { draft in
             ExamEditorSheet(draft: draft) { examsViewModel.save($0) }
         }
@@ -75,6 +86,7 @@ struct RootView: View {
             calendarViewModel.load()
             todayViewModel.load()
             examsViewModel.load()
+            announcementsViewModel.load()
         }
         .onChange(of: calendarViewModel.events) {
             // New, moved or cancelled exam dates from a calendar refresh.
@@ -118,6 +130,7 @@ struct RootView: View {
                 today: todayViewModel,
                 assignments: assignmentsViewModel,
                 exams: examsViewModel,
+                announcements: announcementsViewModel,
                 onOpenModule: { moduleID, section, intent in
                     navigation.show(module: moduleID, section: section, intent: intent)
                 },
@@ -159,6 +172,7 @@ struct RootView: View {
                     assignments: assignmentsViewModel,
                     studIP: studIPViewModel,
                     exams: examsViewModel,
+                    announcements: announcementsViewModel,
                     makeSlidesViewModel: makeSlidesViewModel,
                     makeLearningViewModel: makeLearningViewModel,
                     makeCourseFilesViewModel: makeCourseFilesViewModel,
