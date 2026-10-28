@@ -29,6 +29,7 @@ struct StudyAppApp: App {
             let exams = container.makeExamsViewModel()
             let navigation = AppNavigation()
             let studIP = container.makeStudIPViewModel()
+            studIP.onTimetableSynced = { calendar.load() }
             // Neu verknüpfte Veranstaltungen und geladene Folien sofort in Seitenleiste und Startseite zeigen.
             studIP.onSlidesChanged = {
                 modules.load()

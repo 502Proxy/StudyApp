@@ -17,6 +17,7 @@ final class AppContainer {
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
     let studIPService: any StudIPService
+    let studIPScheduleService: any StudIPScheduleService
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
     let backupArchiver: any BackupArchiving
@@ -44,7 +45,10 @@ final class AppContainer {
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
-        studIPService = StudIPJSONAPIClient()
+        // One client serves every Stud.IP port; features depend only on the port they use.
+        let studIPClient = StudIPJSONAPIClient()
+        studIPService = studIPClient
+        studIPScheduleService = studIPClient
         if inMemory {
             preferences = InMemoryStudyPreferences()
             studIPAccountStore = InMemoryStudIPAccountStore()
@@ -150,7 +154,9 @@ final class AppContainer {
             slideRepository: slideRepository,
             importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
             fileRepository: courseFileRepository,
-            storage: fileStorage
+            storage: fileStorage,
+            timetableSync: SyncStudIPTimetableUseCase(service: studIPScheduleService, repository: studyCalendarRepository),
+            settings: preferences
         )
     }
 

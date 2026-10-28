@@ -134,3 +134,53 @@ struct StudIPCourseDateParsingTests {
         #expect(StudIPJSONAPIParser.courseDate(resource(["title": "ohne Zeit"])) == nil)
     }
 }
+
+@MainActor
+struct StudIPTimetableSyncSettingTests {
+    let service = FakeStudIPService()
+    let schedule = FakeScheduleService()
+    let store = InMemoryStudIPAccountStore()
+    let modules = FakeModuleRepository()
+    let slides = FakeSlideDocumentRepository()
+    let calendar = InMemoryCalendarRepository()
+    let settings = InMemoryStudyPreferences()
+
+    private func makeViewModel() -> StudIPViewModel {
+        StudIPViewModel(
+            service: service,
+            store: store,
+            moduleRepository: modules,
+            slideRepository: slides,
+            importer: ImportSlideDocumentUseCase(repository: slides, storage: FakeFileStorage(), inspector: FakeInspector(pages: 3)),
+            timetableSync: SyncStudIPTimetableUseCase(service: schedule, repository: calendar),
+            settings: settings
+        )
+    }
+
+    private func prepare() throws {
+        try store.save(StudIPCredentials(
+            account: StudIPAccount(serverURL: URL(string: "https://elearning.uni-oldenburg.de")!, username: "abcd1234"),
+            password: "geheim"
+        ))
+        try modules.add(StudyModule(id: UUID(), name: "Analysis I", code: "", color: .blue, createdAt: .now, studIPCourseID: "c1"))
+        let start = Date.now.addingTimeInterval(86_400)
+        schedule.byCourse["c1"] = [
+            StudIPCourseDate(id: "d1", title: "Vorlesung", details: "", location: "", start: start, end: start, isCancelled: false),
+        ]
+    }
+
+    @Test func importsTheTimetableOnlyWhenTurnedOn() async throws {
+        try prepare()
+        let viewModel = makeViewModel()
+        var reloads = 0
+        viewModel.onTimetableSynced = { reloads += 1 }
+
+        await viewModel.syncNow()
+        #expect(calendar.storedEvents.isEmpty)
+
+        settings.importsStudIPTimetable = true
+        await viewModel.syncNow()
+        #expect(calendar.storedEvents.map(\.externalID) == ["studip:d1"])
+        #expect(reloads == 1)
+    }
+}
