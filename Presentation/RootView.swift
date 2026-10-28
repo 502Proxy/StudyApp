@@ -10,6 +10,7 @@ struct RootView: View {
     @Bindable var backupViewModel: BackupViewModel
     @Bindable var examsViewModel: ExamsViewModel
     @Bindable var announcementsViewModel: AnnouncementsViewModel
+    let studyTimerViewModel: StudyTimerViewModel
     let mensaViewModel: MensaViewModel
     let makeSlidesViewModel: SlidesViewModelFactory
     let makeLearningViewModel: LearningViewModelFactory
@@ -43,6 +44,15 @@ struct RootView: View {
                 }
         }
         .toolbar { historyButtons }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                StudyTimerToolbarButton(
+                    viewModel: studyTimerViewModel,
+                    modules: viewModel.activeModules,
+                    currentModuleID: navigation.selectedModuleID
+                )
+            }
+        }
         .sheet(item: $assignmentsViewModel.editor) { draft in
             AssignmentEditorSheet(
                 draft: draft,
@@ -155,6 +165,8 @@ struct RootView: View {
             AssignmentsView(viewModel: assignmentsViewModel, module: nil, modules: viewModel.modules)
         case .exams:
             ExamSectionView(viewModel: examsViewModel, module: nil)
+        case .statistics:
+            StatisticsView(timer: studyTimerViewModel, modules: viewModel.modules, exams: examsViewModel.upcoming)
         case .grades:
             GradesView(viewModel: viewModel) { moduleID in
                 navigation.show(module: moduleID, section: .overview)

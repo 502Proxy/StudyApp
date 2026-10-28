@@ -27,6 +27,7 @@ final class AppContainer {
     let backupFolder: any BackupFolder
     let notificationScheduler: any NotificationScheduling
     let examRepository: any ExamRepository
+    let studySessionRepository: any StudySessionRepository
     /// Einstellungen und Lesefortschritt; im Speicher für Tests und Previews, sonst in `UserDefaults`.
     let preferences: any StudySettingsStore & ReadingProgressStore
 
@@ -46,6 +47,7 @@ final class AppContainer {
         notificationScheduler = UserNotificationScheduler()
         examRepository = SwiftDataExamRepository(context: context)
         announcementRepository = SwiftDataAnnouncementRepository(context: context)
+        studySessionRepository = SwiftDataStudySessionRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
@@ -104,6 +106,7 @@ final class AppContainer {
             calendar: studyCalendarRepository,
             courseFiles: courseFileRepository,
             exams: examRepository,
+            studySessions: studySessionRepository,
             files: fileStorage
         )
     }
@@ -140,6 +143,10 @@ final class AppContainer {
 
     func makeAnnouncementsViewModel() -> AnnouncementsViewModel {
         AnnouncementsViewModel(repository: announcementRepository, modules: moduleRepository)
+    }
+
+    func makeStudyTimerViewModel() -> StudyTimerViewModel {
+        StudyTimerViewModel(repository: studySessionRepository, settings: preferences, scheduler: notificationScheduler)
     }
 
     func makeMensaViewModel() -> MensaViewModel {

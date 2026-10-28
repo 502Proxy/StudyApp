@@ -49,5 +49,6 @@ struct StudyDataRepositories {
     let calendar: any StudyCalendarRepository
     let courseFiles: any CourseFileRepository
     let exams: any ExamRepository
+    let studySessions: any StudySessionRepository
     let files: any FileStorage
 }

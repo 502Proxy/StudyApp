@@ -23,6 +23,7 @@ protocol StudySettingsStore: AnyObject {
     /// OpenMensa canteen shown on „Heute“; `nil` hides the menu.
     var canteenID: Int? { get set }
     var notificationSettings: NotificationSettings { get set }
+    var studyTimerSettings: StudyTimerSettings { get set }
 }
 
 extension StudySettingsStore {
@@ -51,6 +52,7 @@ final class InMemoryStudyPreferences: StudySettingsStore, ReadingProgressStore {
     var importsStudIPTimetable = false
     var canteenID: Int?
     var notificationSettings = NotificationSettings()
+    var studyTimerSettings = StudyTimerSettings()
     private var pages: [UUID: Int] = [:]
     private var documents: [UUID: UUID] = [:]
 

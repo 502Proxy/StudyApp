@@ -25,6 +25,8 @@ struct AppCommands: Commands {
 
             Button("Noten & ECTS") { navigation.showGrades() }
 
+            Button("Statistik") { navigation.showStatistics() }
+
             Button("Neue Aufgabe …") { assignments.startNewAssignment(moduleID: navigation.selectedModuleID) }
                 .keyboardShortcut("t", modifiers: [.command, .option])
 
