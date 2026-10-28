@@ -104,6 +104,10 @@ struct StudyAppApp: App {
             .tint(Theme.accent)
             .preferredColorScheme(appearance.colorScheme)
             .task { await startUp() }
+            .onOpenURL { url in
+                guard let link = StudyAppLink(url: url) else { return }
+                navigation.open(link)
+            }
             .task { await keepClockRunning() }
             .task { await keepSourcesFresh() }
             .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
@@ -156,8 +160,14 @@ struct StudyAppApp: App {
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
         await studIPViewModel.syncIfDue()
+        publishWidgetSnapshot()
         await backupViewModel.runAutomaticBackupIfDue()
         await notificationsViewModel.refresh()
+    }
+
+    /// Hands the current lectures, due cards and exams to the widgets.
+    private func publishWidgetSnapshot() {
+        WidgetSnapshotPublisher().publish(calendar: calendarViewModel, today: todayViewModel, exams: examsViewModel)
     }
 
     /// Opens what a clicked notification refers to.
@@ -186,6 +196,8 @@ struct StudyAppApp: App {
             try? await Task.sleep(for: .seconds(300))
             await calendarViewModel.refreshStaleSubscriptions()
             await studIPViewModel.syncIfDue()
+            todayViewModel.load()
+            publishWidgetSnapshot()
             // Picks up new or moved lectures and assignments.
             await notificationsViewModel.refresh()
         }

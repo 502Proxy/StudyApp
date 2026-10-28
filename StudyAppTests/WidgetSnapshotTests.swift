@@ -70,3 +70,24 @@ struct WidgetSnapshotBuilderTests {
         #expect(snapshot.dueCards == 11)
     }
 }
+
+@MainActor
+struct WidgetLinkNavigationTests {
+    @Test func linksOpenTheModuleSection() throws {
+        let name = "WidgetLinkNavigationTests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: name))
+        defer { defaults.removePersistentDomain(forName: name) }
+        let navigation = AppNavigation(defaults: defaults)
+        let module = UUID()
+
+        navigation.open(StudyAppLink.module(module, section: "slides"))
+        #expect(navigation.currentLocation == .module(module, section: .slides))
+        #expect(navigation.pendingIntent == .resumeSlides)
+
+        navigation.open(StudyAppLink.module(module, section: "unbekannt"))
+        #expect(navigation.currentLocation == .module(module, section: .overview))
+
+        navigation.open(StudyAppLink.today)
+        #expect(navigation.currentLocation == .today)
+    }
+}
