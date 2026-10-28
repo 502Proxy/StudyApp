@@ -15,28 +15,22 @@ struct TodayView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.section) {
                 header
-                hero
-                HStack(alignment: .top, spacing: 18) {
-                    scheduleCard
-                        .frame(maxWidth: .infinity)
-                    VStack(spacing: 18) {
-                        if !exams.upcoming.isEmpty {
-                            UpcomingExamsCard(exams: exams.upcoming) { overview in
-                                onOpenModule(overview.module.id, .exam, nil)
-                            }
-                        }
-                        assignmentsCard
-                        reviewCard
+                // Two columns on wide windows, one column when the window is narrow.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: Self.columnSpacing) {
+                        primaryColumn
+                            .frame(minWidth: 460, maxWidth: .infinity)
+                        secondaryColumn
+                            .frame(minWidth: 320, maxWidth: 440)
                     }
-                    .frame(maxWidth: .infinity)
+                    VStack(spacing: Self.columnSpacing) {
+                        primaryColumn
+                        secondaryColumn
+                    }
                 }
-                if !today.recentNotes.isEmpty {
-                    recentNotes
-                }
-                modulesGrid
             }
             .padding(Theme.Spacing.page)
-            .frame(maxWidth: 1120)
+            .frame(maxWidth: 1200)
             .frame(maxWidth: .infinity)
         }
         .background(Theme.background)
@@ -44,6 +38,32 @@ struct TodayView: View {
         .task {
             today.load()
             exams.load()
+        }
+    }
+
+    private static let columnSpacing: CGFloat = 20
+
+    /// What is happening now: the running or next lecture, today's timeline and recent notes.
+    private var primaryColumn: some View {
+        VStack(alignment: .leading, spacing: Self.columnSpacing) {
+            hero
+            scheduleCard
+            if !today.recentNotes.isEmpty {
+                recentNotes
+            }
+        }
+    }
+
+    /// What needs attention: assignments, flashcards and exams.
+    private var secondaryColumn: some View {
+        VStack(alignment: .leading, spacing: Self.columnSpacing) {
+            assignmentsCard
+            reviewCard
+            if !exams.upcoming.isEmpty {
+                UpcomingExamsCard(exams: exams.upcoming) { overview in
+                    onOpenModule(overview.module.id, .exam, nil)
+                }
+            }
         }
     }
 
@@ -172,7 +192,6 @@ struct TodayView: View {
                 }
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
         .card()
     }
 
@@ -263,7 +282,6 @@ struct TodayView: View {
                 }
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
         .card()
     }
 
@@ -280,46 +298,6 @@ struct TodayView: View {
                         NoteReferenceCard(reference: reference)
                     }
                     .buttonStyle(CardButtonStyle())
-                }
-            }
-        }
-    }
-
-    // MARK: Module
-
-    private var modulesGrid: some View {
-        // Archivierte Semester gehören nicht mehr auf die Startseite.
-        let modules = today.modules.filter { !$0.isArchived }
-        return VStack(alignment: .leading, spacing: 14) {
-            SectionHeader("Deine Module", systemImage: "books.vertical") {
-                Button(action: onCreateModule) {
-                    Label("Neues Modul", systemImage: "plus")
-                }
-                .buttonStyle(.link)
-                .font(Theme.Typography.small)
-            }
-            if modules.isEmpty {
-                Text("Noch keine Module. Sie entstehen automatisch, sobald du deinen Stundenplan importierst.")
-                    .font(Theme.Typography.caption)
-                    .foregroundStyle(Theme.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .card()
-            } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 14)], spacing: 14) {
-                    ForEach(modules) { module in
-                        Button {
-                            onOpenModule(module.id, .overview, nil)
-                        } label: {
-                            ModuleTile(
-                                module: module,
-                                isLive: calendar.liveModuleID == module.id,
-                                documents: today.documentCounts[module.id] ?? 0,
-                                due: today.dueCounts[module.id] ?? 0,
-                                nextEvent: calendar.upcomingEvents(forModule: module.id, limit: 1).first
-                            )
-                        }
-                        .buttonStyle(CardButtonStyle())
-                    }
                 }
             }
         }
@@ -538,44 +516,5 @@ struct NoteReferenceCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .card(padding: 14)
-    }
-}
-
-/// Kachel eines Moduls auf der Startseite.
-private struct ModuleTile: View {
-    let module: StudyModule
-    let isLive: Bool
-    let documents: Int
-    let due: Int
-    let nextEvent: StudyCalendarEvent?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                ModuleBadge(name: module.name, color: module.color, size: 36)
-                Spacer()
-                if isLive { LiveBadge() }
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(module.name)
-                    .font(Theme.Typography.headline)
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1)
-                Text(module.code.isEmpty ? " " : module.code)
-                    .font(Theme.Typography.small)
-                    .foregroundStyle(Theme.textSecondary)
-            }
-            HStack(spacing: 6) {
-                Pill(text: documents == 1 ? "1 Foliensatz" : "\(documents) Foliensätze", tint: module.color.color)
-                if due > 0 { Pill(text: "\(due) fällig", tint: Theme.warning) }
-            }
-            if let nextEvent {
-                Label(nextEvent.startDate.formatted(.dateTime.weekday(.abbreviated).hour().minute()), systemImage: "calendar")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textTertiary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card(padding: 16)
     }
 }
