@@ -17,6 +17,7 @@ struct StudyAppApp: App {
     @State private var backupViewModel: BackupViewModel
     @State private var notificationsViewModel: NotificationsViewModel
     @State private var examsViewModel: ExamsViewModel
+    @State private var announcementsViewModel: AnnouncementsViewModel
     @State private var updater = AppUpdater()
     @AppStorage(ViewPreferences.appearanceKey) private var appearance = AppAppearance.standard
 
@@ -30,6 +31,8 @@ struct StudyAppApp: App {
             let exams = container.makeExamsViewModel()
             let navigation = AppNavigation()
             let studIP = container.makeStudIPViewModel()
+            let announcements = container.makeAnnouncementsViewModel()
+            studIP.onAnnouncementsSynced = { announcements.load() }
             // Neu verknüpfte Veranstaltungen und geladene Folien sofort in Seitenleiste und Startseite zeigen.
             studIP.onSlidesChanged = {
                 modules.load()
@@ -54,7 +57,7 @@ struct StudyAppApp: App {
             _studIPViewModel = State(initialValue: studIP)
             let notifications = container.makeNotificationsViewModel()
             studIP.onBackgroundSyncChanges = { summary in
-                Task { await notifications.notifyNewFiles(summary) }
+                Task { await notifications.notifyAfterSync(summary) }
             }
             _notificationsViewModel = State(initialValue: notifications)
             let responder = NotificationResponder()
@@ -71,10 +74,12 @@ struct StudyAppApp: App {
                 today.load()
                 assignments.load()
                 exams.load()
+                announcements.load()
                 Task { await notifications.refresh() }
             }
             _backupViewModel = State(initialValue: backup)
             _examsViewModel = State(initialValue: exams)
+            _announcementsViewModel = State(initialValue: announcements)
         } catch {
             fatalError("Datenbank konnte nicht geöffnet werden: \(error)")
         }
@@ -91,6 +96,7 @@ struct StudyAppApp: App {
                 studIPViewModel: studIPViewModel,
                 backupViewModel: backupViewModel,
                 examsViewModel: examsViewModel,
+                announcementsViewModel: announcementsViewModel,
                 makeSlidesViewModel: { moduleID in
                     container.makeSlidesViewModel(moduleID: moduleID)
                 },
@@ -117,6 +123,7 @@ struct StudyAppApp: App {
                 Task {
                     await calendarViewModel.refreshStaleSubscriptions()
                     autopilot.run(isLaunch: false)
+                    await studIPViewModel.refreshSessionState(force: false)
                 }
             }
         }
@@ -153,6 +160,7 @@ struct StudyAppApp: App {
         calendarViewModel.synchronizeModules()
         todayViewModel.load()
         examsViewModel.load()
+        announcementsViewModel.load()
         if navigation.destination == nil {
             navigation.showToday()
         }
@@ -161,6 +169,7 @@ struct StudyAppApp: App {
         // Abonnements im Hintergrund auffrischen; eine dabei neu erkannte Vorlesung wird ebenfalls geöffnet.
         await calendarViewModel.refreshStaleSubscriptions()
         autopilot.run(isLaunch: false)
+        await studIPViewModel.refreshSessionState()
         await studIPViewModel.syncIfDue()
         await reindexSearch()
         await backupViewModel.runAutomaticBackupIfDue()
