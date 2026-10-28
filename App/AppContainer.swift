@@ -17,6 +17,8 @@ final class AppContainer {
     let fileStorage: any FileStorage
     let pdfInspector: any PDFInspector
     let studIPService: any StudIPService
+    let studIPAnnouncementService: any StudIPAnnouncementService
+    let announcementRepository: any AnnouncementRepository
     let studIPAccountStore: any StudIPAccountStore
     let courseFileRepository: any CourseFileRepository
     let backupArchiver: any BackupArchiving
@@ -42,11 +44,15 @@ final class AppContainer {
         courseFileRepository = SwiftDataCourseFileRepository(context: context)
         notificationScheduler = UserNotificationScheduler()
         examRepository = SwiftDataExamRepository(context: context)
+        announcementRepository = SwiftDataAnnouncementRepository(context: context)
         studySessionRepository = SwiftDataStudySessionRepository(context: context)
         calendarFeedLoader = URLSessionCalendarFeedLoader()
         calendarEventParser = ICalendarFeedParser()
         pdfInspector = PDFKitInspector()
-        studIPService = StudIPJSONAPIClient()
+        // One client serves every Stud.IP port; features depend only on the port they use.
+        let studIPClient = StudIPJSONAPIClient()
+        studIPService = studIPClient
+        studIPAnnouncementService = studIPClient
         if inMemory {
             preferences = InMemoryStudyPreferences()
             studIPAccountStore = InMemoryStudIPAccountStore()
@@ -131,6 +137,10 @@ final class AppContainer {
         )
     }
 
+    func makeAnnouncementsViewModel() -> AnnouncementsViewModel {
+        AnnouncementsViewModel(repository: announcementRepository, modules: moduleRepository)
+    }
+
     func makeStudyTimerViewModel() -> StudyTimerViewModel {
         StudyTimerViewModel(repository: studySessionRepository, settings: preferences, scheduler: notificationScheduler)
     }
@@ -157,7 +167,8 @@ final class AppContainer {
             slideRepository: slideRepository,
             importer: ImportSlideDocumentUseCase(repository: slideRepository, storage: fileStorage, inspector: pdfInspector),
             fileRepository: courseFileRepository,
-            storage: fileStorage
+            storage: fileStorage,
+            announcementSync: SyncAnnouncementsUseCase(service: studIPAnnouncementService, repository: announcementRepository)
         )
     }
 

@@ -104,6 +104,21 @@ struct NotificationPlanner: Sendable {
     }
 }
 
+extension NotificationPlanner {
+    /// Immediate notification about new course announcements; one summary for several.
+    static func newAnnouncements(_ summary: StudIPSyncSummary, settings: NotificationSettings) -> StudyNotification? {
+        guard settings.announcements, let first = summary.newAnnouncements.first else { return nil }
+        let count = summary.newAnnouncements.count
+        return StudyNotification(
+            id: "\(StudyNotification.identifierPrefix)announcements.\(first.id)",
+            title: count == 1 ? first.title : "\(count) neue Ankündigungen in Stud.IP",
+            body: count == 1 ? String(first.body.prefix(160)) : summary.newAnnouncements.prefix(3).map(\.title).joined(separator: " · "),
+            fireDate: nil,
+            target: .today
+        )
+    }
+}
+
 /// Port to the system's notification center.
 @MainActor
 protocol NotificationScheduling {

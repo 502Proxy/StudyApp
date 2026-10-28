@@ -41,8 +41,30 @@ struct NotificationSettings: Codable, Equatable, Sendable {
     var lectureLeadMinutes = 10
     var assignments = false
     var newFiles = false
+    /// New announcements of linked Stud.IP courses.
+    var announcements = false
 
     static let leadMinuteRange = 0...60
 
-    var isAnyEnabled: Bool { lectures || assignments || newFiles }
+    var isAnyEnabled: Bool { lectures || assignments || newFiles || announcements }
+}
+
+extension NotificationSettings {
+    private enum CodingKeys: String, CodingKey {
+        case lectures, lectureLeadMinutes, assignments, newFiles, announcements
+    }
+
+    /// Missing keys fall back to the defaults, so settings stored by an older version stay readable
+    /// when a new kind of notification is added.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = NotificationSettings()
+        self.init(
+            lectures: try container.decodeIfPresent(Bool.self, forKey: .lectures) ?? defaults.lectures,
+            lectureLeadMinutes: try container.decodeIfPresent(Int.self, forKey: .lectureLeadMinutes) ?? defaults.lectureLeadMinutes,
+            assignments: try container.decodeIfPresent(Bool.self, forKey: .assignments) ?? defaults.assignments,
+            newFiles: try container.decodeIfPresent(Bool.self, forKey: .newFiles) ?? defaults.newFiles,
+            announcements: try container.decodeIfPresent(Bool.self, forKey: .announcements) ?? defaults.announcements
+        )
+    }
 }

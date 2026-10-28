@@ -15,6 +15,7 @@ enum Persistence {
         AssignmentRecord.self,
         CourseFileRecord.self,
         ExamRecord.self,
+        AnnouncementRecord.self,
         StudySessionRecord.self,
     ])
 
