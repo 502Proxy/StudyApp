@@ -97,6 +97,13 @@ final class StudyTimerViewModel {
         }
     }
 
+    /// „45 Min.“ or „2 Std. 5 Min.“.
+    static func durationText(_ minutes: Int) -> String {
+        guard minutes >= 60 else { return "\(minutes) Min." }
+        let rest = minutes % 60
+        return rest == 0 ? "\(minutes / 60) Std." : "\(minutes / 60) Std. \(rest) Min."
+    }
+
     static func clockText(_ interval: TimeInterval) -> String {
         let seconds = Int(interval.rounded(.up))
         return String(format: "%d:%02d", seconds / 60, seconds % 60)

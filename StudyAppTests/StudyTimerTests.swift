@@ -183,6 +183,13 @@ struct StudyTimerViewModelTests {
         #expect(scheduler.scheduled[StudyNotification.studyTimerIdentifier] == nil)
     }
 
+    @Test func formatsDurationsAndClock() {
+        #expect(StudyTimerViewModel.durationText(45) == "45 Min.")
+        #expect(StudyTimerViewModel.durationText(120) == "2 Std.")
+        #expect(StudyTimerViewModel.durationText(125) == "2 Std. 5 Min.")
+        #expect(StudyTimerViewModel.clockText(59.2) == "1:00")
+    }
+
     @Test func settingsChangesArePersisted() {
         let viewModel = makeViewModel()
         viewModel.settings.focusMinutes = 50
