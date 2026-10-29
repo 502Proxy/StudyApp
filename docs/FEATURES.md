@@ -97,6 +97,7 @@ StudyApp offers actions in the Shortcuts app and to Siri without any setup:
 | Nächste Vorlesung | „Was habe ich als Nächstes in StudyApp?“ | Spoken/returned text, e.g. „Als Nächstes: Analysis I, heute um 10:15 in HS 1.“ |
 | Fällige Karteikarten | „Fällige Karten in StudyApp“ | „24 Karten fällig: Analysis I 12, …“ |
 | Karteikarten lernen | „Starte Karteikarten Analysis I in StudyApp“ | Opens the module's flashcards |
+| Lerntimer starten | „Starte den Lerntimer in StudyApp“ | Starts or continues the study timer, optionally for a module: „Lerntimer läuft: Fokus, noch 25:00.“ |
 
 Code: `App/Intents/`, `Domain/UseCases/QuickInfoUseCases.swift`
 

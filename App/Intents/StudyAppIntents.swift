@@ -47,6 +47,23 @@ nonisolated struct OpenFlashcardsIntent: AppIntent {
     }
 }
 
+/// „Starte den Lerntimer“: starts the study timer, optionally for a module.
+nonisolated struct StartStudyTimerIntent: AppIntent {
+    static let title: LocalizedStringResource = "Lerntimer starten"
+    static let description = IntentDescription("Startet den Lerntimer in StudyApp, auf Wunsch für ein Modul.")
+
+    @Parameter(title: "Modul")
+    var module: ModuleEntity?
+
+    @Dependency private var services: StudyAppIntentServices
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+        let text = await services.startStudyTimer(moduleID: module?.id)
+        return .result(value: text, dialog: IntentDialog(stringLiteral: text))
+    }
+}
+
 /// Siri phrases and the actions shown in the Shortcuts app without any setup.
 nonisolated struct StudyAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
@@ -76,6 +93,15 @@ nonisolated struct StudyAppShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Karteikarten lernen",
             systemImageName: "brain.head.profile"
+        )
+        AppShortcut(
+            intent: StartStudyTimerIntent(),
+            phrases: [
+                "Starte den Lerntimer in \(.applicationName)",
+                "Lerntimer in \(.applicationName) starten",
+            ],
+            shortTitle: "Lerntimer starten",
+            systemImageName: "timer"
         )
     }
 }

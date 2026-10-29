@@ -183,6 +183,23 @@ struct StudyTimerViewModelTests {
         #expect(scheduler.scheduled[StudyNotification.studyTimerIdentifier] == nil)
     }
 
+    @Test func shortcutStartsAnIdleTimerForTheModuleAndKeepsARunningOne() async {
+        let viewModel = makeViewModel()
+        let module = UUID()
+
+        #expect(await viewModel.startFromShortcut(moduleID: module) == "Lerntimer läuft: Fokus, noch 25:00.")
+        #expect(viewModel.moduleID == module)
+
+        clock.now += 60
+        viewModel.tick()
+        #expect(await viewModel.startFromShortcut(moduleID: UUID()) == "Der Lerntimer läuft schon: Fokus, noch 24:00.")
+        #expect(viewModel.moduleID == module)
+
+        viewModel.pause()
+        #expect(await viewModel.startFromShortcut(moduleID: nil) == "Lerntimer läuft weiter: Fokus, noch 24:00.")
+        viewModel.reset()
+    }
+
     @Test func formatsDurationsAndClock() {
         #expect(StudyTimerViewModel.durationText(45) == "45 Min.")
         #expect(StudyTimerViewModel.durationText(120) == "2 Std.")
